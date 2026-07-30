@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🍅 番茄闹钟 · 模组版 + 任务清单</title>
+    <title>🍅 番茄闹钟 · 模组版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         /* ===== 全局重置 & 变量 ===== */
@@ -130,6 +130,27 @@
         .header h1 i {
             color: var(--primary);
             margin-right: 8px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .lang-toggle {
+            background: transparent;
+            border: 2px solid var(--gray);
+            border-radius: 30px;
+            padding: 4px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+        .lang-toggle:hover {
+            border-color: var(--secondary);
+            background: rgba(52, 152, 219, 0.08);
         }
         .stats {
             display: flex;
@@ -915,14 +936,14 @@
     <aside class="sidebar">
         <div class="logo"><i class="fas fa-stopwatch"></i> 番茄<span>模组</span></div>
         <nav class="nav-items">
-            <div class="nav-item active" data-target="timer"><i class="fas fa-clock"></i> 番茄计时</div>
-            <div class="nav-item" data-target="store"><i class="fas fa-store"></i> 商店</div>
-            <div class="nav-item" data-target="backpack"><i class="fas fa-backpack"></i> 背包</div>
-            <div class="nav-item" data-target="tasks"><i class="fas fa-tasks"></i> 任务</div>
-            <div class="nav-item" data-target="create"><i class="fas fa-plus-circle"></i> 创建商品</div>
-            <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> 统计</div>
+            <div class="nav-item active" data-target="timer"><i class="fas fa-clock"></i> <span data-i18n="nav-timer">番茄计时</span></div>
+            <div class="nav-item" data-target="store"><i class="fas fa-store"></i> <span data-i18n="nav-store">商店</span></div>
+            <div class="nav-item" data-target="backpack"><i class="fas fa-backpack"></i> <span data-i18n="nav-backpack">背包</span></div>
+            <div class="nav-item" data-target="tasks"><i class="fas fa-tasks"></i> <span data-i18n="nav-tasks">任务</span></div>
+            <div class="nav-item" data-target="create"><i class="fas fa-plus-circle"></i> <span data-i18n="nav-create">创建商品</span></div>
+            <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> <span data-i18n="nav-stats">统计</span></div>
         </nav>
-        <div class="sidebar-footer">v3.1 · 任务清单模组</div>
+        <div class="sidebar-footer">v3.3 · 任务独立导入/导出</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -930,19 +951,22 @@
 
         <!-- 顶部状态栏 -->
         <header class="header">
-            <h1><i class="fas fa-apple-alt"></i> 专注工作</h1>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-icon tomato"><i class="fas fa-apple-alt"></i></div>
-                    <div><div class="stat-value" id="tomato-counter">0</div><div class="stat-label">番茄币</div></div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon exp"><i class="fas fa-star"></i></div>
-                    <div><div class="stat-value" id="exp-counter">0 / 100</div><div class="stat-label">经验值</div></div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon level"><i class="fas fa-level-up-alt"></i></div>
-                    <div><div class="stat-value" id="level-counter">1</div><div class="stat-label">等级</div></div>
+            <h1><i class="fas fa-apple-alt"></i> <span data-i18n="header-title">专注工作</span></h1>
+            <div class="header-right">
+                <button class="lang-toggle" id="lang-toggle">🌐 English</button>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-icon tomato"><i class="fas fa-apple-alt"></i></div>
+                        <div><div class="stat-value" id="tomato-counter">0</div><div class="stat-label" data-i18n="stat-tomato">番茄币</div></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon exp"><i class="fas fa-star"></i></div>
+                        <div><div class="stat-value" id="exp-counter">0 / 100</div><div class="stat-label" data-i18n="stat-exp">经验值</div></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon level"><i class="fas fa-level-up-alt"></i></div>
+                        <div><div class="stat-value" id="level-counter">1</div><div class="stat-label" data-i18n="stat-level">等级</div></div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -951,29 +975,29 @@
         <section class="panel content-section active" id="timer-section">
             <div class="timer-container">
                 <div class="duration-setting">
-                    <label for="duration-input">⏱️ 专注时长</label>
+                    <label for="duration-input" data-i18n="duration-label">⏱️ 专注时长</label>
                     <input type="number" id="duration-input" min="1" max="99" value="25" />
-                    <span>分钟</span>
+                    <span data-i18n="duration-unit">分钟</span>
                 </div>
                 <div class="timer-display" id="timer-display">25:00</div>
                 <div class="timer-controls">
-                    <button class="btn btn-primary" id="btn-start"><i class="fas fa-play"></i> 开始</button>
-                    <button class="btn btn-secondary" id="btn-pause" disabled><i class="fas fa-pause"></i> 暂停</button>
-                    <button class="btn btn-outline" id="btn-reset" disabled><i class="fas fa-undo"></i> 重置</button>
+                    <button class="btn btn-primary" id="btn-start"><i class="fas fa-play"></i> <span data-i18n="btn-start">开始</span></button>
+                    <button class="btn btn-secondary" id="btn-pause" disabled><i class="fas fa-pause"></i> <span data-i18n="btn-pause">暂停</span></button>
+                    <button class="btn btn-outline" id="btn-reset" disabled><i class="fas fa-undo"></i> <span data-i18n="btn-reset">重置</span></button>
                 </div>
                 <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
-                <div class="status-message" id="status">🍅 准备开始工作吧！</div>
+                <div class="status-message" id="status" data-i18n="status-ready">🍅 准备开始工作吧！</div>
             </div>
         </section>
 
         <!-- ===== 商店 ===== -->
         <section class="panel content-section" id="store-section">
             <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-store"></i> 番茄商店</h2>
+                <h2 class="panel-title"><i class="fas fa-store"></i> <span data-i18n="store-title">番茄商店</span></h2>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-secondary" id="btn-refresh-store"><i class="fas fa-sync-alt"></i> 刷新</button>
-                    <button class="btn btn-gold" id="btn-export-items"><i class="fas fa-download"></i> 导出全部</button>
-                    <button class="btn btn-gold" id="btn-import-items"><i class="fas fa-upload"></i> 导入合并</button>
+                    <button class="btn btn-secondary" id="btn-refresh-store"><i class="fas fa-sync-alt"></i> <span data-i18n="store-refresh">刷新</span></button>
+                    <button class="btn btn-gold" id="btn-export-items"><i class="fas fa-download"></i> <span data-i18n="store-export">导出全部</span></button>
+                    <button class="btn btn-gold" id="btn-import-items"><i class="fas fa-upload"></i> <span data-i18n="store-import">导入合并</span></button>
                     <input type="file" id="file-input-import" class="file-input-hidden" accept=".shem" />
                 </div>
             </div>
@@ -983,7 +1007,7 @@
         <!-- ===== 背包 ===== -->
         <section class="panel content-section" id="backpack-section">
             <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-backpack"></i> 我的背包</h2>
+                <h2 class="panel-title"><i class="fas fa-backpack"></i> <span data-i18n="backpack-title">我的背包</span></h2>
             </div>
             <div class="backpack-items" id="backpack-items"></div>
         </section>
@@ -991,52 +1015,57 @@
         <!-- ===== 任务清单 ===== -->
         <section class="panel content-section" id="tasks-section">
             <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-tasks"></i> 任务清单</h2>
-                <button class="btn btn-primary btn-sm" id="btn-add-task"><i class="fas fa-plus"></i> 新建任务</button>
+                <h2 class="panel-title"><i class="fas fa-tasks"></i> <span data-i18n="tasks-title">任务清单</span></h2>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary btn-sm" id="btn-add-task"><i class="fas fa-plus"></i> <span data-i18n="tasks-add">新建任务</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-export-tasks"><i class="fas fa-download"></i> <span data-i18n="tasks-export">导出任务</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-tasks"><i class="fas fa-upload"></i> <span data-i18n="tasks-import">导入任务</span></button>
+                    <input type="file" id="file-input-import-tasks" class="file-input-hidden" accept=".shem" />
+                </div>
             </div>
             <div id="task-form-container" style="display:none;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
                 <form id="task-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="task-name">任务名称</label>
+                            <label for="task-name" data-i18n="task-name-label">任务名称</label>
                             <input type="text" id="task-name" required placeholder="输入任务名称" />
                         </div>
                         <div class="form-group">
-                            <label for="task-target">目标番茄数</label>
+                            <label for="task-target" data-i18n="task-target-label">目标番茄数</label>
                             <input type="number" id="task-target" required min="1" value="5" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="task-desc">任务描述</label>
+                        <label for="task-desc" data-i18n="task-desc-label">任务描述</label>
                         <textarea id="task-desc" placeholder="任务描述（可选）"></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="task-reward-type">奖励类型</label>
+                            <label for="task-reward-type" data-i18n="task-reward-type-label">奖励类型</label>
                             <select id="task-reward-type">
-                                <option value="tomato">🍅 番茄币</option>
-                                <option value="exp">⭐ 经验值</option>
-                                <option value="item">🎁 指定物品</option>
-                                <option value="lootbox">🎁 开箱</option>
+                                <option value="tomato">🍅 <span data-i18n="reward-tomato">番茄币</span></option>
+                                <option value="exp">⭐ <span data-i18n="reward-exp">经验值</span></option>
+                                <option value="item">🎁 <span data-i18n="reward-item">指定物品</span></option>
+                                <option value="lootbox">🎁 <span data-i18n="reward-lootbox">开箱</span></option>
                             </select>
                         </div>
                         <div class="form-group" id="task-reward-item-group" style="display:none;">
-                            <label for="task-reward-item">物品ID</label>
+                            <label for="task-reward-item" data-i18n="task-reward-item-label">物品ID</label>
                             <input type="text" id="task-reward-item" placeholder="输入物品ID (例如 u_123)" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="task-reward-amount">奖励数量</label>
+                        <label for="task-reward-amount" data-i18n="task-reward-amount-label">奖励数量</label>
                         <input type="number" id="task-reward-amount" min="1" value="1" />
                     </div>
                     <div class="form-group">
-                        <label for="task-deps">依赖物品 (ID，逗号分隔)</label>
+                        <label for="task-deps" data-i18n="task-deps-label">依赖物品 (ID，逗号分隔)</label>
                         <input type="text" id="task-deps" placeholder="例如: u_123, u_456" />
-                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">拥有这些物品才能开始此任务</div>
+                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" data-i18n="task-deps-hint">拥有这些物品才能开始此任务</div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="btn-task-submit"><i class="fas fa-save"></i> 保存任务</button>
-                        <button type="button" class="btn btn-outline" id="btn-task-cancel">取消</button>
+                        <button type="submit" class="btn btn-primary" id="btn-task-submit"><i class="fas fa-save"></i> <span data-i18n="task-save">保存任务</span></button>
+                        <button type="button" class="btn btn-outline" id="btn-task-cancel"><span data-i18n="task-cancel">取消</span></button>
                     </div>
                 </form>
             </div>
@@ -1047,27 +1076,27 @@
         <section class="panel content-section" id="create-section">
             <div class="panel-header">
                 <h2 class="panel-title" id="create-panel-title">
-                    <i class="fas fa-plus-circle"></i> 创建商品
-                    <span id="edit-badge" class="edit-badge" style="display:none;">编辑中</span>
+                    <i class="fas fa-plus-circle"></i> <span data-i18n="create-title">创建商品</span>
+                    <span id="edit-badge" class="edit-badge" style="display:none;" data-i18n="create-editing">编辑中</span>
                 </h2>
-                <button class="btn btn-outline btn-sm" id="btn-cancel-edit" style="display:none;"><i class="fas fa-times"></i> 取消编辑</button>
+                <button class="btn btn-outline btn-sm" id="btn-cancel-edit" style="display:none;"><i class="fas fa-times"></i> <span data-i18n="create-cancel">取消编辑</span></button>
             </div>
             <form id="item-form">
                 <div class="form-group">
-                    <label for="item-name">商品名称</label>
+                    <label for="item-name" data-i18n="item-name-label">商品名称</label>
                     <input type="text" id="item-name" required placeholder="输入商品名称" />
                 </div>
                 <div class="form-group">
-                    <label for="item-desc">商品描述</label>
+                    <label for="item-desc" data-i18n="item-desc-label">商品描述</label>
                     <textarea id="item-desc" required placeholder="输入商品描述"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="item-price">价格（番茄币）</label>
+                        <label for="item-price" data-i18n="item-price-label">价格（番茄币）</label>
                         <input type="number" id="item-price" required min="1" placeholder="价格" />
                     </div>
                     <div class="form-group">
-                        <label for="item-icon">图标</label>
+                        <label for="item-icon" data-i18n="item-icon-label">图标</label>
                         <select id="item-icon" required>
                             <option value="fas fa-coffee">☕ 咖啡</option>
                             <option value="fas fa-music">🎵 音乐</option>
@@ -1086,33 +1115,33 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="item-effect">效果</label>
+                        <label for="item-effect" data-i18n="item-effect-label">效果</label>
                         <select id="item-effect" required>
-                            <option value="rest">🛌 休息时间增加</option>
-                            <option value="focus">🎯 专注时间增加</option>
-                            <option value="tomato">🍅 番茄币奖励</option>
-                            <option value="exp">⭐ 经验值奖励</option>
-                            <option value="lootbox">🎁 开箱随机奖励</option>
+                            <option value="rest"><span data-i18n="effect-rest">🛌 休息时间增加</span></option>
+                            <option value="focus"><span data-i18n="effect-focus">🎯 专注时间增加</span></option>
+                            <option value="tomato"><span data-i18n="effect-tomato">🍅 番茄币奖励</span></option>
+                            <option value="exp"><span data-i18n="effect-exp">⭐ 经验值奖励</span></option>
+                            <option value="lootbox"><span data-i18n="effect-lootbox">🎁 开箱随机奖励</span></option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="item-deps">依赖物品 (ID，逗号分隔)</label>
+                        <label for="item-deps" data-i18n="item-deps-label">依赖物品 (ID，逗号分隔)</label>
                         <input type="text" id="item-deps" placeholder="例如: u_123, u_456" />
-                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">输入依赖的物品ID，使用前需拥有这些物品</div>
+                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" data-i18n="item-deps-hint">输入依赖的物品ID，使用前需拥有这些物品</div>
                     </div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary" id="btn-submit-form">
-                        <i class="fas fa-save"></i> <span id="submit-btn-text">创建商品</span>
+                        <i class="fas fa-save"></i> <span id="submit-btn-text" data-i18n="create-submit">创建商品</span>
                     </button>
                     <button type="button" class="btn btn-gold" id="btn-export-single">
-                        <i class="fas fa-file-export"></i> 创建物品文件
+                        <i class="fas fa-file-export"></i> <span data-i18n="create-export-single">创建物品文件</span>
                     </button>
                     <button type="button" class="btn btn-gold" id="btn-export-and-load">
-                        <i class="fas fa-file-import"></i> 创建并加载
+                        <i class="fas fa-file-import"></i> <span data-i18n="create-export-load">创建并加载</span>
                     </button>
                 </div>
-                <div style="margin-top:12px;font-size:0.85rem;color:var(--gray);">
+                <div style="margin-top:12px;font-size:0.85rem;color:var(--gray);" data-i18n="create-hint">
                     <i class="fas fa-info-circle"></i> “开箱”效果使用时会随机获得奖励。
                 </div>
             </form>
@@ -1121,12 +1150,12 @@
         <!-- ===== 统计 ===== -->
         <section class="panel content-section" id="stats-section">
             <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-chart-line"></i> 数据统计</h2>
+                <h2 class="panel-title"><i class="fas fa-chart-line"></i> <span data-i18n="stats-title">数据统计</span></h2>
             </div>
             <div class="tab-container">
-                <div class="tab active" data-tab="daily">📅 今日</div>
-                <div class="tab" data-tab="weekly">📆 本周</div>
-                <div class="tab" data-tab="monthly">📊 本月</div>
+                <div class="tab active" data-tab="daily"><span data-i18n="stats-tab-daily">📅 今日</span></div>
+                <div class="tab" data-tab="weekly"><span data-i18n="stats-tab-weekly">📆 本周</span></div>
+                <div class="tab" data-tab="monthly"><span data-i18n="stats-tab-monthly">📊 本月</span></div>
             </div>
             <div class="tab-content active" id="daily-stats"></div>
             <div class="tab-content" id="weekly-stats"></div>
@@ -1142,1234 +1171,1596 @@
 
     <!-- ============================================================ -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            // =========================================================
-            //  数据层（包含 tasks）
-            // =========================================================
-            const STORAGE_KEY = 'tomato_data_v3';
-
-            function getDefaultData() {
-                return {
-                    tomatoes: 0,
-                    exp: 0,
-                    level: 1,
-                    backpack: {},
-                    userItems: [],
-                    tasks: [], // 任务数组
-                    history: [],
-                    stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
-                            sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
-                };
+        // =========================================================
+        //  国际化 (i18n) 翻译表 (新增任务导出/导入翻译)
+        // =========================================================
+        const TRANSLATIONS = {
+            'zh': {
+                'nav-timer': '番茄计时',
+                'nav-store': '商店',
+                'nav-backpack': '背包',
+                'nav-tasks': '任务',
+                'nav-create': '创建商品',
+                'nav-stats': '统计',
+                'footer-text': '任务独立导入/导出',
+                'header-title': '专注工作',
+                'stat-tomato': '番茄币',
+                'stat-exp': '经验值',
+                'stat-level': '等级',
+                'duration-label': '⏱️ 专注时长',
+                'duration-unit': '分钟',
+                'btn-start': '开始',
+                'btn-pause': '暂停',
+                'btn-reset': '重置',
+                'status-ready': '🍅 准备开始工作吧！',
+                'store-title': '番茄商店',
+                'store-refresh': '刷新',
+                'store-export': '导出全部',
+                'store-import': '导入合并',
+                'backpack-title': '我的背包',
+                'tasks-title': '任务清单',
+                'tasks-add': '新建任务',
+                'tasks-export': '导出任务',
+                'tasks-import': '导入任务',
+                'task-name-label': '任务名称',
+                'task-target-label': '目标番茄数',
+                'task-desc-label': '任务描述',
+                'task-reward-type-label': '奖励类型',
+                'reward-tomato': '番茄币',
+                'reward-exp': '经验值',
+                'reward-item': '指定物品',
+                'reward-lootbox': '开箱',
+                'task-reward-item-label': '物品ID',
+                'task-reward-amount-label': '奖励数量',
+                'task-deps-label': '依赖物品 (ID，逗号分隔)',
+                'task-deps-hint': '拥有这些物品才能开始此任务',
+                'task-save': '保存任务',
+                'task-cancel': '取消',
+                'create-title': '创建商品',
+                'create-editing': '编辑中',
+                'create-cancel': '取消编辑',
+                'item-name-label': '商品名称',
+                'item-desc-label': '商品描述',
+                'item-price-label': '价格（番茄币）',
+                'item-icon-label': '图标',
+                'item-effect-label': '效果',
+                'effect-rest': '🛌 休息时间增加',
+                'effect-focus': '🎯 专注时间增加',
+                'effect-tomato': '🍅 番茄币奖励',
+                'effect-exp': '⭐ 经验值奖励',
+                'effect-lootbox': '🎁 开箱随机奖励',
+                'item-deps-label': '依赖物品 (ID，逗号分隔)',
+                'item-deps-hint': '输入依赖的物品ID，使用前需拥有这些物品',
+                'create-submit': '创建商品',
+                'create-export-single': '创建物品文件',
+                'create-export-load': '创建并加载',
+                'create-hint': '<i class="fas fa-info-circle"></i> “开箱”效果使用时会随机获得奖励。',
+                'stats-title': '数据统计',
+                'stats-tab-daily': '📅 今日',
+                'stats-tab-weekly': '📆 本周',
+                'stats-tab-monthly': '📊 本月',
+                'buy': '购买',
+                'insufficient': '余额不足',
+                'edit': '编辑',
+                'remove': '移除',
+                'use': '使用',
+                'dependencies': '依赖',
+                'dependency_ok': '✅ 依赖满足',
+                'dependency_miss': '❌ 缺依赖',
+                'dep_missing': '缺少依赖物品: ',
+                'empty_store': '商店暂无商品',
+                'empty_backpack': '背包空空，去商店逛逛吧',
+                'empty_tasks': '暂无任务，点击“新建任务”创建',
+                'task_status_done': '✅ 已完成',
+                'task_status_locked': '🔒 缺依赖',
+                'task_status_pending': '🔄 进行中',
+                'task_reward': '🏆 奖励：',
+                'task_no_reward': '无奖励',
+                'reward_desc_tomato': '🍅 {amount} 番茄币',
+                'reward_desc_exp': '⭐ {amount} 经验值',
+                'reward_desc_item': '🎁 {name} x{amount}',
+                'reward_desc_lootbox': '🎁 开箱',
+                'notif_purchase': '✅ 购买了「{name}」',
+                'notif_removed': '🗑️ 已移除「{name}」',
+                'notif_created': '✅ 创建商品「{name}」成功！',
+                'notif_updated': '✅ 已更新「{name}」',
+                'notif_exported': '📄 已导出「{name}」为 .shem 文件',
+                'notif_export_all': '✅ 全部数据（含任务）已导出',
+                'notif_export_tasks': '📄 已导出 {count} 个任务为 .shem 文件',
+                'notif_import_merge': '✅ 合并完成：新增 {added} 个商品，更新 {updated} 个；背包新增 {bpAdded} 种，更新 {bpUpdated} 种；新增 {taskAdded} 个任务',
+                'notif_import_tasks': '✅ 导入任务完成：新增 {added} 个，更新 {updated} 个',
+                'notif_task_created': '✅ 任务「{name}」已创建',
+                'notif_task_updated': '✅ 任务「{name}」已更新',
+                'notif_task_deleted': '🗑️ 任务已删除',
+                'notif_task_reset': '🔄 任务「{name}」已重置',
+                'notif_complete_tomato': '🎉 完成一个番茄！获得 1 番茄币和 10 经验值',
+                'notif_level_up': '🎊 升级！当前等级 {level}',
+                'notif_task_complete': '🎉 任务「{name}」完成！{reward_msg}',
+                'notif_lootbox_tomato': '🍅 开箱获得 {amount} 番茄币！',
+                'notif_lootbox_exp': '⭐ 开箱获得 {amount} 经验值！',
+                'notif_lootbox_empty': '😅 宝箱是空的…',
+                'notif_effect_rest': '☕ 已使用休息时间',
+                'notif_effect_focus': '🎯 专注时间增加 10 分钟',
+                'notif_effect_tomato': '🍅 获得 2 番茄币！',
+                'notif_effect_exp': '⭐ 获得 25 经验值！',
+                'notif_edit_start': '✏️ 正在编辑「{name}」',
+                'notif_error_item_not_found': '商品不存在',
+                'notif_error_insufficient': '番茄币不足！',
+                'notif_error_cannot_remove_default': '无法移除默认商品',
+                'notif_error_invalid_form': '请完整填写表单',
+                'notif_error_dep_missing': '⚠️ 依赖物品 ID "{id}" 不存在，请先创建它',
+                'notif_error_task_missing': '任务不存在',
+                'notif_error_task_form': '请正确填写任务名称和目标次数',
+                'notif_error_task_dep_missing': '依赖物品 "{id}" 不存在，请先创建',
+                'notif_error_task_reward_item_missing': '奖励物品 "{id}" 不存在',
+                'notif_error_import_invalid': '❌ 无效的 .shem 文件',
+                'notif_error_import_parse': '❌ 文件解析失败',
+                'task_edit': '编辑',
+                'task_delete': '删除',
+                'task_reset': '重置',
+                'btn_buy': '购买',
+                'btn_edit': '编辑',
+                'btn_remove': '移除',
+                'btn_use': '使用',
+                'btn_missing_dep': '缺依赖',
+            },
+            'en': {
+                'nav-timer': 'Pomodoro Timer',
+                'nav-store': 'Store',
+                'nav-backpack': 'Backpack',
+                'nav-tasks': 'Tasks',
+                'nav-create': 'Create Item',
+                'nav-stats': 'Statistics',
+                'footer-text': 'Task Import/Export',
+                'header-title': 'Focus & Work',
+                'stat-tomato': 'Tomatoes',
+                'stat-exp': 'EXP',
+                'stat-level': 'Level',
+                'duration-label': '⏱️ Focus Duration',
+                'duration-unit': 'min',
+                'btn-start': 'Start',
+                'btn-pause': 'Pause',
+                'btn-reset': 'Reset',
+                'status-ready': '🍅 Ready to focus!',
+                'store-title': 'Tomato Store',
+                'store-refresh': 'Refresh',
+                'store-export': 'Export All',
+                'store-import': 'Merge Import',
+                'backpack-title': 'My Backpack',
+                'tasks-title': 'Task List',
+                'tasks-add': 'New Task',
+                'tasks-export': 'Export Tasks',
+                'tasks-import': 'Import Tasks',
+                'task-name-label': 'Task Name',
+                'task-target-label': 'Target Pomodoros',
+                'task-desc-label': 'Task Description',
+                'task-reward-type-label': 'Reward Type',
+                'reward-tomato': 'Tomato Coins',
+                'reward-exp': 'EXP',
+                'reward-item': 'Specific Item',
+                'reward-lootbox': 'Lootbox',
+                'task-reward-item-label': 'Item ID',
+                'task-reward-amount-label': 'Reward Amount',
+                'task-deps-label': 'Dependencies (IDs, comma separated)',
+                'task-deps-hint': 'Need these items to start this task',
+                'task-save': 'Save Task',
+                'task-cancel': 'Cancel',
+                'create-title': 'Create Item',
+                'create-editing': 'Editing',
+                'create-cancel': 'Cancel Edit',
+                'item-name-label': 'Item Name',
+                'item-desc-label': 'Item Description',
+                'item-price-label': 'Price (Tomatoes)',
+                'item-icon-label': 'Icon',
+                'item-effect-label': 'Effect',
+                'effect-rest': '🛌 Add Rest Time',
+                'effect-focus': '🎯 Add Focus Time',
+                'effect-tomato': '🍅 Tomato Coin Reward',
+                'effect-exp': '⭐ EXP Reward',
+                'effect-lootbox': '🎁 Random Lootbox',
+                'item-deps-label': 'Dependencies (IDs, comma separated)',
+                'item-deps-hint': 'Need these items to use this item',
+                'create-submit': 'Create Item',
+                'create-export-single': 'Export Item File',
+                'create-export-load': 'Export & Load',
+                'create-hint': '<i class="fas fa-info-circle"></i> "Lootbox" effect gives random rewards when used.',
+                'stats-title': 'Statistics',
+                'stats-tab-daily': '📅 Today',
+                'stats-tab-weekly': '📆 This Week',
+                'stats-tab-monthly': '📊 This Month',
+                'buy': 'Buy',
+                'insufficient': 'Insufficient',
+                'edit': 'Edit',
+                'remove': 'Remove',
+                'use': 'Use',
+                'dependencies': 'Dependencies',
+                'dependency_ok': '✅ Deps satisfied',
+                'dependency_miss': '❌ Missing deps',
+                'dep_missing': 'Missing dependencies: ',
+                'empty_store': 'No items in store',
+                'empty_backpack': 'Your backpack is empty, visit the store!',
+                'empty_tasks': 'No tasks yet, click "New Task" to create one',
+                'task_status_done': '✅ Completed',
+                'task_status_locked': '🔒 Locked',
+                'task_status_pending': '🔄 In Progress',
+                'task_reward': '🏆 Reward: ',
+                'task_no_reward': 'No reward',
+                'reward_desc_tomato': '🍅 {amount} Tomato Coins',
+                'reward_desc_exp': '⭐ {amount} EXP',
+                'reward_desc_item': '🎁 {name} x{amount}',
+                'reward_desc_lootbox': '🎁 Lootbox',
+                'notif_purchase': '✅ Purchased "{name}"',
+                'notif_removed': '🗑️ Removed "{name}"',
+                'notif_created': '✅ Created item "{name}" successfully!',
+                'notif_updated': '✅ Updated "{name}"',
+                'notif_exported': '📄 Exported "{name}" as .shem file',
+                'notif_export_all': '✅ All data (including tasks) exported',
+                'notif_export_tasks': '📄 Exported {count} tasks as .shem file',
+                'notif_import_merge': '✅ Merge complete: added {added} items, updated {updated}; backpack added {bpAdded}, updated {bpUpdated}; added {taskAdded} tasks',
+                'notif_import_tasks': '✅ Tasks imported: added {added}, updated {updated}',
+                'notif_task_created': '✅ Task "{name}" created',
+                'notif_task_updated': '✅ Task "{name}" updated',
+                'notif_task_deleted': '🗑️ Task deleted',
+                'notif_task_reset': '🔄 Task "{name}" reset',
+                'notif_complete_tomato': '🎉 Completed a pomodoro! Earned 1 🍅 and 10 ⭐',
+                'notif_level_up': '🎊 Level up! Now level {level}',
+                'notif_task_complete': '🎉 Task "{name}" completed! {reward_msg}',
+                'notif_lootbox_tomato': '🍅 Lootbox gave {amount} Tomato Coins!',
+                'notif_lootbox_exp': '⭐ Lootbox gave {amount} EXP!',
+                'notif_lootbox_empty': '😅 The lootbox was empty…',
+                'notif_effect_rest': '☕ Used rest time',
+                'notif_effect_focus': '🎯 Focus time +10 minutes',
+                'notif_effect_tomato': '🍅 Got 2 Tomato Coins!',
+                'notif_effect_exp': '⭐ Got 25 EXP!',
+                'notif_edit_start': '✏️ Editing "{name}"',
+                'notif_error_item_not_found': 'Item not found',
+                'notif_error_insufficient': 'Not enough Tomatoes!',
+                'notif_error_cannot_remove_default': 'Cannot remove default item',
+                'notif_error_invalid_form': 'Please fill the form completely',
+                'notif_error_dep_missing': '⚠️ Dependency item "{id}" does not exist, please create it first',
+                'notif_error_task_missing': 'Task not found',
+                'notif_error_task_form': 'Please fill task name and target correctly',
+                'notif_error_task_dep_missing': 'Dependency item "{id}" does not exist, please create it first',
+                'notif_error_task_reward_item_missing': 'Reward item "{id}" does not exist',
+                'notif_error_import_invalid': '❌ Invalid .shem file',
+                'notif_error_import_parse': '❌ Failed to parse file',
+                'task_edit': 'Edit',
+                'task_delete': 'Delete',
+                'task_reset': 'Reset',
+                'btn_buy': 'Buy',
+                'btn_edit': 'Edit',
+                'btn_remove': 'Remove',
+                'btn_use': 'Use',
+                'btn_missing_dep': 'Missing Dep',
             }
+        };
 
-            let data = loadData();
+        let currentLang = 'zh';
 
-            function loadData() {
-                try {
-                    const raw = localStorage.getItem(STORAGE_KEY);
-                    if (raw) {
-                        const parsed = JSON.parse(raw);
-                        const def = getDefaultData();
-                        for (const key in def) { if (!(key in parsed)) parsed[key] = def[key]; }
-                        // 确保每个任务有 dependencies 字段
-                        if (parsed.tasks) {
-                            parsed.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
-                        }
-                        return parsed;
+        function t(key, params) {
+            const dict = TRANSLATIONS[currentLang] || TRANSLATIONS['zh'];
+            let text = dict[key] || key;
+            if (params) {
+                for (const [k, v] of Object.entries(params)) {
+                    text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+                }
+            }
+            return text;
+        }
+
+        // =========================================================
+        //  语言切换
+        // =========================================================
+        function setLanguage(lang) {
+            if (lang === currentLang) return;
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            document.getElementById('lang-toggle').textContent = lang === 'zh' ? '🌐 English' : '🌐 中文';
+            renderStore();
+            renderBackpack();
+            renderTasks();
+            renderStats();
+            updateStatus(t('status-ready'));
+            document.getElementById('status').textContent = t('status-ready');
+            if (editingItemId) {
+                document.getElementById('submit-btn-text').textContent = t('create-submit');
+            }
+            document.getElementById('btn-task-submit').innerHTML = `<i class="fas fa-save"></i> ${t('task-save')}`;
+        }
+
+        // =========================================================
+        //  数据层
+        // =========================================================
+        const STORAGE_KEY = 'tomato_data_v3';
+
+        function getDefaultData() {
+            return {
+                tomatoes: 0,
+                exp: 0,
+                level: 1,
+                backpack: {},
+                userItems: [],
+                tasks: [],
+                history: [],
+                stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
+                        sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
+            };
+        }
+
+        let data = loadData();
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const def = getDefaultData();
+                    for (const key in def) { if (!(key in parsed)) parsed[key] = def[key]; }
+                    if (parsed.tasks) {
+                        parsed.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
                     }
-                } catch (_) {}
-                return getDefaultData();
-            }
+                    return parsed;
+                }
+            } catch (_) {}
+            return getDefaultData();
+        }
 
-            function saveData() {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
-            }
+        function saveData() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+        }
 
-            // =========================================================
-            //  预设商品
-            // =========================================================
-            const PRESET_ITEMS = [
-                { id: 'p1', name: '休息 5 分钟', price: 1, icon: 'fas fa-coffee', effect: 'rest',
+        // =========================================================
+        //  预设商品
+        // =========================================================
+        const PRESET_ITEMS = [
+            { id: 'p1', name: '休息 5 分钟', price: 1, icon: 'fas fa-coffee', effect: 'rest',
                 desc: '增加 5 分钟休息时间', dependencies: [] },
-                { id: 'p2', name: '专注加成', price: 2, icon: 'fas fa-brain', effect: 'focus',
+            { id: 'p2', name: '专注加成', price: 2, icon: 'fas fa-brain', effect: 'focus',
                 desc: '下次专注 +10 分钟', dependencies: [] },
-                { id: 'p3', name: '双倍奖励', price: 5, icon: 'fas fa-gem', effect: 'tomato',
+            { id: 'p3', name: '双倍奖励', price: 5, icon: 'fas fa-gem', effect: 'tomato',
                 desc: '下次番茄币 x2', dependencies: [] },
-                { id: 'p4', name: '经验加成', price: 3, icon: 'fas fa-star', effect: 'exp',
+            { id: 'p4', name: '经验加成', price: 3, icon: 'fas fa-star', effect: 'exp',
                 desc: '获得 25% 额外经验', dependencies: [] },
-                { id: 'p5', name: '惊喜宝箱', price: 8, icon: 'fas fa-box', effect: 'lootbox',
-                    desc: '开箱获得随机奖励！', dependencies: [] },
-                { id: 'p6', name: '高级特权', price: 30, icon: 'fas fa-crown', effect: 'premium',
-                    desc: '解锁所有功能', dependencies: [] }
-            ];
+            { id: 'p5', name: '惊喜宝箱', price: 8, icon: 'fas fa-box', effect: 'lootbox',
+                desc: '开箱获得随机奖励！', dependencies: [] },
+            { id: 'p6', name: '高级特权', price: 30, icon: 'fas fa-crown', effect: 'premium',
+                desc: '解锁所有功能', dependencies: [] }
+        ];
 
-            function getAllItems() {
-                return [...PRESET_ITEMS, ...data.userItems];
-            }
+        function getAllItems() {
+            return [...PRESET_ITEMS, ...data.userItems];
+        }
 
-            function findItem(id) {
-                return getAllItems().find(item => String(item.id) === String(id));
-            }
+        function findItem(id) {
+            return getAllItems().find(item => String(item.id) === String(id));
+        }
 
-            // =========================================================
-            //  DOM 引用
-            // =========================================================
-            const $ = id => document.getElementById(id);
-            const timerDisplay = $('timer-display');
-            const progressBar = $('progress-bar');
-            const statusMsg = $('status');
-            const tomatoCounter = $('tomato-counter');
-            const expCounter = $('exp-counter');
-            const levelCounter = $('level-counter');
-            const btnStart = $('btn-start');
-            const btnPause = $('btn-pause');
-            const btnReset = $('btn-reset');
-            const storeItemsEl = $('store-items');
-            const backpackItemsEl = $('backpack-items');
-            const notification = $('notification');
-            const notificationText = $('notification-text');
-            const itemForm = $('item-form');
-            const durationInput = $('duration-input');
-            const createPanelTitle = $('create-panel-title');
-            const editBadge = $('edit-badge');
-            const cancelEditBtn = $('btn-cancel-edit');
-            const submitBtnText = $('submit-btn-text');
-            const btnSubmitForm = $('btn-submit-form');
-            const btnExportSingle = $('btn-export-single');
-            const btnExportAndLoad = $('btn-export-and-load');
+        // =========================================================
+        //  DOM 引用
+        // =========================================================
+        const $ = id => document.getElementById(id);
+        const timerDisplay = $('timer-display');
+        const progressBar = $('progress-bar');
+        const statusMsg = $('status');
+        const tomatoCounter = $('tomato-counter');
+        const expCounter = $('exp-counter');
+        const levelCounter = $('level-counter');
+        const btnStart = $('btn-start');
+        const btnPause = $('btn-pause');
+        const btnReset = $('btn-reset');
+        const storeItemsEl = $('store-items');
+        const backpackItemsEl = $('backpack-items');
+        const notification = $('notification');
+        const notificationText = $('notification-text');
+        const itemForm = $('item-form');
+        const durationInput = $('duration-input');
+        const createPanelTitle = $('create-panel-title');
+        const editBadge = $('edit-badge');
+        const cancelEditBtn = $('btn-cancel-edit');
+        const submitBtnText = $('submit-btn-text');
+        const btnSubmitForm = $('btn-submit-form');
+        const btnExportSingle = $('btn-export-single');
+        const btnExportAndLoad = $('btn-export-and-load');
 
-            // 任务相关 DOM
-            const taskListContainer = $('task-list-container');
-            const taskFormContainer = $('task-form-container');
-            const taskForm = $('task-form');
-            const btnAddTask = $('btn-add-task');
-            const btnTaskSubmit = $('btn-task-submit');
-            const btnTaskCancel = $('btn-task-cancel');
-            const taskNameInput = $('task-name');
-            const taskDescInput = $('task-desc');
-            const taskTargetInput = $('task-target');
-            const taskRewardType = $('task-reward-type');
-            const taskRewardAmount = $('task-reward-amount');
-            const taskRewardItem = $('task-reward-item');
-            const taskRewardItemGroup = $('task-reward-item-group');
-            const taskDepsInput = $('task-deps');
+        // 任务相关 DOM
+        const taskListContainer = $('task-list-container');
+        const taskFormContainer = $('task-form-container');
+        const taskForm = $('task-form');
+        const btnAddTask = $('btn-add-task');
+        const btnTaskSubmit = $('btn-task-submit');
+        const btnTaskCancel = $('btn-task-cancel');
+        const taskNameInput = $('task-name');
+        const taskDescInput = $('task-desc');
+        const taskTargetInput = $('task-target');
+        const taskRewardType = $('task-reward-type');
+        const taskRewardAmount = $('task-reward-amount');
+        const taskRewardItem = $('task-reward-item');
+        const taskRewardItemGroup = $('task-reward-item-group');
+        const taskDepsInput = $('task-deps');
 
-            let editingTaskId = null;
+        let editingTaskId = null;
 
-            // =========================================================
-            //  编辑状态（商品）
-            // =========================================================
-            let editingItemId = null;
+        // =========================================================
+        //  编辑状态（商品）
+        // =========================================================
+        let editingItemId = null;
 
-            function startEditing(itemId) {
-                const item = data.userItems.find(i => String(i.id) === String(itemId));
-                if (!item) return showNotification('商品不存在', 'error');
-                editingItemId = String(itemId);
-                $('item-name').value = item.name;
-                $('item-desc').value = item.desc || '';
-                $('item-price').value = item.price;
-                $('item-icon').value = item.icon;
-                $('item-effect').value = item.effect;
-                $('item-deps').value = (item.dependencies || []).join(', ');
-                editBadge.style.display = 'inline';
-                cancelEditBtn.style.display = 'inline-block';
-                submitBtnText.textContent = '更新商品';
-                createPanelTitle.innerHTML =
-                    `<i class="fas fa-edit"></i> 编辑商品 <span id="edit-badge" class="edit-badge" style="display:inline;">编辑中</span>`;
-                switchSection('create');
-                showNotification(`✏️ 正在编辑「${item.name}」`, 'warning');
-            }
+        function startEditing(itemId) {
+            const item = data.userItems.find(i => String(i.id) === String(itemId));
+            if (!item) return showNotification(t('notif_error_item_not_found'), 'error');
+            editingItemId = String(itemId);
+            $('item-name').value = item.name;
+            $('item-desc').value = item.desc || '';
+            $('item-price').value = item.price;
+            $('item-icon').value = item.icon;
+            $('item-effect').value = item.effect;
+            $('item-deps').value = (item.dependencies || []).join(', ');
+            editBadge.style.display = 'inline';
+            cancelEditBtn.style.display = 'inline-block';
+            submitBtnText.textContent = t('create-submit');
+            createPanelTitle.innerHTML =
+                `<i class="fas fa-edit"></i> ${t('create-title')} <span id="edit-badge" class="edit-badge" style="display:inline;">${t('create-editing')}</span>`;
+            switchSection('create');
+            showNotification(t('notif_edit_start', { name: item.name }), 'warning');
+        }
 
-            function cancelEditing() {
-                editingItemId = null;
-                editBadge.style.display = 'none';
-                cancelEditBtn.style.display = 'none';
-                submitBtnText.textContent = '创建商品';
-                createPanelTitle.innerHTML = `<i class="fas fa-plus-circle"></i> 创建商品`;
-                itemForm.reset();
-                $('item-deps').value = '';
-            }
-            cancelEditBtn.addEventListener('click', cancelEditing);
+        function cancelEditing() {
+            editingItemId = null;
+            editBadge.style.display = 'none';
+            cancelEditBtn.style.display = 'none';
+            submitBtnText.textContent = t('create-submit');
+            createPanelTitle.innerHTML = `<i class="fas fa-plus-circle"></i> ${t('create-title')}`;
+            itemForm.reset();
+            $('item-deps').value = '';
+        }
+        cancelEditBtn.addEventListener('click', cancelEditing);
 
-            // =========================================================
-            //  计时器
-            // =========================================================
-            let WORK_TIME = 25 * 60;
-            let timeLeft = WORK_TIME;
-            let timerInterval = null;
-            let isRunning = false;
-            let isPaused = false;
+        // =========================================================
+        //  计时器
+        // =========================================================
+        let WORK_TIME = 25 * 60;
+        let timeLeft = WORK_TIME;
+        let timerInterval = null;
+        let isRunning = false;
+        let isPaused = false;
 
-            function updateStatsUI() {
-                tomatoCounter.textContent = data.tomatoes;
-                const expNeeded = data.level * 100;
-                expCounter.textContent = `${data.exp} / ${expNeeded}`;
-                levelCounter.textContent = data.level;
-            }
+        function updateStatsUI() {
+            tomatoCounter.textContent = data.tomatoes;
+            const expNeeded = data.level * 100;
+            expCounter.textContent = `${data.exp} / ${expNeeded}`;
+            levelCounter.textContent = data.level;
+        }
 
-            function updateTimerDisplay() {
-                const m = Math.floor(timeLeft / 60);
-                const s = timeLeft % 60;
-                timerDisplay.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            }
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            timerDisplay.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
 
-            function updateProgress() {
-                const total = WORK_TIME;
-                const progress = ((total - timeLeft) / total) * 100;
-                progressBar.style.width = `${Math.min(100, progress)}%`;
-            }
+        function updateProgress() {
+            const total = WORK_TIME;
+            const progress = ((total - timeLeft) / total) * 100;
+            progressBar.style.width = `${Math.min(100, progress)}%`;
+        }
 
-            function updateStatus(text) { statusMsg.textContent = text; }
+        function updateStatus(text) { statusMsg.textContent = text; }
 
-            function setButtons(running, paused) {
-                btnStart.disabled = running || paused;
-                btnPause.disabled = !running || paused;
-                btnReset.disabled = !running && !paused;
-                if (paused) btnStart.disabled = false;
-            }
+        function setButtons(running, paused) {
+            btnStart.disabled = running || paused;
+            btnPause.disabled = !running || paused;
+            btnReset.disabled = !running && !paused;
+            if (paused) btnStart.disabled = false;
+        }
 
-            durationInput.addEventListener('change', function() {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 1) val = 1;
-                if (val > 99) val = 99;
-                this.value = val;
-                WORK_TIME = val * 60;
-                clearInterval(timerInterval);
-                timerInterval = null;
-                isRunning = false;
-                isPaused = false;
-                timeLeft = WORK_TIME;
+        durationInput.addEventListener('change', function() {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 99) val = 99;
+            this.value = val;
+            WORK_TIME = val * 60;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            isPaused = false;
+            timeLeft = WORK_TIME;
+            updateTimerDisplay();
+            updateProgress();
+            setButtons(false, false);
+            updateStatus(t('status-ready'));
+        });
+
+        function startTimer() {
+            if (isRunning && !isPaused) return;
+            if (timeLeft <= 0) { resetTimer(); return; }
+            isRunning = true;
+            isPaused = false;
+            setButtons(true, false);
+            updateStatus('🍅 ' + t('status-ready').replace('🍅 ', ''));
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
                 updateTimerDisplay();
                 updateProgress();
-                setButtons(false, false);
-                updateStatus('⏱️ 时长已更新');
+                if (timeLeft <= 0) completeTimer();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (!isRunning || isPaused) return;
+            isPaused = true;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            setButtons(true, true);
+            updateStatus('⏸️ ' + t('btn-pause'));
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            isPaused = false;
+            timeLeft = WORK_TIME;
+            updateTimerDisplay();
+            updateProgress();
+            setButtons(false, false);
+            updateStatus(t('status-ready'));
+        }
+
+        function completeTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            isPaused = false;
+            setButtons(false, false);
+            const earnedTomato = 1,
+                earnedExp = 10;
+            data.tomatoes += earnedTomato;
+            data.exp += earnedExp;
+            data.history.push({ date: new Date().toISOString(), tomatoesEarned: earnedTomato, expEarned: earnedExp });
+            checkLevelUp();
+            updateTaskProgress();
+            saveData();
+            updateStatsUI();
+            updateStatus('🎉 ' + t('notif_complete_tomato'));
+            showNotification(t('notif_complete_tomato'), 'success');
+            timeLeft = WORK_TIME;
+            updateTimerDisplay();
+            updateProgress();
+            if (document.getElementById('stats-section').classList.contains('active')) renderStats();
+            if (document.getElementById('tasks-section').classList.contains('active')) renderTasks();
+        }
+
+        function checkLevelUp() {
+            let needed = data.level * 100;
+            while (data.exp >= needed) {
+                data.exp -= needed;
+                data.level++;
+                showNotification(t('notif_level_up', { level: data.level }), 'success');
+                needed = data.level * 100;
+            }
+            if (data.exp >= data.level * 100) checkLevelUp();
+        }
+
+        // =========================================================
+        //  依赖检查工具
+        // =========================================================
+        function checkDependencies(depIds) {
+            if (!depIds || depIds.length === 0) return { ok: true, missing: [] };
+            const missing = [];
+            for (const id of depIds) {
+                const key = String(id).trim();
+                if (!key) continue;
+                if (!data.backpack[key] || data.backpack[key].count <= 0) {
+                    missing.push(key);
+                }
+            }
+            return { ok: missing.length === 0, missing };
+        }
+
+        function getDependencyNames(depIds) {
+            return depIds.map(id => {
+                const item = findItem(id);
+                return item ? item.name : id;
             });
+        }
 
-            function startTimer() {
-                if (isRunning && !isPaused) return;
-                if (timeLeft <= 0) { resetTimer(); return; }
-                isRunning = true;
-                isPaused = false;
-                setButtons(true, false);
-                updateStatus('🍅 专注工作中…');
-                if (timerInterval) clearInterval(timerInterval);
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    updateTimerDisplay();
-                    updateProgress();
-                    if (timeLeft <= 0) completeTimer();
-                }, 1000);
-            }
+        // =========================================================
+        //  任务系统
+        // =========================================================
+        function getTaskStatus(task) {
+            if (task.completed) return 'done';
+            const depCheck = checkDependencies(task.dependencies || []);
+            if (!depCheck.ok) return 'locked';
+            return 'pending';
+        }
 
-            function pauseTimer() {
-                if (!isRunning || isPaused) return;
-                isPaused = true;
-                clearInterval(timerInterval);
-                timerInterval = null;
-                setButtons(true, true);
-                updateStatus('⏸️ 已暂停');
-            }
-
-            function resetTimer() {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                isRunning = false;
-                isPaused = false;
-                timeLeft = WORK_TIME;
-                updateTimerDisplay();
-                updateProgress();
-                setButtons(false, false);
-                updateStatus('🍅 准备开始工作吧！');
-            }
-
-            function completeTimer() {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                isRunning = false;
-                isPaused = false;
-                setButtons(false, false);
-                const earnedTomato = 1,
-                    earnedExp = 10;
-                data.tomatoes += earnedTomato;
-                data.exp += earnedExp;
-                data.history.push({ date: new Date().toISOString(), tomatoesEarned: earnedTomato, expEarned: earnedExp });
-                checkLevelUp();
-                // 更新任务进度
-                updateTaskProgress();
-                saveData();
-                updateStatsUI();
-                updateStatus('🎉 完成！获得 1 🍅 + 10 ⭐');
-                showNotification('🎉 完成一个番茄！获得 1 番茄币和 10 经验值', 'success');
-                timeLeft = WORK_TIME;
-                updateTimerDisplay();
-                updateProgress();
-                if (document.getElementById('stats-section').classList.contains('active')) renderStats();
-                if (document.getElementById('tasks-section').classList.contains('active')) renderTasks();
-            }
-
-            function checkLevelUp() {
-                let needed = data.level * 100;
-                while (data.exp >= needed) {
-                    data.exp -= needed;
-                    data.level++;
-                    showNotification(`🎊 升级！当前等级 ${data.level}`, 'success');
-                    needed = data.level * 100;
-                }
-                if (data.exp >= data.level * 100) checkLevelUp();
-            }
-
-            // =========================================================
-            //  依赖检查工具
-            // =========================================================
-            function checkDependencies(depIds) {
-                if (!depIds || depIds.length === 0) return { ok: true, missing: [] };
-                const missing = [];
-                for (const id of depIds) {
-                    const key = String(id).trim();
-                    if (!key) continue;
-                    if (!data.backpack[key] || data.backpack[key].count <= 0) {
-                        missing.push(key);
+        function updateTaskProgress() {
+            data.tasks.forEach(task => {
+                if (task.completed) return;
+                const status = getTaskStatus(task);
+                if (status === 'pending') {
+                    task.completedSessions = (task.completedSessions || 0) + 1;
+                    if (task.completedSessions >= task.targetSessions) {
+                        task.completed = true;
+                        giveTaskReward(task);
                     }
                 }
-                return { ok: missing.length === 0, missing };
-            }
+            });
+            saveData();
+        }
 
-            function getDependencyNames(depIds) {
-                return depIds.map(id => {
-                    const item = findItem(id);
-                    return item ? item.name : id;
-                });
-            }
-
-            // =========================================================
-            //  任务系统
-            // =========================================================
-            function getTaskStatus(task) {
-                if (task.completed) return 'done';
-                // 检查依赖
-                const depCheck = checkDependencies(task.dependencies || []);
-                if (!depCheck.ok) return 'locked';
-                return 'pending';
-            }
-
-            function updateTaskProgress() {
-                // 所有进行中的任务，增加完成次数
-                data.tasks.forEach(task => {
-                    if (task.completed) return;
-                    const status = getTaskStatus(task);
-                    if (status === 'pending') {
-                        task.completedSessions = (task.completedSessions || 0) + 1;
-                        if (task.completedSessions >= task.targetSessions) {
-                            task.completed = true;
-                            // 发放奖励
-                            giveTaskReward(task);
-                        }
-                    }
-                });
-                saveData();
-            }
-
-            function giveTaskReward(task) {
-                const rewardType = task.rewardType;
-                const amount = task.rewardAmount || 1;
-                let msg = '';
-                switch (rewardType) {
-                    case 'tomato':
-                        data.tomatoes += amount;
-                        msg = `🍅 获得 ${amount} 番茄币`;
-                        break;
-                    case 'exp':
-                        data.exp += amount;
-                        checkLevelUp();
-                        msg = `⭐ 获得 ${amount} 经验值`;
-                        break;
-                    case 'item':
-                        const itemId = task.rewardItemId;
-                        if (itemId) {
-                            const item = findItem(itemId);
-                            if (item) {
-                                const key = String(item.id);
-                                if (data.backpack[key]) {
-                                    data.backpack[key].count += amount;
-                                } else {
-                                    data.backpack[key] = { id: item.id, name: item.name, icon: item.icon,
-                                        effect: item.effect, count: amount, dependencies: item.dependencies ||
-                                        [] };
-                                }
-                                msg = `🎁 获得 ${amount} 个「${item.name}」`;
+        function giveTaskReward(task) {
+            const rewardType = task.rewardType;
+            const amount = task.rewardAmount || 1;
+            let msg = '';
+            switch (rewardType) {
+                case 'tomato':
+                    data.tomatoes += amount;
+                    msg = t('notif_lootbox_tomato', { amount });
+                    break;
+                case 'exp':
+                    data.exp += amount;
+                    checkLevelUp();
+                    msg = t('notif_lootbox_exp', { amount });
+                    break;
+                case 'item':
+                    const itemId = task.rewardItemId;
+                    if (itemId) {
+                        const item = findItem(itemId);
+                        if (item) {
+                            const key = String(item.id);
+                            if (data.backpack[key]) {
+                                data.backpack[key].count += amount;
                             } else {
-                                msg = `⚠️ 奖励物品不存在 (ID: ${itemId})`;
+                                data.backpack[key] = { id: item.id, name: item.name, icon: item.icon,
+                                    effect: item.effect, count: amount, dependencies: item.dependencies ||
+                                    [] };
                             }
+                            msg = `🎁 ${t('reward_desc_item', { name: item.name, amount })}`;
                         } else {
-                            msg = '⚠️ 未指定奖励物品';
+                            msg = `⚠️ ${t('notif_error_task_reward_item_missing', { id: itemId })}`;
                         }
-                        break;
-                    case 'lootbox':
-                        const result = openLootbox();
-                        if (result.type === 'tomato') {
-                            data.tomatoes += result.amount;
-                            msg = `🍅 开箱获得 ${result.amount} 番茄币！`;
-                        } else if (result.type === 'exp') {
-                            data.exp += result.amount;
-                            checkLevelUp();
-                            msg = `⭐ 开箱获得 ${result.amount} 经验值！`;
-                        } else {
-                            msg = '😅 宝箱是空的…';
-                        }
-                        break;
-                    default:
-                        msg = '✅ 任务完成！';
-                }
-                saveData();
-                updateStatsUI();
-                showNotification(`🎉 任务「${task.name}」完成！${msg}`, 'success');
-                // 重新渲染任务列表
-                if (document.getElementById('tasks-section').classList.contains('active')) renderTasks();
-                // 刷新商店和背包（因为可能有物品变化）
-                if (document.getElementById('store-section').classList.contains('active')) renderStore();
-                if (document.getElementById('backpack-section').classList.contains('active')) renderBackpack();
-            }
-
-            function openLootbox() {
-                const rewards = [
-                    { type: 'tomato', amount: 2, label: '2 🍅 番茄币', weight: 30 },
-                    { type: 'tomato', amount: 5, label: '5 🍅 番茄币', weight: 15 },
-                    { type: 'exp', amount: 10, label: '10 ⭐ 经验值', weight: 25 },
-                    { type: 'exp', amount: 25, label: '25 ⭐ 经验值', weight: 10 },
-                    { type: 'nothing', label: '😅 什么也没有…', weight: 20 },
-                ];
-                const totalWeight = rewards.reduce((s, r) => s + r.weight, 0);
-                let roll = Math.random() * totalWeight;
-                for (const r of rewards) {
-                    roll -= r.weight;
-                    if (roll <= 0) return r;
-                }
-                return rewards[0];
-            }
-
-            function renderTasks() {
-                taskListContainer.innerHTML = '';
-                if (data.tasks.length === 0) {
-                    taskListContainer.innerHTML =
-                        `<div class="empty-message"><i class="fas fa-tasks"></i> 暂无任务，点击“新建任务”创建</div>`;
-                    return;
-                }
-                data.tasks.forEach(task => {
-                    const status = getTaskStatus(task);
-                    const isCompleted = task.completed || false;
-                    const progress = Math.min(100, ((task.completedSessions || 0) / task.targetSessions) * 100);
-                    const div = document.createElement('div');
-                    div.className = `task-item ${isCompleted ? 'completed' : ''}`;
-
-                    let statusText = '';
-                    let statusClass = '';
-                    if (isCompleted) {
-                        statusText = '✅ 已完成';
-                        statusClass = 'done';
-                    } else if (status === 'locked') {
-                        statusText = '🔒 缺依赖';
-                        statusClass = 'locked';
                     } else {
-                        statusText = '🔄 进行中';
-                        statusClass = 'pending';
+                        msg = '⚠️ ' + t('task_no_reward');
                     }
-
-                    const depNames = (task.dependencies || []).length > 0 ? getDependencyNames(task.dependencies || [])
-                        .join(' → ') : '无';
-
-                    let rewardDesc = '';
-                    switch (task.rewardType) {
-                        case 'tomato':
-                            rewardDesc = `🍅 ${task.rewardAmount} 番茄币`;
-                            break;
-                        case 'exp':
-                            rewardDesc = `⭐ ${task.rewardAmount} 经验值`;
-                            break;
-                        case 'item':
-                            const item = findItem(task.rewardItemId);
-                            rewardDesc = `🎁 ${item ? item.name : '未知物品'} x${task.rewardAmount}`;
-                            break;
-                        case 'lootbox':
-                            rewardDesc = '🎁 开箱';
-                            break;
-                        default:
-                            rewardDesc = '无奖励';
-                    }
-
-                    div.innerHTML = `
-                        <div class="task-header">
-                            <span class="task-name">${task.name}</span>
-                            <span class="task-status ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="task-desc">${task.description || ''}</div>
-                        <div class="task-reward">🏆 奖励：${rewardDesc}</div>
-                        <div class="task-progress">
-                            <span style="font-size:0.8rem;color:var(--gray);">${task.completedSessions || 0}/${task.targetSessions}</span>
-                            <div class="task-bar"><div class="task-fill" style="width:${progress}%;"></div></div>
-                        </div>
-                        <div style="font-size:0.75rem;color:var(--gray);">📦 依赖：${depNames}</div>
-                        <div class="task-actions">
-                            <button class="btn btn-secondary btn-sm task-edit" data-id="${task.id}"><i class="fas fa-pen"></i> 编辑</button>
-                            <button class="btn btn-danger btn-sm task-delete" data-id="${task.id}"><i class="fas fa-trash"></i> 删除</button>
-                            ${isCompleted ? `<button class="btn btn-outline btn-sm task-reset" data-id="${task.id}"><i class="fas fa-undo"></i> 重置</button>` : ''}
-                        </div>
-                    `;
-                    taskListContainer.appendChild(div);
-
-                    // 编辑
-                    div.querySelector('.task-edit').addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const id = this.dataset.id;
-                        editTask(id);
-                    });
-                    // 删除
-                    div.querySelector('.task-delete').addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const id = this.dataset.id;
-                        if (confirm('确定删除此任务吗？')) deleteTask(id);
-                    });
-                    // 重置
-                    const resetBtn = div.querySelector('.task-reset');
-                    if (resetBtn) {
-                        resetBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            const id = this.dataset.id;
-                            resetTask(id);
-                        });
-                    }
-                });
-            }
-
-            // 任务 CRUD
-            function addTask(taskData) {
-                const newTask = {
-                    id: 't_' + Date.now(),
-                    name: taskData.name,
-                    description: taskData.description || '',
-                    targetSessions: taskData.targetSessions,
-                    completedSessions: 0,
-                    completed: false,
-                    rewardType: taskData.rewardType,
-                    rewardAmount: taskData.rewardAmount || 1,
-                    rewardItemId: taskData.rewardItemId || null,
-                    dependencies: taskData.dependencies || []
-                };
-                data.tasks.push(newTask);
-                saveData();
-                renderTasks();
-                showNotification(`✅ 任务「${newTask.name}」已创建`, 'success');
-            }
-
-            function editTask(id) {
-                const task = data.tasks.find(t => t.id === id);
-                if (!task) return showNotification('任务不存在', 'error');
-                editingTaskId = id;
-                taskNameInput.value = task.name;
-                taskDescInput.value = task.description || '';
-                taskTargetInput.value = task.targetSessions;
-                taskRewardType.value = task.rewardType;
-                taskRewardAmount.value = task.rewardAmount || 1;
-                taskRewardItem.value = task.rewardItemId || '';
-                taskDepsInput.value = (task.dependencies || []).join(', ');
-                // 显示奖励物品输入框
-                toggleRewardItemInput(task.rewardType === 'item');
-                btnTaskSubmit.textContent = '更新任务';
-                taskFormContainer.style.display = 'block';
-                btnAddTask.style.display = 'none';
-                // 滚动到表单
-                taskFormContainer.scrollIntoView({ behavior: 'smooth' });
-            }
-
-            function deleteTask(id) {
-                data.tasks = data.tasks.filter(t => t.id !== id);
-                saveData();
-                renderTasks();
-                showNotification('🗑️ 任务已删除', 'warning');
-                if (editingTaskId === id) cancelTaskEdit();
-            }
-
-            function resetTask(id) {
-                const task = data.tasks.find(t => t.id === id);
-                if (!task) return;
-                task.completed = false;
-                task.completedSessions = 0;
-                saveData();
-                renderTasks();
-                showNotification(`🔄 任务「${task.name}」已重置`, 'success');
-            }
-
-            function cancelTaskEdit() {
-                editingTaskId = null;
-                taskFormContainer.style.display = 'none';
-                btnAddTask.style.display = 'inline-block';
-                btnTaskSubmit.textContent = '保存任务';
-                taskForm.reset();
-                taskRewardItem.value = '';
-                toggleRewardItemInput(false);
-            }
-
-            function toggleRewardItemInput(show) {
-                taskRewardItemGroup.style.display = show ? 'block' : 'none';
-            }
-
-            // 监听奖励类型切换
-            taskRewardType.addEventListener('change', function() {
-                toggleRewardItemInput(this.value === 'item');
-            });
-
-            // 任务表单提交
-            taskForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const name = taskNameInput.value.trim();
-                const description = taskDescInput.value.trim();
-                const targetSessions = parseInt(taskTargetInput.value);
-                const rewardType = taskRewardType.value;
-                const rewardAmount = parseInt(taskRewardAmount.value) || 1;
-                const rewardItemId = taskRewardItem.value.trim() || null;
-                const depsRaw = taskDepsInput.value.trim();
-                const dependencies = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-
-                if (!name || isNaN(targetSessions) || targetSessions < 1) {
-                    return showNotification('请正确填写任务名称和目标次数', 'error');
-                }
-
-                // 验证依赖是否存在
-                for (const depId of dependencies) {
-                    if (!findItem(depId)) {
-                        return showNotification(`依赖物品 "${depId}" 不存在，请先创建`, 'warning');
-                    }
-                }
-
-                // 验证奖励物品
-                if (rewardType === 'item' && rewardItemId) {
-                    if (!findItem(rewardItemId)) {
-                        return showNotification(`奖励物品 "${rewardItemId}" 不存在`, 'error');
-                    }
-                }
-
-                const taskData = {
-                    name,
-                    description,
-                    targetSessions,
-                    rewardType,
-                    rewardAmount,
-                    rewardItemId: rewardType === 'item' ? rewardItemId : null,
-                    dependencies
-                };
-
-                if (editingTaskId) {
-                    // 更新
-                    const idx = data.tasks.findIndex(t => t.id === editingTaskId);
-                    if (idx !== -1) {
-                        const old = data.tasks[idx];
-                        // 保留完成状态和已计数
-                        data.tasks[idx] = {
-                            ...old,
-                            name: taskData.name,
-                            description: taskData.description,
-                            targetSessions: taskData.targetSessions,
-                            rewardType: taskData.rewardType,
-                            rewardAmount: taskData.rewardAmount,
-                            rewardItemId: taskData.rewardItemId,
-                            dependencies: taskData.dependencies,
-                            // 如果目标次数改变，重置进度？
-                            // 保持原进度，但若已完成则保留完成状态
-                        };
-                        // 如果已完成，但目标次数改变，可能需要重置？
-                        // 简单处理：如果原任务已完成，不重置
-                        saveData();
-                        renderTasks();
-                        showNotification(`✅ 任务「${taskData.name}」已更新`, 'success');
-                        cancelTaskEdit();
-                    } else {
-                        showNotification('任务不存在', 'error');
-                    }
-                } else {
-                    addTask(taskData);
-                    cancelTaskEdit();
-                }
-            });
-
-            btnAddTask.addEventListener('click', function() {
-                taskFormContainer.style.display = 'block';
-                btnAddTask.style.display = 'none';
-                taskForm.reset();
-                editingTaskId = null;
-                btnTaskSubmit.textContent = '保存任务';
-                toggleRewardItemInput(false);
-                taskFormContainer.scrollIntoView({ behavior: 'smooth' });
-            });
-
-            btnTaskCancel.addEventListener('click', function() {
-                cancelTaskEdit();
-            });
-
-            // =========================================================
-            //  商店渲染（含依赖显示）
-            // =========================================================
-            function renderStore() {
-                const items = getAllItems();
-                storeItemsEl.innerHTML = '';
-                if (items.length === 0) {
-                    storeItemsEl.innerHTML = `<div class="empty-message"><i class="fas fa-store"></i> 商店暂无商品</div>`;
-                    return;
-                }
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'item';
-                    const canBuy = data.tomatoes >= item.price;
-                    const isUserItem = String(item.id).startsWith('u_');
-                    const deps = item.dependencies || [];
-                    const depCheck = checkDependencies(deps);
-                    const hasDeps = deps.length > 0;
-
-                    let depHTML = '';
-                    if (hasDeps) {
-                        const depNames = getDependencyNames(deps);
-                        const statusClass = depCheck.ok ? 'dep-ok' : 'dep-miss';
-                        const statusText = depCheck.ok ? '✅ 依赖满足' : '❌ 缺依赖';
-                        depHTML = `
-                            <div class="dep-list">📦 依赖: ${depNames.join(' → ')}</div>
-                            <span class="dependency-badge ${statusClass}">${statusText}</span>
-                        `;
-                    }
-
-                    let actionsHTML = `
-                        <button class="btn btn-accent btn-buy" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>
-                            ${canBuy ? '购买' : '余额不足'}
-                        </button>
-                    `;
-                    if (isUserItem) {
-                        actionsHTML += `
-                            <button class="btn btn-secondary btn-sm btn-edit" data-id="${item.id}" title="编辑"><i class="fas fa-pen"></i></button>
-                            <button class="btn btn-danger btn-sm btn-remove" data-id="${item.id}" title="移除"><i class="fas fa-trash"></i></button>
-                        `;
-                    }
-
-                    div.innerHTML = `
-                        <div class="item-icon"><i class="${item.icon}"></i></div>
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-desc">${item.desc || ' '}</div>
-                        <div class="item-price">${item.price} 🍅</div>
-                        ${depHTML}
-                        <div class="item-actions">${actionsHTML}</div>
-                    `;
-                    storeItemsEl.appendChild(div);
-
-                    div.querySelector('.btn-buy').addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        purchaseItem(this.dataset.id);
-                    });
-                    const editBtn = div.querySelector('.btn-edit');
-                    if (editBtn) editBtn.addEventListener('click', function(e) { e.stopPropagation();
-                        startEditing(this.dataset.id); });
-                    const removeBtn = div.querySelector('.btn-remove');
-                    if (removeBtn) removeBtn.addEventListener('click', function(e) { e.stopPropagation();
-                        removeUserItem(this.dataset.id); });
-                });
-            }
-
-            function purchaseItem(itemId) {
-                const item = findItem(itemId);
-                if (!item) return showNotification('商品不存在', 'error');
-                if (data.tomatoes < item.price) return showNotification('番茄币不足！', 'error');
-                data.tomatoes -= item.price;
-                const key = String(item.id);
-                if (data.backpack[key]) {
-                    data.backpack[key].count++;
-                } else {
-                    data.backpack[key] = { id: item.id, name: item.name, icon: item.icon, effect: item.effect,
-                        count: 1, dependencies: item.dependencies || [] };
-                }
-                saveData();
-                updateStatsUI();
-                renderStore();
-                renderBackpack();
-                showNotification(`✅ 购买了「${item.name}」`, 'success');
-            }
-
-            function removeUserItem(itemId) {
-                const idx = data.userItems.findIndex(i => String(i.id) === String(itemId));
-                if (idx === -1) return showNotification('无法移除默认商品', 'error');
-                const removed = data.userItems.splice(idx, 1)[0];
-                const key = String(itemId);
-                if (data.backpack[key]) delete data.backpack[key];
-                saveData();
-                renderStore();
-                renderBackpack();
-                if (editingItemId === String(itemId)) cancelEditing();
-                showNotification(`🗑️ 已移除「${removed.name}」`, 'warning');
-            }
-
-            // =========================================================
-            //  背包渲染
-            // =========================================================
-            function renderBackpack() {
-                const keys = Object.keys(data.backpack);
-                backpackItemsEl.innerHTML = '';
-                if (keys.length === 0) {
-                    backpackItemsEl.innerHTML =
-                        `<div class="empty-message"><i class="fas fa-backpack"></i> 背包空空，去商店逛逛吧</div>`;
-                    return;
-                }
-                keys.forEach(key => {
-                    const item = data.backpack[key];
-                    const fullItem = findItem(key);
-                    const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
-                    const depCheck = checkDependencies(deps);
-
-                    const div = document.createElement('div');
-                    div.className = 'backpack-item';
-
-                    let depStatus = '';
-                    if (deps.length > 0) {
-                        const depNames = getDependencyNames(deps);
-                        const cls = depCheck.ok ? 'dep-ok' : 'dep-miss';
-                        const txt = depCheck.ok ? '✅' : '❌';
-                        depStatus = `<div style="font-size:0.65rem;color:var(--gray);">${txt} ${depNames.join(' → ')}</div>`;
-                    }
-
-                    const canUse = depCheck.ok;
-
-                    div.innerHTML = `
-                        <div class="item-count">${item.count}</div>
-                        <div class="item-icon"><i class="${item.icon}"></i></div>
-                        <div class="item-name">${item.name}</div>
-                        ${depStatus}
-                        <button class="btn ${canUse ? 'btn-primary' : 'btn-outline'} btn-use" data-id="${key}" ${canUse ? '' : 'disabled'}>
-                            ${canUse ? '使用' : '缺依赖'}
-                        </button>
-                    `;
-                    backpackItemsEl.appendChild(div);
-                    div.querySelector('.btn-use').addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        if (!canUse) {
-                            const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
-                            showNotification(`❌ 缺少依赖物品: ${miss}`, 'error');
-                            return;
-                        }
-                        useItem(key);
-                    });
-                });
-            }
-
-            function useItem(itemId) {
-                const item = data.backpack[itemId];
-                if (!item || item.count <= 0) return;
-                const fullItem = findItem(itemId);
-                const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
-                const depCheck = checkDependencies(deps);
-                if (!depCheck.ok) {
-                    const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
-                    showNotification(`❌ 缺少依赖物品: ${miss}`, 'error');
-                    return;
-                }
-                const effect = item.effect || (fullItem ? fullItem.effect : 'rest');
-                if (effect === 'lootbox') {
+                    break;
+                case 'lootbox':
                     const result = openLootbox();
-                    let msg = '';
                     if (result.type === 'tomato') {
                         data.tomatoes += result.amount;
-                        msg = `🍅 获得 ${result.amount} 番茄币！`;
+                        msg = t('notif_lootbox_tomato', { amount: result.amount });
                     } else if (result.type === 'exp') {
                         data.exp += result.amount;
                         checkLevelUp();
-                        msg = `⭐ 获得 ${result.amount} 经验值！`;
+                        msg = t('notif_lootbox_exp', { amount: result.amount });
                     } else {
-                        msg = '😅 宝箱是空的…';
+                        msg = t('notif_lootbox_empty');
                     }
-                    item.count--;
-                    if (item.count <= 0) delete data.backpack[itemId];
-                    saveData();
-                    updateStatsUI();
-                    renderBackpack();
-                    renderStore();
-                    showNotification(`🎁 ${msg}`, 'success');
-                    return;
+                    break;
+                default:
+                    msg = '✅ ' + t('task_status_done');
+            }
+            saveData();
+            updateStatsUI();
+            showNotification(t('notif_task_complete', { name: task.name, reward_msg: msg }), 'success');
+            if (document.getElementById('tasks-section').classList.contains('active')) renderTasks();
+            if (document.getElementById('store-section').classList.contains('active')) renderStore();
+            if (document.getElementById('backpack-section').classList.contains('active')) renderBackpack();
+        }
+
+        function openLootbox() {
+            const rewards = [
+                { type: 'tomato', amount: 2, label: '2 🍅 ' + t('reward-tomato'), weight: 30 },
+                { type: 'tomato', amount: 5, label: '5 🍅 ' + t('reward-tomato'), weight: 15 },
+                { type: 'exp', amount: 10, label: '10 ⭐ ' + t('reward-exp'), weight: 25 },
+                { type: 'exp', amount: 25, label: '25 ⭐ ' + t('reward-exp'), weight: 10 },
+                { type: 'nothing', label: '😅 ' + t('notif_lootbox_empty'), weight: 20 },
+            ];
+            const totalWeight = rewards.reduce((s, r) => s + r.weight, 0);
+            let roll = Math.random() * totalWeight;
+            for (const r of rewards) {
+                roll -= r.weight;
+                if (roll <= 0) return r;
+            }
+            return rewards[0];
+        }
+
+        function renderTasks() {
+            taskListContainer.innerHTML = '';
+            if (data.tasks.length === 0) {
+                taskListContainer.innerHTML =
+                    `<div class="empty-message"><i class="fas fa-tasks"></i> ${t('empty_tasks')}</div>`;
+                return;
+            }
+            data.tasks.forEach(task => {
+                const status = getTaskStatus(task);
+                const isCompleted = task.completed || false;
+                const progress = Math.min(100, ((task.completedSessions || 0) / task.targetSessions) * 100);
+                const div = document.createElement('div');
+                div.className = `task-item ${isCompleted ? 'completed' : ''}`;
+
+                let statusText = '',
+                    statusClass = '';
+                if (isCompleted) {
+                    statusText = t('task_status_done');
+                    statusClass = 'done';
+                } else if (status === 'locked') {
+                    statusText = t('task_status_locked');
+                    statusClass = 'locked';
+                } else {
+                    statusText = t('task_status_pending');
+                    statusClass = 'pending';
                 }
-                applyEffect(item);
+
+                const depNames = (task.dependencies || []).length > 0 ? getDependencyNames(task.dependencies || [])
+                    .join(' → ') : t('task_no_reward');
+
+                let rewardDesc = '';
+                switch (task.rewardType) {
+                    case 'tomato':
+                        rewardDesc = t('reward_desc_tomato', { amount: task.rewardAmount });
+                        break;
+                    case 'exp':
+                        rewardDesc = t('reward_desc_exp', { amount: task.rewardAmount });
+                        break;
+                    case 'item':
+                        const item = findItem(task.rewardItemId);
+                        rewardDesc = t('reward_desc_item', { name: item ? item.name : 'Unknown', amount: task
+                                .rewardAmount });
+                        break;
+                    case 'lootbox':
+                        rewardDesc = t('reward_desc_lootbox');
+                        break;
+                    default:
+                        rewardDesc = t('task_no_reward');
+                }
+
+                div.innerHTML = `
+                    <div class="task-header">
+                        <span class="task-name">${task.name}</span>
+                        <span class="task-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="task-desc">${task.description || ''}</div>
+                    <div class="task-reward">${t('task_reward')}${rewardDesc}</div>
+                    <div class="task-progress">
+                        <span style="font-size:0.8rem;color:var(--gray);">${task.completedSessions || 0}/${task.targetSessions}</span>
+                        <div class="task-bar"><div class="task-fill" style="width:${progress}%;"></div></div>
+                    </div>
+                    <div style="font-size:0.75rem;color:var(--gray);">📦 ${t('dependencies')}：${depNames}</div>
+                    <div class="task-actions">
+                        <button class="btn btn-secondary btn-sm task-edit" data-id="${task.id}"><i class="fas fa-pen"></i> ${t('task_edit')}</button>
+                        <button class="btn btn-danger btn-sm task-delete" data-id="${task.id}"><i class="fas fa-trash"></i> ${t('task_delete')}</button>
+                        ${isCompleted ? `<button class="btn btn-outline btn-sm task-reset" data-id="${task.id}"><i class="fas fa-undo"></i> ${t('task_reset')}</button>` : ''}
+                    </div>
+                `;
+                taskListContainer.appendChild(div);
+
+                div.querySelector('.task-edit').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    editTask(id);
+                });
+                div.querySelector('.task-delete').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    if (confirm(t('task_delete') + '?')) deleteTask(id);
+                });
+                const resetBtn = div.querySelector('.task-reset');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        resetTask(id);
+                    });
+                }
+            });
+        }
+
+        function addTask(taskData) {
+            const newTask = {
+                id: 't_' + Date.now(),
+                name: taskData.name,
+                description: taskData.description || '',
+                targetSessions: taskData.targetSessions,
+                completedSessions: 0,
+                completed: false,
+                rewardType: taskData.rewardType,
+                rewardAmount: taskData.rewardAmount || 1,
+                rewardItemId: taskData.rewardItemId || null,
+                dependencies: taskData.dependencies || []
+            };
+            data.tasks.push(newTask);
+            saveData();
+            renderTasks();
+            showNotification(t('notif_task_created', { name: newTask.name }), 'success');
+        }
+
+        function editTask(id) {
+            const task = data.tasks.find(t => t.id === id);
+            if (!task) return showNotification(t('notif_error_task_missing'), 'error');
+            editingTaskId = id;
+            taskNameInput.value = task.name;
+            taskDescInput.value = task.description || '';
+            taskTargetInput.value = task.targetSessions;
+            taskRewardType.value = task.rewardType;
+            taskRewardAmount.value = task.rewardAmount || 1;
+            taskRewardItem.value = task.rewardItemId || '';
+            taskDepsInput.value = (task.dependencies || []).join(', ');
+            toggleRewardItemInput(task.rewardType === 'item');
+            btnTaskSubmit.textContent = t('task_save');
+            taskFormContainer.style.display = 'block';
+            btnAddTask.style.display = 'none';
+            taskFormContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteTask(id) {
+            data.tasks = data.tasks.filter(t => t.id !== id);
+            saveData();
+            renderTasks();
+            showNotification(t('notif_task_deleted'), 'warning');
+            if (editingTaskId === id) cancelTaskEdit();
+        }
+
+        function resetTask(id) {
+            const task = data.tasks.find(t => t.id === id);
+            if (!task) return;
+            task.completed = false;
+            task.completedSessions = 0;
+            saveData();
+            renderTasks();
+            showNotification(t('notif_task_reset', { name: task.name }), 'success');
+        }
+
+        function cancelTaskEdit() {
+            editingTaskId = null;
+            taskFormContainer.style.display = 'none';
+            btnAddTask.style.display = 'inline-block';
+            btnTaskSubmit.textContent = t('task_save');
+            taskForm.reset();
+            taskRewardItem.value = '';
+            toggleRewardItemInput(false);
+        }
+
+        function toggleRewardItemInput(show) {
+            taskRewardItemGroup.style.display = show ? 'block' : 'none';
+        }
+
+        taskRewardType.addEventListener('change', function() {
+            toggleRewardItemInput(this.value === 'item');
+        });
+
+        taskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = taskNameInput.value.trim();
+            const description = taskDescInput.value.trim();
+            const targetSessions = parseInt(taskTargetInput.value);
+            const rewardType = taskRewardType.value;
+            const rewardAmount = parseInt(taskRewardAmount.value) || 1;
+            const rewardItemId = taskRewardItem.value.trim() || null;
+            const depsRaw = taskDepsInput.value.trim();
+            const dependencies = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            if (!name || isNaN(targetSessions) || targetSessions < 1) {
+                return showNotification(t('notif_error_task_form'), 'error');
+            }
+
+            for (const depId of dependencies) {
+                if (!findItem(depId)) {
+                    return showNotification(t('notif_error_task_dep_missing', { id: depId }), 'warning');
+                }
+            }
+
+            if (rewardType === 'item' && rewardItemId) {
+                if (!findItem(rewardItemId)) {
+                    return showNotification(t('notif_error_task_reward_item_missing', { id: rewardItemId }), 'error');
+                }
+            }
+
+            const taskData = {
+                name,
+                description,
+                targetSessions,
+                rewardType,
+                rewardAmount,
+                rewardItemId: rewardType === 'item' ? rewardItemId : null,
+                dependencies
+            };
+
+            if (editingTaskId) {
+                const idx = data.tasks.findIndex(t => t.id === editingTaskId);
+                if (idx !== -1) {
+                    const old = data.tasks[idx];
+                    data.tasks[idx] = {
+                        ...old,
+                        name: taskData.name,
+                        description: taskData.description,
+                        targetSessions: taskData.targetSessions,
+                        rewardType: taskData.rewardType,
+                        rewardAmount: taskData.rewardAmount,
+                        rewardItemId: taskData.rewardItemId,
+                        dependencies: taskData.dependencies,
+                    };
+                    saveData();
+                    renderTasks();
+                    showNotification(t('notif_task_updated', { name: taskData.name }), 'success');
+                    cancelTaskEdit();
+                } else {
+                    showNotification(t('notif_error_task_missing'), 'error');
+                }
+            } else {
+                addTask(taskData);
+                cancelTaskEdit();
+            }
+        });
+
+        btnAddTask.addEventListener('click', function() {
+            taskFormContainer.style.display = 'block';
+            btnAddTask.style.display = 'none';
+            taskForm.reset();
+            editingTaskId = null;
+            btnTaskSubmit.textContent = t('task_save');
+            toggleRewardItemInput(false);
+            taskFormContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        btnTaskCancel.addEventListener('click', function() {
+            cancelTaskEdit();
+        });
+
+        // =========================================================
+        //  商店渲染
+        // =========================================================
+        function renderStore() {
+            const items = getAllItems();
+            storeItemsEl.innerHTML = '';
+            if (items.length === 0) {
+                storeItemsEl.innerHTML = `<div class="empty-message"><i class="fas fa-store"></i> ${t('empty_store')}</div>`;
+                return;
+            }
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                const canBuy = data.tomatoes >= item.price;
+                const isUserItem = String(item.id).startsWith('u_');
+                const deps = item.dependencies || [];
+                const depCheck = checkDependencies(deps);
+                const hasDeps = deps.length > 0;
+
+                let depHTML = '';
+                if (hasDeps) {
+                    const depNames = getDependencyNames(deps);
+                    const statusClass = depCheck.ok ? 'dep-ok' : 'dep-miss';
+                    const statusText = depCheck.ok ? t('dependency_ok') : t('dependency_miss');
+                    depHTML = `
+                        <div class="dep-list">📦 ${t('dependencies')}: ${depNames.join(' → ')}</div>
+                        <span class="dependency-badge ${statusClass}">${statusText}</span>
+                    `;
+                }
+
+                let actionsHTML = `
+                    <button class="btn btn-accent btn-buy" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>
+                        ${canBuy ? t('btn_buy') : t('insufficient')}
+                    </button>
+                `;
+                if (isUserItem) {
+                    actionsHTML += `
+                        <button class="btn btn-secondary btn-sm btn-edit" data-id="${item.id}" title="${t('btn_edit')}"><i class="fas fa-pen"></i></button>
+                        <button class="btn btn-danger btn-sm btn-remove" data-id="${item.id}" title="${t('btn_remove')}"><i class="fas fa-trash"></i></button>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="item-icon"><i class="${item.icon}"></i></div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-desc">${item.desc || ' '}</div>
+                    <div class="item-price">${item.price} 🍅</div>
+                    ${depHTML}
+                    <div class="item-actions">${actionsHTML}</div>
+                `;
+                storeItemsEl.appendChild(div);
+
+                div.querySelector('.btn-buy').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    purchaseItem(this.dataset.id);
+                });
+                const editBtn = div.querySelector('.btn-edit');
+                if (editBtn) editBtn.addEventListener('click', function(e) { e.stopPropagation();
+                    startEditing(this.dataset.id); });
+                const removeBtn = div.querySelector('.btn-remove');
+                if (removeBtn) removeBtn.addEventListener('click', function(e) { e.stopPropagation();
+                    removeUserItem(this.dataset.id); });
+            });
+        }
+
+        function purchaseItem(itemId) {
+            const item = findItem(itemId);
+            if (!item) return showNotification(t('notif_error_item_not_found'), 'error');
+            if (data.tomatoes < item.price) return showNotification(t('notif_error_insufficient'), 'error');
+            data.tomatoes -= item.price;
+            const key = String(item.id);
+            if (data.backpack[key]) {
+                data.backpack[key].count++;
+            } else {
+                data.backpack[key] = { id: item.id, name: item.name, icon: item.icon, effect: item.effect,
+                    count: 1, dependencies: item.dependencies || [] };
+            }
+            saveData();
+            updateStatsUI();
+            renderStore();
+            renderBackpack();
+            showNotification(t('notif_purchase', { name: item.name }), 'success');
+        }
+
+        function removeUserItem(itemId) {
+            const idx = data.userItems.findIndex(i => String(i.id) === String(itemId));
+            if (idx === -1) return showNotification(t('notif_error_cannot_remove_default'), 'error');
+            const removed = data.userItems.splice(idx, 1)[0];
+            const key = String(itemId);
+            if (data.backpack[key]) delete data.backpack[key];
+            saveData();
+            renderStore();
+            renderBackpack();
+            if (editingItemId === String(itemId)) cancelEditing();
+            showNotification(t('notif_removed', { name: removed.name }), 'warning');
+        }
+
+        // =========================================================
+        //  背包渲染
+        // =========================================================
+        function renderBackpack() {
+            const keys = Object.keys(data.backpack);
+            backpackItemsEl.innerHTML = '';
+            if (keys.length === 0) {
+                backpackItemsEl.innerHTML =
+                    `<div class="empty-message"><i class="fas fa-backpack"></i> ${t('empty_backpack')}</div>`;
+                return;
+            }
+            keys.forEach(key => {
+                const item = data.backpack[key];
+                const fullItem = findItem(key);
+                const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
+                const depCheck = checkDependencies(deps);
+
+                const div = document.createElement('div');
+                div.className = 'backpack-item';
+
+                let depStatus = '';
+                if (deps.length > 0) {
+                    const depNames = getDependencyNames(deps);
+                    const cls = depCheck.ok ? 'dep-ok' : 'dep-miss';
+                    const txt = depCheck.ok ? '✅' : '❌';
+                    depStatus = `<div style="font-size:0.65rem;color:var(--gray);">${txt} ${depNames.join(' → ')}</div>`;
+                }
+
+                const canUse = depCheck.ok;
+
+                div.innerHTML = `
+                    <div class="item-count">${item.count}</div>
+                    <div class="item-icon"><i class="${item.icon}"></i></div>
+                    <div class="item-name">${item.name}</div>
+                    ${depStatus}
+                    <button class="btn ${canUse ? 'btn-primary' : 'btn-outline'} btn-use" data-id="${key}" ${canUse ? '' : 'disabled'}>
+                        ${canUse ? t('btn_use') : t('btn_missing_dep')}
+                    </button>
+                `;
+                backpackItemsEl.appendChild(div);
+                div.querySelector('.btn-use').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!canUse) {
+                        const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
+                        showNotification(t('dep_missing') + miss, 'error');
+                        return;
+                    }
+                    useItem(key);
+                });
+            });
+        }
+
+        function useItem(itemId) {
+            const item = data.backpack[itemId];
+            if (!item || item.count <= 0) return;
+            const fullItem = findItem(itemId);
+            const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
+            const depCheck = checkDependencies(deps);
+            if (!depCheck.ok) {
+                const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
+                showNotification(t('dep_missing') + miss, 'error');
+                return;
+            }
+            const effect = item.effect || (fullItem ? fullItem.effect : 'rest');
+            if (effect === 'lootbox') {
+                const result = openLootbox();
+                let msg = '';
+                if (result.type === 'tomato') {
+                    data.tomatoes += result.amount;
+                    msg = t('notif_lootbox_tomato', { amount: result.amount });
+                } else if (result.type === 'exp') {
+                    data.exp += result.amount;
+                    checkLevelUp();
+                    msg = t('notif_lootbox_exp', { amount: result.amount });
+                } else {
+                    msg = t('notif_lootbox_empty');
+                }
                 item.count--;
                 if (item.count <= 0) delete data.backpack[itemId];
                 saveData();
                 updateStatsUI();
                 renderBackpack();
                 renderStore();
+                showNotification(`🎁 ${msg}`, 'success');
+                return;
             }
+            applyEffect(item);
+            item.count--;
+            if (item.count <= 0) delete data.backpack[itemId];
+            saveData();
+            updateStatsUI();
+            renderBackpack();
+            renderStore();
+        }
 
-            function applyEffect(item) {
-                const effect = item.effect;
-                switch (effect) {
-                    case 'rest':
-                        timeLeft = Math.max(timeLeft, 5 * 60);
-                        updateTimerDisplay();
-                        updateProgress();
-                        updateStatus('🛌 休息 5 分钟');
-                        showNotification('☕ 已使用休息时间', 'success');
-                        break;
-                    case 'focus':
-                        timeLeft = Math.min(timeLeft + 10 * 60, 45 * 60);
-                        updateTimerDisplay();
-                        updateProgress();
-                        updateStatus('🎯 专注时间 +10 分钟');
-                        showNotification('🎯 专注时间增加 10 分钟', 'success');
-                        break;
-                    case 'tomato':
-                        data.tomatoes += 2;
-                        saveData();
-                        updateStatsUI();
-                        showNotification('🍅 获得 2 番茄币！', 'success');
-                        break;
-                    case 'exp':
-                        data.exp += 25;
-                        checkLevelUp();
-                        saveData();
-                        updateStatsUI();
-                        showNotification('⭐ 获得 25 经验值！', 'success');
-                        break;
-                    default:
-                        showNotification(`使用了「${item.name}」`, 'success');
-                }
+        function applyEffect(item) {
+            const effect = item.effect;
+            switch (effect) {
+                case 'rest':
+                    timeLeft = Math.max(timeLeft, 5 * 60);
+                    updateTimerDisplay();
+                    updateProgress();
+                    updateStatus('🛌 ' + t('notif_effect_rest'));
+                    showNotification(t('notif_effect_rest'), 'success');
+                    break;
+                case 'focus':
+                    timeLeft = Math.min(timeLeft + 10 * 60, 45 * 60);
+                    updateTimerDisplay();
+                    updateProgress();
+                    updateStatus('🎯 ' + t('notif_effect_focus'));
+                    showNotification(t('notif_effect_focus'), 'success');
+                    break;
+                case 'tomato':
+                    data.tomatoes += 2;
+                    saveData();
+                    updateStatsUI();
+                    showNotification(t('notif_effect_tomato'), 'success');
+                    break;
+                case 'exp':
+                    data.exp += 25;
+                    checkLevelUp();
+                    saveData();
+                    updateStatsUI();
+                    showNotification(t('notif_effect_exp'), 'success');
+                    break;
+                default:
+                    showNotification(t('notif_purchase', { name: item.name }), 'success');
             }
+        }
 
-            // =========================================================
-            //  创建 / 更新商品（含 dependencies）
-            // =========================================================
-            function getFormData() {
-                const depsRaw = $('item-deps').value.trim();
-                const deps = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-                return {
-                    name: $('item-name').value.trim(),
-                    desc: $('item-desc').value.trim(),
-                    price: parseInt($('item-price').value),
-                    icon: $('item-icon').value,
-                    effect: $('item-effect').value,
-                    dependencies: deps
-                };
+        // =========================================================
+        //  创建 / 更新商品
+        // =========================================================
+        function getFormData() {
+            const depsRaw = $('item-deps').value.trim();
+            const deps = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+            return {
+                name: $('item-name').value.trim(),
+                desc: $('item-desc').value.trim(),
+                price: parseInt($('item-price').value),
+                icon: $('item-icon').value,
+                effect: $('item-effect').value,
+                dependencies: deps
+            };
+        }
+
+        function validateForm(data) {
+            if (!data.name || !data.desc || isNaN(data.price) || data.price < 1) {
+                showNotification(t('notif_error_invalid_form'), 'error');
+                return false;
             }
-
-            function validateForm(data) {
-                if (!data.name || !data.desc || isNaN(data.price) || data.price < 1) {
-                    showNotification('请完整填写表单', 'error');
+            for (const depId of data.dependencies) {
+                if (!findItem(depId)) {
+                    showNotification(t('notif_error_dep_missing', { id: depId }), 'warning');
                     return false;
                 }
-                for (const depId of data.dependencies) {
-                    if (!findItem(depId)) {
-                        showNotification(`⚠️ 依赖物品 ID "${depId}" 不存在，请先创建它`, 'warning');
-                        return false;
-                    }
-                }
-                return true;
             }
+            return true;
+        }
 
-            function saveItemFromForm() {
-                const formData = getFormData();
-                if (!validateForm(formData)) return null;
+        function saveItemFromForm() {
+            const formData = getFormData();
+            if (!validateForm(formData)) return null;
 
-                if (editingItemId) {
-                    const index = data.userItems.findIndex(i => String(i.id) === editingItemId);
-                    if (index === -1) { showNotification('要编辑的商品已不存在', 'error');
-                        cancelEditing(); return null; }
-                    const oldItem = data.userItems[index];
-                    const updated = { ...oldItem, ...formData };
-                    data.userItems[index] = updated;
-                    const key = editingItemId;
-                    if (data.backpack[key]) {
-                        data.backpack[key].name = updated.name;
-                        data.backpack[key].icon = updated.icon;
-                        data.backpack[key].effect = updated.effect;
-                        data.backpack[key].dependencies = updated.dependencies;
-                    }
-                    saveData();
-                    showNotification(`✅ 已更新「${updated.name}」`, 'success');
-                    cancelEditing();
-                    return updated;
-                } else {
-                    const newItem = { id: 'u_' + Date.now(), ...formData };
-                    data.userItems.push(newItem);
-                    saveData();
-                    showNotification(`✅ 创建商品「${newItem.name}」成功！`, 'success');
-                    itemForm.reset();
-                    $('item-deps').value = '';
-                    return newItem;
+            if (editingItemId) {
+                const index = data.userItems.findIndex(i => String(i.id) === editingItemId);
+                if (index === -1) { showNotification(t('notif_error_item_not_found'), 'error');
+                    cancelEditing(); return null; }
+                const oldItem = data.userItems[index];
+                const updated = { ...oldItem, ...formData };
+                data.userItems[index] = updated;
+                const key = editingItemId;
+                if (data.backpack[key]) {
+                    data.backpack[key].name = updated.name;
+                    data.backpack[key].icon = updated.icon;
+                    data.backpack[key].effect = updated.effect;
+                    data.backpack[key].dependencies = updated.dependencies;
                 }
+                saveData();
+                showNotification(t('notif_updated', { name: updated.name }), 'success');
+                cancelEditing();
+                return updated;
+            } else {
+                const newItem = { id: 'u_' + Date.now(), ...formData };
+                data.userItems.push(newItem);
+                saveData();
+                showNotification(t('notif_created', { name: newItem.name }), 'success');
+                itemForm.reset();
+                $('item-deps').value = '';
+                return newItem;
             }
+        }
 
-            itemForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const saved = saveItemFromForm();
-                if (saved) { renderStore();
-                    renderBackpack();
-                    updateStatsUI(); }
-            });
+        itemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const saved = saveItemFromForm();
+            if (saved) { renderStore();
+                renderBackpack();
+                updateStatsUI(); }
+        });
 
-            // =========================================================
-            //  导出单个商品
-            // =========================================================
-            function exportSingleItem(item, filenamePrefix = '商品') {
-                const exportData = { userItems: [item], backpack: {}, tasks: [], version: '1.0' };
-                const json = JSON.stringify(exportData, null, 2);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                const safeName = item.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
-                a.download = `${safeName}_${new Date().toISOString().slice(0,10)}.shem`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showNotification(`📄 已导出「${item.name}」为 .shem 文件`, 'success');
-            }
+        // =========================================================
+        //  导出单个商品
+        // =========================================================
+        function exportSingleItem(item, filenamePrefix = '商品') {
+            const exportData = { userItems: [item], backpack: {}, tasks: [], version: '1.0' };
+            const json = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const safeName = item.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
+            a.download = `${safeName}_${new Date().toISOString().slice(0,10)}.shem`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification(t('notif_exported', { name: item.name }), 'success');
+        }
 
-            btnExportSingle.addEventListener('click', function() {
-                const formData = getFormData();
-                if (!validateForm(formData)) return;
-                const tempItem = { id: 'temp_' + Date.now(), ...formData };
-                exportSingleItem(tempItem, formData.name);
-            });
+        btnExportSingle.addEventListener('click', function() {
+            const formData = getFormData();
+            if (!validateForm(formData)) return;
+            const tempItem = { id: 'temp_' + Date.now(), ...formData };
+            exportSingleItem(tempItem, formData.name);
+        });
 
-            btnExportAndLoad.addEventListener('click', function() {
-                const saved = saveItemFromForm();
-                if (saved) {
-                    renderStore();
-                    renderBackpack();
-                    updateStatsUI();
-                    exportSingleItem(saved, saved.name);
-                    if (!editingItemId) { itemForm.reset();
-                        $('item-deps').value = ''; }
-                }
-            });
-
-            // =========================================================
-            //  统计
-            // =========================================================
-            function renderStats() {
-                const dailyEl = $('daily-stats');
-                const weeklyEl = $('weekly-stats');
-                const monthlyEl = $('monthly-stats');
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const weekStart = new Date(now);
-                weekStart.setDate(now.getDate() - now.getDay());
-                weekStart.setHours(0, 0, 0, 0);
-                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-                function filterHistory(startDate) {
-                    return data.history.filter(h => new Date(h.date) >= startDate);
-                }
-
-                function calcStats(records) {
-                    let tomatoes = 0,
-                        exp = 0,
-                        sessions = records.length;
-                    records.forEach(r => { tomatoes += r.tomatoesEarned || 0;
-                        exp += r.expEarned || 0; });
-                    return { tomatoes, exp, sessions };
-                }
-
-                function renderStatBlock(el, records, label) {
-                    const s = calcStats(records);
-                    const expNeeded = data.level * 100;
-                    const expProgress = Math.min(100, (data.exp / expNeeded) * 100);
-                    el.innerHTML = `
-                        <div class="stat-grid">
-                            <div class="stat-card"><div class="icon">🍅</div><div class="number">${s.tomatoes}</div><div class="label">番茄币</div></div>
-                            <div class="stat-card"><div class="icon">⏱️</div><div class="number">${s.sessions}</div><div class="label">完成番茄</div></div>
-                            <div class="stat-card"><div class="icon">⭐</div><div class="number">${s.exp}</div><div class="label">经验值</div></div>
-                            <div class="stat-card"><div class="icon">📊</div><div class="number">${data.level}</div><div class="label">当前等级</div></div>
-                        </div>
-                        <div style="margin-top:8px;">
-                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--gray);">
-                                <span>等级进度</span><span>${data.exp} / ${expNeeded}</span>
-                            </div>
-                            <div class="level-bar"><div class="level-progress" style="width:${expProgress}%;"></div></div>
-                        </div>
-                        <p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">${label} · 共 ${s.sessions} 个番茄</p>
-                    `;
-                }
-                renderStatBlock(dailyEl, filterHistory(today), '今日');
-                renderStatBlock(weeklyEl, filterHistory(weekStart), '本周');
-                renderStatBlock(monthlyEl, filterHistory(monthStart), '本月');
-            }
-
-            // =========================================================
-            //  导航
-            // =========================================================
-            function switchSection(target) {
-                document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-                const section = document.getElementById(`${target}-section`);
-                if (section) section.classList.add('active');
-                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                const navItem = document.querySelector(`.nav-item[data-target="${target}"]`);
-                if (navItem) navItem.classList.add('active');
-                if (target === 'stats') renderStats();
-                if (target === 'store') renderStore();
-                if (target === 'backpack') renderBackpack();
-                if (target === 'tasks') renderTasks();
-            }
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function() { switchSection(this.dataset.target); });
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    const tabId = this.dataset.tab;
-                    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-                    const target = document.getElementById(`${tabId}-stats`);
-                    if (target) target.classList.add('active');
-                });
-            });
-
-            // =========================================================
-            //  通知
-            // =========================================================
-            let notiTimer = null;
-
-            function showNotification(text, type = 'success') {
-                notificationText.textContent = text;
-                notification.className = 'notification show ' + type;
-                clearTimeout(notiTimer);
-                notiTimer = setTimeout(() => notification.classList.remove('show'), 3500);
-            }
-
-            // =========================================================
-            //  导入 / 导出 全部（含任务）
-            // =========================================================
-            const exportBtn = $('btn-export-items');
-            const importBtn = $('btn-import-items');
-            const fileInput = $('file-input-import');
-
-            exportBtn.addEventListener('click', function() {
-                const exportData = {
-                    userItems: data.userItems,
-                    backpack: data.backpack,
-                    tasks: data.tasks,
-                    version: '1.0'
-                };
-                const json = JSON.stringify(exportData, null, 2);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `番茄模组_全量_${new Date().toISOString().slice(0,10)}.shem`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showNotification('✅ 全部数据（含任务）已导出', 'success');
-            });
-
-            importBtn.addEventListener('click', function() { fileInput.click(); });
-
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    try {
-                        const imported = JSON.parse(ev.target.result);
-                        if (imported.userItems && imported.backpack) {
-                            let added = 0,
-                                updated = 0,
-                                bpAdded = 0,
-                                bpUpdated = 0;
-                            // 合并商品
-                            imported.userItems.forEach(imp => {
-                                const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
-                                if (idx !== -1) { data.userItems[idx] = imp;
-                                    updated++; } else { data.userItems.push(imp);
-                                    added++; }
-                            });
-                            // 合并背包
-                            for (const [key, val] of Object.entries(imported.backpack)) {
-                                if (data.backpack[key]) {
-                                    data.backpack[key].count += val.count;
-                                    data.backpack[key].name = val.name;
-                                    data.backpack[key].icon = val.icon;
-                                    data.backpack[key].effect = val.effect;
-                                    data.backpack[key].dependencies = val.dependencies || [];
-                                    bpUpdated++;
-                                } else {
-                                    data.backpack[key] = val;
-                                    bpAdded++;
-                                }
-                            }
-                            // 合并任务
-                            let taskAdded = 0;
-                            if (imported.tasks) {
-                                imported.tasks.forEach(impTask => {
-                                    const exists = data.tasks.some(t => t.id === impTask.id);
-                                    if (!exists) {
-                                        data.tasks.push(impTask);
-                                        taskAdded++;
-                                    } else {
-                                        // 可选的更新逻辑：替换或忽略，这里简单忽略重复
-                                    }
-                                });
-                            }
-                            saveData();
-                            renderStore();
-                            renderBackpack();
-                            renderTasks();
-                            updateStatsUI();
-                            showNotification(
-                                `✅ 合并完成：新增 ${added} 个商品，更新 ${updated} 个；背包新增 ${bpAdded} 种，更新 ${bpUpdated} 种；新增 ${taskAdded} 个任务`,
-                                'success');
-                        } else {
-                            showNotification('❌ 无效的 .shem 文件', 'error');
-                        }
-                    } catch (err) { showNotification('❌ 文件解析失败', 'error');
-                        console.error(err); }
-                };
-                reader.readAsText(file);
-                fileInput.value = '';
-            });
-
-            // =========================================================
-            //  键盘快捷键
-            // =========================================================
-            document.addEventListener('keydown', function(e) {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')
-                    return;
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    if (isRunning && !isPaused) pauseTimer();
-                    else if (isRunning && isPaused) startTimer();
-                    else startTimer();
-                }
-                if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) { e.preventDefault();
-                    resetTimer(); }
-            });
-
-            // =========================================================
-            //  初始化
-            // =========================================================
-            btnStart.addEventListener('click', startTimer);
-            btnPause.addEventListener('click', pauseTimer);
-            btnReset.addEventListener('click', resetTimer);
-            $('btn-refresh-store').addEventListener('click', renderStore);
-
-            function init() {
-                durationInput.value = Math.floor(WORK_TIME / 60);
-                updateStatsUI();
-                updateTimerDisplay();
-                updateProgress();
-                setButtons(false, false);
+        btnExportAndLoad.addEventListener('click', function() {
+            const saved = saveItemFromForm();
+            if (saved) {
                 renderStore();
                 renderBackpack();
-                renderTasks();
-                switchSection('timer');
-                renderStats();
-                updateStatus('🍅 准备开始工作吧！');
-                // 隐藏任务表单初始状态
-                taskFormContainer.style.display = 'none';
-                btnAddTask.style.display = 'inline-block';
+                updateStatsUI();
+                exportSingleItem(saved, saved.name);
+                if (!editingItemId) { itemForm.reset();
+                    $('item-deps').value = ''; }
             }
-            init();
-            console.log('🍅 番茄闹钟 任务模组版 已启动！');
         });
+
+        // =========================================================
+        //  统计
+        // =========================================================
+        function renderStats() {
+            const dailyEl = $('daily-stats');
+            const weeklyEl = $('weekly-stats');
+            const monthlyEl = $('monthly-stats');
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            function filterHistory(startDate) {
+                return data.history.filter(h => new Date(h.date) >= startDate);
+            }
+
+            function calcStats(records) {
+                let tomatoes = 0,
+                    exp = 0,
+                    sessions = records.length;
+                records.forEach(r => { tomatoes += r.tomatoesEarned || 0;
+                    exp += r.expEarned || 0; });
+                return { tomatoes, exp, sessions };
+            }
+
+            function renderStatBlock(el, records, label) {
+                const s = calcStats(records);
+                const expNeeded = data.level * 100;
+                const expProgress = Math.min(100, (data.exp / expNeeded) * 100);
+                el.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat-card"><div class="icon">🍅</div><div class="number">${s.tomatoes}</div><div class="label">${t('stat-tomato')}</div></div>
+                        <div class="stat-card"><div class="icon">⏱️</div><div class="number">${s.sessions}</div><div class="label">${t('stat-exp')}</div></div>
+                        <div class="stat-card"><div class="icon">⭐</div><div class="number">${s.exp}</div><div class="label">${t('stat-level')}</div></div>
+                        <div class="stat-card"><div class="icon">📊</div><div class="number">${data.level}</div><div class="label">${t('stat-level')}</div></div>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--gray);">
+                            <span>${t('stat-exp')}</span><span>${data.exp} / ${expNeeded}</span>
+                        </div>
+                        <div class="level-bar"><div class="level-progress" style="width:${expProgress}%;"></div></div>
+                    </div>
+                    <p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">${label} · ${s.sessions} ${t('nav-timer')}</p>
+                `;
+            }
+            renderStatBlock(dailyEl, filterHistory(today), t('stats-tab-daily'));
+            renderStatBlock(weeklyEl, filterHistory(weekStart), t('stats-tab-weekly'));
+            renderStatBlock(monthlyEl, filterHistory(monthStart), t('stats-tab-monthly'));
+        }
+
+        // =========================================================
+        //  导航
+        // =========================================================
+        function switchSection(target) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            const section = document.getElementById(`${target}-section`);
+            if (section) section.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navItem = document.querySelector(`.nav-item[data-target="${target}"]`);
+            if (navItem) navItem.classList.add('active');
+            if (target === 'stats') renderStats();
+            if (target === 'store') renderStore();
+            if (target === 'backpack') renderBackpack();
+            if (target === 'tasks') renderTasks();
+        }
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() { switchSection(this.dataset.target); });
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                const target = document.getElementById(`${tabId}-stats`);
+                if (target) target.classList.add('active');
+            });
+        });
+
+        // =========================================================
+        //  通知
+        // =========================================================
+        let notiTimer = null;
+
+        function showNotification(text, type = 'success') {
+            notificationText.textContent = text;
+            notification.className = 'notification show ' + type;
+            clearTimeout(notiTimer);
+            notiTimer = setTimeout(() => notification.classList.remove('show'), 3500);
+        }
+
+        // =========================================================
+        //  导入 / 导出 全部（含任务）
+        // =========================================================
+        const exportBtn = $('btn-export-items');
+        const importBtn = $('btn-import-items');
+        const fileInput = $('file-input-import');
+
+        exportBtn.addEventListener('click', function() {
+            const exportData = {
+                userItems: data.userItems,
+                backpack: data.backpack,
+                tasks: data.tasks,
+                version: '1.0'
+            };
+            const json = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `番茄模组_全量_${new Date().toISOString().slice(0,10)}.shem`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification(t('notif_export_all'), 'success');
+        });
+
+        importBtn.addEventListener('click', function() { fileInput.click(); });
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (imported.userItems && imported.backpack) {
+                        let added = 0,
+                            updated = 0,
+                            bpAdded = 0,
+                            bpUpdated = 0;
+                        imported.userItems.forEach(imp => {
+                            const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
+                            if (idx !== -1) { data.userItems[idx] = imp;
+                                updated++; } else { data.userItems.push(imp);
+                                added++; }
+                        });
+                        for (const [key, val] of Object.entries(imported.backpack)) {
+                            if (data.backpack[key]) {
+                                data.backpack[key].count += val.count;
+                                data.backpack[key].name = val.name;
+                                data.backpack[key].icon = val.icon;
+                                data.backpack[key].effect = val.effect;
+                                data.backpack[key].dependencies = val.dependencies || [];
+                                bpUpdated++;
+                            } else {
+                                data.backpack[key] = val;
+                                bpAdded++;
+                            }
+                        }
+                        let taskAdded = 0;
+                        if (imported.tasks) {
+                            imported.tasks.forEach(impTask => {
+                                const exists = data.tasks.some(t => t.id === impTask.id);
+                                if (!exists) {
+                                    data.tasks.push(impTask);
+                                    taskAdded++;
+                                }
+                            });
+                        }
+                        saveData();
+                        renderStore();
+                        renderBackpack();
+                        renderTasks();
+                        updateStatsUI();
+                        showNotification(
+                            t('notif_import_merge', { added, updated, bpAdded, bpUpdated, taskAdded }),
+                            'success');
+                    } else {
+                        showNotification(t('notif_error_import_invalid'), 'error');
+                    }
+                } catch (err) { showNotification(t('notif_error_import_parse'), 'error');
+                    console.error(err); }
+            };
+            reader.readAsText(file);
+            fileInput.value = '';
+        });
+
+        // =========================================================
+        //  🆕 任务独立导入/导出
+        // =========================================================
+        const exportTasksBtn = $('btn-export-tasks');
+        const importTasksBtn = $('btn-import-tasks');
+        const fileInputTasks = $('file-input-import-tasks');
+
+        exportTasksBtn.addEventListener('click', function() {
+            if (data.tasks.length === 0) {
+                return showNotification('没有任务可导出', 'warning');
+            }
+            const exportData = {
+                tasks: data.tasks,
+                version: '1.0'
+            };
+            const json = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `任务清单_${new Date().toISOString().slice(0,10)}.shem`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification(t('notif_export_tasks', { count: data.tasks.length }), 'success');
+        });
+
+        importTasksBtn.addEventListener('click', function() {
+            fileInputTasks.click();
+        });
+
+        fileInputTasks.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    // 检查是否包含 tasks 字段
+                    if (!imported.tasks || !Array.isArray(imported.tasks)) {
+                        return showNotification('无效的任务文件，缺少 tasks 数组', 'error');
+                    }
+                    let added = 0,
+                        updated = 0;
+                    imported.tasks.forEach(impTask => {
+                        // 确保依赖字段存在
+                        if (!impTask.dependencies) impTask.dependencies = [];
+                        const existIndex = data.tasks.findIndex(t => t.id === impTask.id);
+                        if (existIndex !== -1) {
+                            // 更新（保留完成状态和进度？一般导入任务希望保留用户进度，但为了安全，我们保留原进度）
+                            // 但考虑到任务可能被修改，我们覆盖除 completedSessions 和 completed 以外的字段
+                            const oldTask = data.tasks[existIndex];
+                            // 保留完成状态和进度，但可以更新其他属性
+                            data.tasks[existIndex] = {
+                                ...impTask,
+                                completedSessions: oldTask.completedSessions || 0,
+                                completed: oldTask.completed || false,
+                            };
+                            updated++;
+                        } else {
+                            // 新增
+                            data.tasks.push(impTask);
+                            added++;
+                        }
+                    });
+                    saveData();
+                    renderTasks();
+                    showNotification(t('notif_import_tasks', { added, updated }), 'success');
+                } catch (err) {
+                    showNotification(t('notif_error_import_parse'), 'error');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            fileInputTasks.value = '';
+        });
+
+        // =========================================================
+        //  键盘快捷键
+        // =========================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')
+                return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isRunning && !isPaused) pauseTimer();
+                else if (isRunning && isPaused) startTimer();
+                else startTimer();
+            }
+            if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) { e.preventDefault();
+                resetTimer(); }
+        });
+
+        // =========================================================
+        //  语言切换按钮事件
+        // =========================================================
+        document.getElementById('lang-toggle').addEventListener('click', function() {
+            const newLang = currentLang === 'zh' ? 'en' : 'zh';
+            setLanguage(newLang);
+            renderStore();
+            renderBackpack();
+            renderTasks();
+            renderStats();
+            updateStatus(t('status-ready'));
+        });
+
+        // =========================================================
+        //  初始化
+        // =========================================================
+        btnStart.addEventListener('click', startTimer);
+        btnPause.addEventListener('click', pauseTimer);
+        btnReset.addEventListener('click', resetTimer);
+        $('btn-refresh-store').addEventListener('click', renderStore);
+
+        function init() {
+            currentLang = 'zh';
+            setLanguage('zh');
+            durationInput.value = Math.floor(WORK_TIME / 60);
+            updateStatsUI();
+            updateTimerDisplay();
+            updateProgress();
+            setButtons(false, false);
+            renderStore();
+            renderBackpack();
+            renderTasks();
+            switchSection('timer');
+            renderStats();
+            updateStatus(t('status-ready'));
+            taskFormContainer.style.display = 'none';
+            btnAddTask.style.display = 'inline-block';
+        }
+        init();
+        console.log('🍅 番茄闹钟 任务独立导入/导出 已启动！');
     </script>
 </body>
 </html>
