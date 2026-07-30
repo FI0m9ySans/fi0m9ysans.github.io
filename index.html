@@ -67,6 +67,7 @@
         }
         .nav-items {
             flex: 1;
+            overflow-y: auto;
         }
         .nav-item {
             padding: 14px 24px;
@@ -94,6 +95,9 @@
             background: rgba(231, 76, 60, 0.2);
             color: var(--white);
             border-left-color: var(--primary);
+        }
+        .nav-item.custom-tab {
+            border-left-color: var(--gold);
         }
         .sidebar-footer {
             padding: 16px 24px;
@@ -134,7 +138,7 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .lang-toggle {
@@ -151,6 +155,15 @@
         .lang-toggle:hover {
             border-color: var(--secondary);
             background: rgba(52, 152, 219, 0.08);
+        }
+        .save-btns {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .save-btns .btn {
+            padding: 4px 12px;
+            font-size: 0.75rem;
         }
         .stats {
             display: flex;
@@ -229,6 +242,9 @@
         }
         .content-section.active {
             display: block;
+        }
+        .content-section.custom-panel .panel-content {
+            min-height: 200px;
         }
         @keyframes fadeUp {
             from {
@@ -928,6 +944,10 @@
             color: var(--secondary);
             margin-top: 2px;
         }
+        .custom-tab-content {
+            min-height: 200px;
+            padding: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -935,15 +955,17 @@
     <!-- ===== 侧边栏 ===== -->
     <aside class="sidebar">
         <div class="logo"><i class="fas fa-stopwatch"></i> 番茄<span>模组</span></div>
-        <nav class="nav-items">
+        <nav class="nav-items" id="sidebar-nav">
+            <!-- 内置导航 -->
             <div class="nav-item active" data-target="timer"><i class="fas fa-clock"></i> <span data-i18n="nav-timer">番茄计时</span></div>
             <div class="nav-item" data-target="store"><i class="fas fa-store"></i> <span data-i18n="nav-store">商店</span></div>
             <div class="nav-item" data-target="backpack"><i class="fas fa-backpack"></i> <span data-i18n="nav-backpack">背包</span></div>
             <div class="nav-item" data-target="tasks"><i class="fas fa-tasks"></i> <span data-i18n="nav-tasks">任务</span></div>
             <div class="nav-item" data-target="create"><i class="fas fa-plus-circle"></i> <span data-i18n="nav-create">创建商品</span></div>
             <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> <span data-i18n="nav-stats">统计</span></div>
+            <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v3.3 · 任务独立导入/导出</div>
+        <div class="sidebar-footer">v3.4 · 存档 · 多格式</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -953,6 +975,11 @@
         <header class="header">
             <h1><i class="fas fa-apple-alt"></i> <span data-i18n="header-title">专注工作</span></h1>
             <div class="header-right">
+                <div class="save-btns">
+                    <button class="btn btn-gold btn-sm" id="btn-export-save"><i class="fas fa-download"></i> <span data-i18n="save-export">导出存档 (.saop)</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-save"><i class="fas fa-upload"></i> <span data-i18n="save-import">导入存档 (.saop)</span></button>
+                    <input type="file" id="file-input-import-save" class="file-input-hidden" accept=".saop" />
+                </div>
                 <button class="lang-toggle" id="lang-toggle">🌐 English</button>
                 <div class="stats">
                     <div class="stat-item">
@@ -996,9 +1023,12 @@
                 <h2 class="panel-title"><i class="fas fa-store"></i> <span data-i18n="store-title">番茄商店</span></h2>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-secondary" id="btn-refresh-store"><i class="fas fa-sync-alt"></i> <span data-i18n="store-refresh">刷新</span></button>
-                    <button class="btn btn-gold" id="btn-export-items"><i class="fas fa-download"></i> <span data-i18n="store-export">导出全部</span></button>
-                    <button class="btn btn-gold" id="btn-import-items"><i class="fas fa-upload"></i> <span data-i18n="store-import">导入合并</span></button>
-                    <input type="file" id="file-input-import" class="file-input-hidden" accept=".shem" />
+                    <button class="btn btn-gold btn-sm" id="btn-export-shem"><i class="fas fa-download"></i> <span data-i18n="store-export-shem">导出物品 (.shem)</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-shem"><i class="fas fa-upload"></i> <span data-i18n="store-import-shem">导入物品</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-export-zod"><i class="fas fa-download"></i> <span data-i18n="store-export-zod">导出模组 (.zod)</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-zod"><i class="fas fa-upload"></i> <span data-i18n="store-import-zod">导入模组</span></button>
+                    <input type="file" id="file-input-import-shem" class="file-input-hidden" accept=".shem" />
+                    <input type="file" id="file-input-import-zod" class="file-input-hidden" accept=".zod" />
                 </div>
             </div>
             <div class="items-grid" id="store-items"></div>
@@ -1018,9 +1048,9 @@
                 <h2 class="panel-title"><i class="fas fa-tasks"></i> <span data-i18n="tasks-title">任务清单</span></h2>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-primary btn-sm" id="btn-add-task"><i class="fas fa-plus"></i> <span data-i18n="tasks-add">新建任务</span></button>
-                    <button class="btn btn-gold btn-sm" id="btn-export-tasks"><i class="fas fa-download"></i> <span data-i18n="tasks-export">导出任务</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-export-tasks"><i class="fas fa-download"></i> <span data-i18n="tasks-export">导出任务 (.taem)</span></button>
                     <button class="btn btn-gold btn-sm" id="btn-import-tasks"><i class="fas fa-upload"></i> <span data-i18n="tasks-import">导入任务</span></button>
-                    <input type="file" id="file-input-import-tasks" class="file-input-hidden" accept=".shem" />
+                    <input type="file" id="file-input-import-tasks" class="file-input-hidden" accept=".taem" />
                 </div>
             </div>
             <div id="task-form-container" style="display:none;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
@@ -1161,6 +1191,9 @@
             <div class="tab-content" id="weekly-stats"></div>
             <div class="tab-content" id="monthly-stats"></div>
         </section>
+
+        <!-- ===== 自定义标签面板（动态生成） ===== -->
+        <!-- 将由 JS 动态创建 -->
     </main>
 
     <!-- ===== 通知 ===== -->
@@ -1172,7 +1205,7 @@
     <!-- ============================================================ -->
     <script>
         // =========================================================
-        //  国际化 (i18n) 翻译表 (新增任务导出/导入翻译)
+        //  国际化 (i18n) 翻译表 (新增存档/多格式)
         // =========================================================
         const TRANSLATIONS = {
             'zh': {
@@ -1182,7 +1215,7 @@
                 'nav-tasks': '任务',
                 'nav-create': '创建商品',
                 'nav-stats': '统计',
-                'footer-text': '任务独立导入/导出',
+                'footer-text': '存档 · 多格式',
                 'header-title': '专注工作',
                 'stat-tomato': '番茄币',
                 'stat-exp': '经验值',
@@ -1195,13 +1228,17 @@
                 'status-ready': '🍅 准备开始工作吧！',
                 'store-title': '番茄商店',
                 'store-refresh': '刷新',
-                'store-export': '导出全部',
-                'store-import': '导入合并',
+                'store-export-shem': '导出物品 (.shem)',
+                'store-import-shem': '导入物品',
+                'store-export-zod': '导出模组 (.zod)',
+                'store-import-zod': '导入模组',
                 'backpack-title': '我的背包',
                 'tasks-title': '任务清单',
                 'tasks-add': '新建任务',
-                'tasks-export': '导出任务',
+                'tasks-export': '导出任务 (.taem)',
                 'tasks-import': '导入任务',
+                'save-export': '导出存档 (.saop)',
+                'save-import': '导入存档 (.saop)',
                 'task-name-label': '任务名称',
                 'task-target-label': '目标番茄数',
                 'task-desc-label': '任务描述',
@@ -1265,10 +1302,14 @@
                 'notif_created': '✅ 创建商品「{name}」成功！',
                 'notif_updated': '✅ 已更新「{name}」',
                 'notif_exported': '📄 已导出「{name}」为 .shem 文件',
-                'notif_export_all': '✅ 全部数据（含任务）已导出',
-                'notif_export_tasks': '📄 已导出 {count} 个任务为 .shem 文件',
-                'notif_import_merge': '✅ 合并完成：新增 {added} 个商品，更新 {updated} 个；背包新增 {bpAdded} 种，更新 {bpUpdated} 种；新增 {taskAdded} 个任务',
-                'notif_import_tasks': '✅ 导入任务完成：新增 {added} 个，更新 {updated} 个',
+                'notif_export_tasks': '📄 已导出 {count} 个任务为 .taem 文件',
+                'notif_export_shem': '📄 已导出 {count} 个物品和背包为 .shem 文件',
+                'notif_export_zod': '📄 已导出完整模组 (.zod)',
+                'notif_export_save': '💾 已导出完整存档 (.saop)',
+                'notif_import_shem': '✅ 物品导入完成：新增 {added} 个，更新 {updated} 个',
+                'notif_import_tasks': '✅ 任务导入完成：新增 {added} 个，更新 {updated} 个',
+                'notif_import_zod': '✅ 模组导入完成：商品新增 {itemAdded} 更新 {itemUpdated}，任务新增 {taskAdded} 更新 {taskUpdated}，标签新增 {tabAdded}',
+                'notif_import_save': '✅ 存档已恢复',
                 'notif_task_created': '✅ 任务「{name}」已创建',
                 'notif_task_updated': '✅ 任务「{name}」已更新',
                 'notif_task_deleted': '🗑️ 任务已删除',
@@ -1293,7 +1334,7 @@
                 'notif_error_task_form': '请正确填写任务名称和目标次数',
                 'notif_error_task_dep_missing': '依赖物品 "{id}" 不存在，请先创建',
                 'notif_error_task_reward_item_missing': '奖励物品 "{id}" 不存在',
-                'notif_error_import_invalid': '❌ 无效的 .shem 文件',
+                'notif_error_import_invalid': '❌ 无效的文件',
                 'notif_error_import_parse': '❌ 文件解析失败',
                 'task_edit': '编辑',
                 'task_delete': '删除',
@@ -1303,6 +1344,7 @@
                 'btn_remove': '移除',
                 'btn_use': '使用',
                 'btn_missing_dep': '缺依赖',
+                'custom_tab_delete': '🗑️ 删除标签',
             },
             'en': {
                 'nav-timer': 'Pomodoro Timer',
@@ -1311,7 +1353,7 @@
                 'nav-tasks': 'Tasks',
                 'nav-create': 'Create Item',
                 'nav-stats': 'Statistics',
-                'footer-text': 'Task Import/Export',
+                'footer-text': 'Save · Multi-Format',
                 'header-title': 'Focus & Work',
                 'stat-tomato': 'Tomatoes',
                 'stat-exp': 'EXP',
@@ -1324,13 +1366,17 @@
                 'status-ready': '🍅 Ready to focus!',
                 'store-title': 'Tomato Store',
                 'store-refresh': 'Refresh',
-                'store-export': 'Export All',
-                'store-import': 'Merge Import',
+                'store-export-shem': 'Export Items (.shem)',
+                'store-import-shem': 'Import Items',
+                'store-export-zod': 'Export Mod (.zod)',
+                'store-import-zod': 'Import Mod',
                 'backpack-title': 'My Backpack',
                 'tasks-title': 'Task List',
                 'tasks-add': 'New Task',
-                'tasks-export': 'Export Tasks',
+                'tasks-export': 'Export Tasks (.taem)',
                 'tasks-import': 'Import Tasks',
+                'save-export': 'Export Save (.saop)',
+                'save-import': 'Import Save (.saop)',
                 'task-name-label': 'Task Name',
                 'task-target-label': 'Target Pomodoros',
                 'task-desc-label': 'Task Description',
@@ -1394,10 +1440,14 @@
                 'notif_created': '✅ Created item "{name}" successfully!',
                 'notif_updated': '✅ Updated "{name}"',
                 'notif_exported': '📄 Exported "{name}" as .shem file',
-                'notif_export_all': '✅ All data (including tasks) exported',
-                'notif_export_tasks': '📄 Exported {count} tasks as .shem file',
-                'notif_import_merge': '✅ Merge complete: added {added} items, updated {updated}; backpack added {bpAdded}, updated {bpUpdated}; added {taskAdded} tasks',
+                'notif_export_tasks': '📄 Exported {count} tasks as .taem file',
+                'notif_export_shem': '📄 Exported {count} items and backpack as .shem file',
+                'notif_export_zod': '📄 Exported full mod (.zod)',
+                'notif_export_save': '💾 Exported full save (.saop)',
+                'notif_import_shem': '✅ Items imported: added {added}, updated {updated}',
                 'notif_import_tasks': '✅ Tasks imported: added {added}, updated {updated}',
+                'notif_import_zod': '✅ Mod imported: items added {itemAdded} updated {itemUpdated}, tasks added {taskAdded} updated {taskUpdated}, tabs added {tabAdded}',
+                'notif_import_save': '✅ Save restored',
                 'notif_task_created': '✅ Task "{name}" created',
                 'notif_task_updated': '✅ Task "{name}" updated',
                 'notif_task_deleted': '🗑️ Task deleted',
@@ -1422,7 +1472,7 @@
                 'notif_error_task_form': 'Please fill task name and target correctly',
                 'notif_error_task_dep_missing': 'Dependency item "{id}" does not exist, please create it first',
                 'notif_error_task_reward_item_missing': 'Reward item "{id}" does not exist',
-                'notif_error_import_invalid': '❌ Invalid .shem file',
+                'notif_error_import_invalid': '❌ Invalid file',
                 'notif_error_import_parse': '❌ Failed to parse file',
                 'task_edit': 'Edit',
                 'task_delete': 'Delete',
@@ -1432,6 +1482,7 @@
                 'btn_remove': 'Remove',
                 'btn_use': 'Use',
                 'btn_missing_dep': 'Missing Dep',
+                'custom_tab_delete': '🗑️ Delete Tab',
             }
         };
 
@@ -1463,6 +1514,7 @@
             renderBackpack();
             renderTasks();
             renderStats();
+            renderCustomTabs();
             updateStatus(t('status-ready'));
             document.getElementById('status').textContent = t('status-ready');
             if (editingItemId) {
@@ -1472,7 +1524,7 @@
         }
 
         // =========================================================
-        //  数据层
+        //  数据层（含 customTabs）
         // =========================================================
         const STORAGE_KEY = 'tomato_data_v3';
 
@@ -1485,6 +1537,7 @@
                 userItems: [],
                 tasks: [],
                 history: [],
+                customTabs: [],
                 stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
                         sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
             };
@@ -1502,6 +1555,7 @@
                     if (parsed.tasks) {
                         parsed.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
                     }
+                    if (!parsed.customTabs) parsed.customTabs = [];
                     return parsed;
                 }
             } catch (_) {}
@@ -1565,7 +1619,7 @@
         const btnExportSingle = $('btn-export-single');
         const btnExportAndLoad = $('btn-export-and-load');
 
-        // 任务相关 DOM
+        // 任务相关
         const taskListContainer = $('task-list-container');
         const taskFormContainer = $('task-form-container');
         const taskForm = $('task-form');
@@ -1582,6 +1636,9 @@
         const taskDepsInput = $('task-deps');
 
         let editingTaskId = null;
+
+        // 自定义标签相关
+        let customTabIdMap = {};
 
         // =========================================================
         //  编辑状态（商品）
@@ -2409,10 +2466,10 @@
         });
 
         // =========================================================
-        //  导出单个商品
+        //  导出单个商品 (.shem)
         // =========================================================
         function exportSingleItem(item, filenamePrefix = '商品') {
-            const exportData = { userItems: [item], backpack: {}, tasks: [], version: '1.0' };
+            const exportData = { userItems: [item], backpack: {}, tasks: [], customTabs: [], version: '1.0' };
             const json = JSON.stringify(exportData, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -2499,23 +2556,100 @@
         }
 
         // =========================================================
+        //  自定义标签页系统
+        // =========================================================
+        function renderCustomTabs() {
+            const navContainer = document.getElementById('sidebar-nav');
+            // 移除已有的自定义标签（保留内置导航）
+            const existingCustom = navContainer.querySelectorAll('.nav-item.custom-tab');
+            existingCustom.forEach(el => el.remove());
+
+            // 移除已有的自定义面板
+            const mainContent = document.querySelector('.main-content');
+            const existingPanels = mainContent.querySelectorAll('.content-section.custom-panel');
+            existingPanels.forEach(el => el.remove());
+
+            // 重新构建
+            data.customTabs.forEach((tab, index) => {
+                // 侧边栏项
+                const navItem = document.createElement('div');
+                navItem.className = 'nav-item custom-tab';
+                navItem.dataset.target = 'custom_' + tab.id;
+                navItem.innerHTML = `<i class="${tab.icon || 'fas fa-puzzle-piece'}"></i> ${tab.name}`;
+                navContainer.appendChild(navItem);
+
+                // 面板
+                const panel = document.createElement('section');
+                panel.className = 'panel content-section custom-panel';
+                panel.id = 'custom_' + tab.id;
+                panel.innerHTML = `
+                    <div class="panel-header">
+                        <h2 class="panel-title"><i class="${tab.icon || 'fas fa-puzzle-piece'}"></i> ${tab.name}</h2>
+                        <button class="btn btn-danger btn-sm btn-delete-custom-tab" data-id="${tab.id}"><i class="fas fa-trash"></i> ${t('custom_tab_delete')}</button>
+                    </div>
+                    <div class="panel-content custom-tab-content">${tab.content || ''}</div>
+                `;
+                mainContent.appendChild(panel);
+
+                // 绑定删除事件
+                panel.querySelector('.btn-delete-custom-tab').addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (confirm(`确定删除标签 "${data.customTabs.find(t => t.id === id)?.name}" 吗？`)) {
+                        data.customTabs = data.customTabs.filter(t => t.id !== id);
+                        saveData();
+                        renderCustomTabs();
+                        // 如果当前激活的是这个标签，切换到计时器
+                        if (document.getElementById('custom_' + id)?.classList.contains('active')) {
+                            switchSection('timer');
+                        }
+                        showNotification('🗑️ 已删除自定义标签', 'warning');
+                    }
+                });
+
+                // 点击导航切换
+                navItem.addEventListener('click', function() {
+                    switchSection('custom_' + tab.id);
+                });
+            });
+
+            // 重新激活当前选中的导航
+            // 不自动切换，保持当前
+        }
+
+        // =========================================================
         //  导航
         // =========================================================
         function switchSection(target) {
+            // 隐藏所有面板
             document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-            const section = document.getElementById(`${target}-section`);
+            // 显示目标面板
+            const section = document.getElementById(target + '-section') || document.getElementById(target);
             if (section) section.classList.add('active');
+
+            // 更新导航高亮
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItem = document.querySelector(`.nav-item[data-target="${target}"]`);
             if (navItem) navItem.classList.add('active');
+
+            // 如果目标是以 custom_ 开头，说明是自定义面板，无需额外操作
+            if (target.startsWith('custom_')) return;
+
+            // 内置面板刷新
             if (target === 'stats') renderStats();
             if (target === 'store') renderStore();
             if (target === 'backpack') renderBackpack();
             if (target === 'tasks') renderTasks();
         }
+
+        // 导航点击事件（内置+自定义）
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() { switchSection(this.dataset.target); });
+            item.addEventListener('click', function() {
+                const target = this.dataset.target;
+                switchSection(target);
+            });
         });
+
+        // 统计标签切换
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -2540,101 +2674,241 @@
         }
 
         // =========================================================
-        //  导入 / 导出 全部（含任务）
+        //  多格式导入/导出函数
         // =========================================================
-        const exportBtn = $('btn-export-items');
-        const importBtn = $('btn-import-items');
-        const fileInput = $('file-input-import');
 
-        exportBtn.addEventListener('click', function() {
-            const exportData = {
-                userItems: data.userItems,
-                backpack: data.backpack,
-                tasks: data.tasks,
-                version: '1.0'
-            };
-            const json = JSON.stringify(exportData, null, 2);
+        // 通用下载
+        function downloadJSON(data, filename) {
+            const json = JSON.stringify(data, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `番茄模组_全量_${new Date().toISOString().slice(0,10)}.shem`;
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showNotification(t('notif_export_all'), 'success');
-        });
+        }
 
-        importBtn.addEventListener('click', function() { fileInput.click(); });
-
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                try {
-                    const imported = JSON.parse(ev.target.result);
-                    if (imported.userItems && imported.backpack) {
-                        let added = 0,
-                            updated = 0,
-                            bpAdded = 0,
-                            bpUpdated = 0;
-                        imported.userItems.forEach(imp => {
-                            const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
-                            if (idx !== -1) { data.userItems[idx] = imp;
-                                updated++; } else { data.userItems.push(imp);
-                                added++; }
-                        });
-                        for (const [key, val] of Object.entries(imported.backpack)) {
-                            if (data.backpack[key]) {
-                                data.backpack[key].count += val.count;
-                                data.backpack[key].name = val.name;
-                                data.backpack[key].icon = val.icon;
-                                data.backpack[key].effect = val.effect;
-                                data.backpack[key].dependencies = val.dependencies || [];
-                                bpUpdated++;
-                            } else {
-                                data.backpack[key] = val;
-                                bpAdded++;
-                            }
-                        }
-                        let taskAdded = 0;
-                        if (imported.tasks) {
-                            imported.tasks.forEach(impTask => {
-                                const exists = data.tasks.some(t => t.id === impTask.id);
-                                if (!exists) {
-                                    data.tasks.push(impTask);
-                                    taskAdded++;
-                                }
-                            });
-                        }
-                        saveData();
-                        renderStore();
-                        renderBackpack();
-                        renderTasks();
-                        updateStatsUI();
-                        showNotification(
-                            t('notif_import_merge', { added, updated, bpAdded, bpUpdated, taskAdded }),
-                            'success');
-                    } else {
-                        showNotification(t('notif_error_import_invalid'), 'error');
+        // 通用导入（文件选择）
+        function importFile(accept, callback) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = accept;
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        callback(data);
+                    } catch (err) {
+                        showNotification(t('notif_error_import_parse'), 'error');
+                        console.error(err);
                     }
-                } catch (err) { showNotification(t('notif_error_import_parse'), 'error');
-                    console.error(err); }
+                };
+                reader.readAsText(file);
+                input.remove();
             };
-            reader.readAsText(file);
-            fileInput.value = '';
+            input.click();
+        }
+
+        // =========================================================
+        //  导出存档 (.saop)
+        // =========================================================
+        $('btn-export-save').addEventListener('click', function() {
+            const saveData = {
+                tomatoes: data.tomatoes,
+                exp: data.exp,
+                level: data.level,
+                backpack: data.backpack,
+                userItems: data.userItems,
+                tasks: data.tasks,
+                history: data.history,
+                customTabs: data.customTabs,
+                stats: data.stats,
+                version: '1.0'
+            };
+            downloadJSON(saveData, `存档_${new Date().toISOString().slice(0,10)}.saop`);
+            showNotification(t('notif_export_save'), 'success');
+        });
+
+        // 导入存档 (.saop)
+        $('btn-import-save').addEventListener('click', function() {
+            if (!confirm('导入存档将完全替换当前所有数据（包括进度、物品、任务等），确定继续吗？')) return;
+            importFile('.saop', function(imported) {
+                // 验证关键字段
+                if (typeof imported.tomatoes !== 'number' || typeof imported.exp !== 'number') {
+                    return showNotification(t('notif_error_import_invalid'), 'error');
+                }
+                // 直接覆盖
+                data.tomatoes = imported.tomatoes || 0;
+                data.exp = imported.exp || 0;
+                data.level = imported.level || 1;
+                data.backpack = imported.backpack || {};
+                data.userItems = imported.userItems || [];
+                data.tasks = imported.tasks || [];
+                data.history = imported.history || [];
+                data.customTabs = imported.customTabs || [];
+                data.stats = imported.stats || { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0,
+                        exp: 0, sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } };
+                // 确保任务有依赖字段
+                data.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
+                saveData();
+                // 刷新所有
+                updateStatsUI();
+                updateTimerDisplay();
+                updateProgress();
+                setButtons(false, false);
+                renderStore();
+                renderBackpack();
+                renderTasks();
+                renderCustomTabs();
+                renderStats();
+                updateStatus(t('status-ready'));
+                showNotification(t('notif_import_save'), 'success');
+            });
         });
 
         // =========================================================
-        //  🆕 任务独立导入/导出
+        //  导出物品 (.shem)
         // =========================================================
-        const exportTasksBtn = $('btn-export-tasks');
-        const importTasksBtn = $('btn-import-tasks');
-        const fileInputTasks = $('file-input-import-tasks');
+        $('btn-export-shem').addEventListener('click', function() {
+            const exportData = {
+                userItems: data.userItems,
+                backpack: data.backpack,
+                version: '1.0'
+            };
+            downloadJSON(exportData, `物品_${new Date().toISOString().slice(0,10)}.shem`);
+            showNotification(t('notif_export_shem', { count: data.userItems.length }), 'success');
+        });
 
-        exportTasksBtn.addEventListener('click', function() {
+        // 导入物品 (.shem)
+        $('btn-import-shem').addEventListener('click', function() {
+            importFile('.shem', function(imported) {
+                if (!imported.userItems || !imported.backpack) {
+                    return showNotification(t('notif_error_import_invalid'), 'error');
+                }
+                let added = 0,
+                    updated = 0;
+                imported.userItems.forEach(imp => {
+                    const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
+                    if (idx !== -1) { data.userItems[idx] = imp;
+                        updated++; } else { data.userItems.push(imp);
+                        added++; }
+                });
+                for (const [key, val] of Object.entries(imported.backpack)) {
+                    if (data.backpack[key]) {
+                        data.backpack[key].count += val.count;
+                        data.backpack[key].name = val.name;
+                        data.backpack[key].icon = val.icon;
+                        data.backpack[key].effect = val.effect;
+                        data.backpack[key].dependencies = val.dependencies || [];
+                    } else {
+                        data.backpack[key] = val;
+                    }
+                }
+                saveData();
+                renderStore();
+                renderBackpack();
+                showNotification(t('notif_import_shem', { added, updated }), 'success');
+            });
+        });
+
+        // =========================================================
+        //  导出模组 (.zod) —— 含物品+背包+任务+自定义标签
+        // =========================================================
+        $('btn-export-zod').addEventListener('click', function() {
+            const exportData = {
+                userItems: data.userItems,
+                backpack: data.backpack,
+                tasks: data.tasks,
+                customTabs: data.customTabs,
+                version: '1.0'
+            };
+            downloadJSON(exportData, `模组_${new Date().toISOString().slice(0,10)}.zod`);
+            showNotification(t('notif_export_zod'), 'success');
+        });
+
+        // 导入模组 (.zod)
+        $('btn-import-zod').addEventListener('click', function() {
+            importFile('.zod', function(imported) {
+                if (!imported.userItems || !imported.backpack) {
+                    return showNotification(t('notif_error_import_invalid'), 'error');
+                }
+                let itemAdded = 0,
+                    itemUpdated = 0,
+                    taskAdded = 0,
+                    taskUpdated = 0,
+                    tabAdded = 0;
+
+                // 物品
+                imported.userItems.forEach(imp => {
+                    const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
+                    if (idx !== -1) { data.userItems[idx] = imp;
+                        itemUpdated++; } else { data.userItems.push(imp);
+                        itemAdded++; }
+                });
+                // 背包
+                for (const [key, val] of Object.entries(imported.backpack)) {
+                    if (data.backpack[key]) {
+                        data.backpack[key].count += val.count;
+                        data.backpack[key].name = val.name;
+                        data.backpack[key].icon = val.icon;
+                        data.backpack[key].effect = val.effect;
+                        data.backpack[key].dependencies = val.dependencies || [];
+                    } else {
+                        data.backpack[key] = val;
+                    }
+                }
+                // 任务
+                if (imported.tasks) {
+                    imported.tasks.forEach(impTask => {
+                        if (!impTask.dependencies) impTask.dependencies = [];
+                        const idx = data.tasks.findIndex(t => t.id === impTask.id);
+                        if (idx !== -1) {
+                            // 保留进度
+                            const old = data.tasks[idx];
+                            data.tasks[idx] = {
+                                ...impTask,
+                                completedSessions: old.completedSessions || 0,
+                                completed: old.completed || false
+                            };
+                            taskUpdated++;
+                        } else {
+                            data.tasks.push(impTask);
+                            taskAdded++;
+                        }
+                    });
+                }
+                // 自定义标签
+                if (imported.customTabs) {
+                    imported.customTabs.forEach(impTab => {
+                        if (!data.customTabs.some(t => t.id === impTab.id)) {
+                            data.customTabs.push(impTab);
+                            tabAdded++;
+                        }
+                    });
+                }
+
+                saveData();
+                renderStore();
+                renderBackpack();
+                renderTasks();
+                renderCustomTabs();
+                showNotification(t('notif_import_zod', { itemAdded, itemUpdated, taskAdded, taskUpdated,
+                    tabAdded }), 'success');
+            });
+        });
+
+        // =========================================================
+        //  导出任务 (.taem) 和 导入任务 (已经存在，但扩展文件扩展名)
+        // =========================================================
+        // 修改已有的任务导出/导入以使用 .taem
+        const originalExportTasks = $('btn-export-tasks').click;
+        $('btn-export-tasks').addEventListener('click', function() {
             if (data.tasks.length === 0) {
                 return showNotification('没有任务可导出', 'warning');
             }
@@ -2642,67 +2916,38 @@
                 tasks: data.tasks,
                 version: '1.0'
             };
-            const json = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `任务清单_${new Date().toISOString().slice(0,10)}.shem`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            downloadJSON(exportData, `任务清单_${new Date().toISOString().slice(0,10)}.taem`);
             showNotification(t('notif_export_tasks', { count: data.tasks.length }), 'success');
         });
 
-        importTasksBtn.addEventListener('click', function() {
-            fileInputTasks.click();
-        });
-
-        fileInputTasks.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                try {
-                    const imported = JSON.parse(ev.target.result);
-                    // 检查是否包含 tasks 字段
-                    if (!imported.tasks || !Array.isArray(imported.tasks)) {
-                        return showNotification('无效的任务文件，缺少 tasks 数组', 'error');
-                    }
-                    let added = 0,
-                        updated = 0;
-                    imported.tasks.forEach(impTask => {
-                        // 确保依赖字段存在
-                        if (!impTask.dependencies) impTask.dependencies = [];
-                        const existIndex = data.tasks.findIndex(t => t.id === impTask.id);
-                        if (existIndex !== -1) {
-                            // 更新（保留完成状态和进度？一般导入任务希望保留用户进度，但为了安全，我们保留原进度）
-                            // 但考虑到任务可能被修改，我们覆盖除 completedSessions 和 completed 以外的字段
-                            const oldTask = data.tasks[existIndex];
-                            // 保留完成状态和进度，但可以更新其他属性
-                            data.tasks[existIndex] = {
-                                ...impTask,
-                                completedSessions: oldTask.completedSessions || 0,
-                                completed: oldTask.completed || false,
-                            };
-                            updated++;
-                        } else {
-                            // 新增
-                            data.tasks.push(impTask);
-                            added++;
-                        }
-                    });
-                    saveData();
-                    renderTasks();
-                    showNotification(t('notif_import_tasks', { added, updated }), 'success');
-                } catch (err) {
-                    showNotification(t('notif_error_import_parse'), 'error');
-                    console.error(err);
+        $('btn-import-tasks').addEventListener('click', function() {
+            importFile('.taem', function(imported) {
+                if (!imported.tasks || !Array.isArray(imported.tasks)) {
+                    return showNotification('无效的任务文件，缺少 tasks 数组', 'error');
                 }
-            };
-            reader.readAsText(file);
-            fileInputTasks.value = '';
+                let added = 0,
+                    updated = 0;
+                imported.tasks.forEach(impTask => {
+                    if (!impTask.dependencies) impTask.dependencies = [];
+                    const idx = data.tasks.findIndex(t => t.id === impTask.id);
+                    if (idx !== -1) {
+                        // 保留进度
+                        const old = data.tasks[idx];
+                        data.tasks[idx] = {
+                            ...impTask,
+                            completedSessions: old.completedSessions || 0,
+                            completed: old.completed || false
+                        };
+                        updated++;
+                    } else {
+                        data.tasks.push(impTask);
+                        added++;
+                    }
+                });
+                saveData();
+                renderTasks();
+                showNotification(t('notif_import_tasks', { added, updated }), 'success');
+            });
         });
 
         // =========================================================
@@ -2731,6 +2976,7 @@
             renderBackpack();
             renderTasks();
             renderStats();
+            renderCustomTabs();
             updateStatus(t('status-ready'));
         });
 
@@ -2753,6 +2999,7 @@
             renderStore();
             renderBackpack();
             renderTasks();
+            renderCustomTabs();
             switchSection('timer');
             renderStats();
             updateStatus(t('status-ready'));
@@ -2760,7 +3007,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 任务独立导入/导出 已启动！');
+        console.log('🍅 番茄闹钟 存档·多格式·自定义标签 已启动！');
     </script>
 </body>
 </html>
