@@ -1,4 +1,3 @@
-# fi0m9ysans.github.io
 # 🍅 番茄闹钟 · 全球模组版
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-blue?logo=github)](https://FI0m9ySans.github.io/)
@@ -54,3 +53,42 @@
 1. 克隆仓库：
    ```bash
    git clone https://github.com/FI0m9ySans/fi0m9ysans.github.io.git
+   ```
+2. 直接用浏览器打开 `index.html`
+3. 或使用 Live Server 等工具
+
+---
+
+## 🛠️ 技术栈
+
+- 原生 HTML + CSS + JavaScript
+- FontAwesome 图标库
+- localStorage 数据持久化
+- GitHub Pages 托管
+- GitHub Issues 作为模组提交渠道
+
+---
+
+## 🤝 贡献
+
+欢迎提交模组、反馈 Bug 或提出新功能建议！
+
+- **提交模组**：通过 [Issues](https://github.com/FI0m9ySans/fi0m9ysans.github.io/issues/new/choose) 提交
+- **反馈问题**：[Open Issue](https://github.com/FI0m9ySans/fi0m9ysans.github.io/issues)
+
+---
+
+## 📜 开源协议
+
+MIT License
+
+---
+
+## 📧 联系
+
+- GitHub: [@FI0m9ySans](https://github.com/FI0m9ySans)
+
+---
+
+**🍅 让专注变得更有趣！**
+```
