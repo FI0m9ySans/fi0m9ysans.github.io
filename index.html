@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🍅 番茄闹钟 · 模组版</title>
+    <title>🍅 番茄闹钟 · 模组版 + 任务清单</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
+        /* ===== 全局重置 & 变量 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -350,7 +351,6 @@
             margin-top: 6px;
             min-height: 28px;
         }
-        /* 专注时长设置 */
         .duration-setting {
             display: flex;
             align-items: center;
@@ -579,6 +579,91 @@
         }
         .form-actions .btn {
             flex: 1 1 auto;
+        }
+        /* ===== 任务清单 ===== */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .task-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 18px;
+            border-left: 4px solid var(--secondary);
+            transition: var(--transition);
+        }
+        .task-item.completed {
+            border-left-color: var(--accent);
+            opacity: 0.7;
+        }
+        .task-item .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .task-item .task-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .task-item .task-desc {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin: 4px 0 8px;
+        }
+        .task-item .task-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 6px 0 10px;
+        }
+        .task-item .task-progress .task-bar {
+            flex: 1;
+            height: 6px;
+            background: #e0e4e8;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .task-item .task-progress .task-bar .task-fill {
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.5s;
+            border-radius: 4px;
+        }
+        .task-item .task-progress .task-text {
+            font-size: 0.85rem;
+            color: var(--gray);
+            white-space: nowrap;
+        }
+        .task-item .task-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .task-item .task-actions .btn {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+        }
+        .task-item .task-status {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .task-item .task-status.done {
+            color: var(--accent);
+        }
+        .task-item .task-status.pending {
+            color: var(--secondary);
+        }
+        .task-item .task-status.locked {
+            color: var(--gray);
+        }
+        .task-item .task-reward {
+            font-size: 0.8rem;
+            color: var(--gold);
+            margin-top: 4px;
         }
         /* ===== 统计 ===== */
         .tab-container {
@@ -833,10 +918,11 @@
             <div class="nav-item active" data-target="timer"><i class="fas fa-clock"></i> 番茄计时</div>
             <div class="nav-item" data-target="store"><i class="fas fa-store"></i> 商店</div>
             <div class="nav-item" data-target="backpack"><i class="fas fa-backpack"></i> 背包</div>
+            <div class="nav-item" data-target="tasks"><i class="fas fa-tasks"></i> 任务</div>
             <div class="nav-item" data-target="create"><i class="fas fa-plus-circle"></i> 创建商品</div>
             <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> 统计</div>
         </nav>
-        <div class="sidebar-footer">v3.0 · 开箱 & 模组依赖</div>
+        <div class="sidebar-footer">v3.1 · 任务清单模组</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -902,6 +988,61 @@
             <div class="backpack-items" id="backpack-items"></div>
         </section>
 
+        <!-- ===== 任务清单 ===== -->
+        <section class="panel content-section" id="tasks-section">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-tasks"></i> 任务清单</h2>
+                <button class="btn btn-primary btn-sm" id="btn-add-task"><i class="fas fa-plus"></i> 新建任务</button>
+            </div>
+            <div id="task-form-container" style="display:none;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
+                <form id="task-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-name">任务名称</label>
+                            <input type="text" id="task-name" required placeholder="输入任务名称" />
+                        </div>
+                        <div class="form-group">
+                            <label for="task-target">目标番茄数</label>
+                            <input type="number" id="task-target" required min="1" value="5" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-desc">任务描述</label>
+                        <textarea id="task-desc" placeholder="任务描述（可选）"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-reward-type">奖励类型</label>
+                            <select id="task-reward-type">
+                                <option value="tomato">🍅 番茄币</option>
+                                <option value="exp">⭐ 经验值</option>
+                                <option value="item">🎁 指定物品</option>
+                                <option value="lootbox">🎁 开箱</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="task-reward-item-group" style="display:none;">
+                            <label for="task-reward-item">物品ID</label>
+                            <input type="text" id="task-reward-item" placeholder="输入物品ID (例如 u_123)" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-reward-amount">奖励数量</label>
+                        <input type="number" id="task-reward-amount" min="1" value="1" />
+                    </div>
+                    <div class="form-group">
+                        <label for="task-deps">依赖物品 (ID，逗号分隔)</label>
+                        <input type="text" id="task-deps" placeholder="例如: u_123, u_456" />
+                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">拥有这些物品才能开始此任务</div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="btn-task-submit"><i class="fas fa-save"></i> 保存任务</button>
+                        <button type="button" class="btn btn-outline" id="btn-task-cancel">取消</button>
+                    </div>
+                </form>
+            </div>
+            <div id="task-list-container" class="task-list"></div>
+        </section>
+
         <!-- ===== 创建商品 ===== -->
         <section class="panel content-section" id="create-section">
             <div class="panel-header">
@@ -955,11 +1096,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="item-deps">依赖物品 (ID，用逗号分隔)</label>
+                        <label for="item-deps">依赖物品 (ID，逗号分隔)</label>
                         <input type="text" id="item-deps" placeholder="例如: u_123, u_456" />
-                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">
-                            输入依赖的物品ID，使用前需拥有这些物品（父子模组联动）
-                        </div>
+                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">输入依赖的物品ID，使用前需拥有这些物品</div>
                     </div>
                 </div>
                 <div class="form-actions">
@@ -1006,7 +1145,7 @@
         document.addEventListener('DOMContentLoaded', function() {
 
             // =========================================================
-            //  数据层
+            //  数据层（包含 tasks）
             // =========================================================
             const STORAGE_KEY = 'tomato_data_v3';
 
@@ -1017,6 +1156,7 @@
                     level: 1,
                     backpack: {},
                     userItems: [],
+                    tasks: [], // 任务数组
                     history: [],
                     stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
                             sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
@@ -1032,6 +1172,10 @@
                         const parsed = JSON.parse(raw);
                         const def = getDefaultData();
                         for (const key in def) { if (!(key in parsed)) parsed[key] = def[key]; }
+                        // 确保每个任务有 dependencies 字段
+                        if (parsed.tasks) {
+                            parsed.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
+                        }
                         return parsed;
                     }
                 } catch (_) {}
@@ -1043,7 +1187,7 @@
             }
 
             // =========================================================
-            //  预设商品（含一个开箱示例）
+            //  预设商品
             // =========================================================
             const PRESET_ITEMS = [
                 { id: 'p1', name: '休息 5 分钟', price: 1, icon: 'fas fa-coffee', effect: 'rest',
@@ -1095,8 +1239,26 @@
             const btnExportSingle = $('btn-export-single');
             const btnExportAndLoad = $('btn-export-and-load');
 
+            // 任务相关 DOM
+            const taskListContainer = $('task-list-container');
+            const taskFormContainer = $('task-form-container');
+            const taskForm = $('task-form');
+            const btnAddTask = $('btn-add-task');
+            const btnTaskSubmit = $('btn-task-submit');
+            const btnTaskCancel = $('btn-task-cancel');
+            const taskNameInput = $('task-name');
+            const taskDescInput = $('task-desc');
+            const taskTargetInput = $('task-target');
+            const taskRewardType = $('task-reward-type');
+            const taskRewardAmount = $('task-reward-amount');
+            const taskRewardItem = $('task-reward-item');
+            const taskRewardItemGroup = $('task-reward-item-group');
+            const taskDepsInput = $('task-deps');
+
+            let editingTaskId = null;
+
             // =========================================================
-            //  编辑状态
+            //  编辑状态（商品）
             // =========================================================
             let editingItemId = null;
 
@@ -1233,6 +1395,8 @@
                 data.exp += earnedExp;
                 data.history.push({ date: new Date().toISOString(), tomatoesEarned: earnedTomato, expEarned: earnedExp });
                 checkLevelUp();
+                // 更新任务进度
+                updateTaskProgress();
                 saveData();
                 updateStatsUI();
                 updateStatus('🎉 完成！获得 1 🍅 + 10 ⭐');
@@ -1241,6 +1405,7 @@
                 updateTimerDisplay();
                 updateProgress();
                 if (document.getElementById('stats-section').classList.contains('active')) renderStats();
+                if (document.getElementById('tasks-section').classList.contains('active')) renderTasks();
             }
 
             function checkLevelUp() {
@@ -1257,16 +1422,14 @@
             // =========================================================
             //  依赖检查工具
             // =========================================================
-            function checkDependencies(item) {
-                const deps = item.dependencies || [];
-                if (deps.length === 0) return { ok: true, missing: [] };
+            function checkDependencies(depIds) {
+                if (!depIds || depIds.length === 0) return { ok: true, missing: [] };
                 const missing = [];
-                for (const depId of deps) {
-                    const depKey = String(depId).trim();
-                    if (!depKey) continue;
-                    // 检查背包中是否有该物品（任意数量）
-                    if (!data.backpack[depKey] || data.backpack[depKey].count <= 0) {
-                        missing.push(depKey);
+                for (const id of depIds) {
+                    const key = String(id).trim();
+                    if (!key) continue;
+                    if (!data.backpack[key] || data.backpack[key].count <= 0) {
+                        missing.push(key);
                     }
                 }
                 return { ok: missing.length === 0, missing };
@@ -1280,8 +1443,94 @@
             }
 
             // =========================================================
-            //  开箱（Lootbox）逻辑
+            //  任务系统
             // =========================================================
+            function getTaskStatus(task) {
+                if (task.completed) return 'done';
+                // 检查依赖
+                const depCheck = checkDependencies(task.dependencies || []);
+                if (!depCheck.ok) return 'locked';
+                return 'pending';
+            }
+
+            function updateTaskProgress() {
+                // 所有进行中的任务，增加完成次数
+                data.tasks.forEach(task => {
+                    if (task.completed) return;
+                    const status = getTaskStatus(task);
+                    if (status === 'pending') {
+                        task.completedSessions = (task.completedSessions || 0) + 1;
+                        if (task.completedSessions >= task.targetSessions) {
+                            task.completed = true;
+                            // 发放奖励
+                            giveTaskReward(task);
+                        }
+                    }
+                });
+                saveData();
+            }
+
+            function giveTaskReward(task) {
+                const rewardType = task.rewardType;
+                const amount = task.rewardAmount || 1;
+                let msg = '';
+                switch (rewardType) {
+                    case 'tomato':
+                        data.tomatoes += amount;
+                        msg = `🍅 获得 ${amount} 番茄币`;
+                        break;
+                    case 'exp':
+                        data.exp += amount;
+                        checkLevelUp();
+                        msg = `⭐ 获得 ${amount} 经验值`;
+                        break;
+                    case 'item':
+                        const itemId = task.rewardItemId;
+                        if (itemId) {
+                            const item = findItem(itemId);
+                            if (item) {
+                                const key = String(item.id);
+                                if (data.backpack[key]) {
+                                    data.backpack[key].count += amount;
+                                } else {
+                                    data.backpack[key] = { id: item.id, name: item.name, icon: item.icon,
+                                        effect: item.effect, count: amount, dependencies: item.dependencies ||
+                                        [] };
+                                }
+                                msg = `🎁 获得 ${amount} 个「${item.name}」`;
+                            } else {
+                                msg = `⚠️ 奖励物品不存在 (ID: ${itemId})`;
+                            }
+                        } else {
+                            msg = '⚠️ 未指定奖励物品';
+                        }
+                        break;
+                    case 'lootbox':
+                        const result = openLootbox();
+                        if (result.type === 'tomato') {
+                            data.tomatoes += result.amount;
+                            msg = `🍅 开箱获得 ${result.amount} 番茄币！`;
+                        } else if (result.type === 'exp') {
+                            data.exp += result.amount;
+                            checkLevelUp();
+                            msg = `⭐ 开箱获得 ${result.amount} 经验值！`;
+                        } else {
+                            msg = '😅 宝箱是空的…';
+                        }
+                        break;
+                    default:
+                        msg = '✅ 任务完成！';
+                }
+                saveData();
+                updateStatsUI();
+                showNotification(`🎉 任务「${task.name}」完成！${msg}`, 'success');
+                // 重新渲染任务列表
+                if (document.getElementById('tasks-section').classList.contains('active')) renderTasks();
+                // 刷新商店和背包（因为可能有物品变化）
+                if (document.getElementById('store-section').classList.contains('active')) renderStore();
+                if (document.getElementById('backpack-section').classList.contains('active')) renderBackpack();
+            }
+
             function openLootbox() {
                 const rewards = [
                     { type: 'tomato', amount: 2, label: '2 🍅 番茄币', weight: 30 },
@@ -1299,6 +1548,263 @@
                 return rewards[0];
             }
 
+            function renderTasks() {
+                taskListContainer.innerHTML = '';
+                if (data.tasks.length === 0) {
+                    taskListContainer.innerHTML =
+                        `<div class="empty-message"><i class="fas fa-tasks"></i> 暂无任务，点击“新建任务”创建</div>`;
+                    return;
+                }
+                data.tasks.forEach(task => {
+                    const status = getTaskStatus(task);
+                    const isCompleted = task.completed || false;
+                    const progress = Math.min(100, ((task.completedSessions || 0) / task.targetSessions) * 100);
+                    const div = document.createElement('div');
+                    div.className = `task-item ${isCompleted ? 'completed' : ''}`;
+
+                    let statusText = '';
+                    let statusClass = '';
+                    if (isCompleted) {
+                        statusText = '✅ 已完成';
+                        statusClass = 'done';
+                    } else if (status === 'locked') {
+                        statusText = '🔒 缺依赖';
+                        statusClass = 'locked';
+                    } else {
+                        statusText = '🔄 进行中';
+                        statusClass = 'pending';
+                    }
+
+                    const depNames = (task.dependencies || []).length > 0 ? getDependencyNames(task.dependencies || [])
+                        .join(' → ') : '无';
+
+                    let rewardDesc = '';
+                    switch (task.rewardType) {
+                        case 'tomato':
+                            rewardDesc = `🍅 ${task.rewardAmount} 番茄币`;
+                            break;
+                        case 'exp':
+                            rewardDesc = `⭐ ${task.rewardAmount} 经验值`;
+                            break;
+                        case 'item':
+                            const item = findItem(task.rewardItemId);
+                            rewardDesc = `🎁 ${item ? item.name : '未知物品'} x${task.rewardAmount}`;
+                            break;
+                        case 'lootbox':
+                            rewardDesc = '🎁 开箱';
+                            break;
+                        default:
+                            rewardDesc = '无奖励';
+                    }
+
+                    div.innerHTML = `
+                        <div class="task-header">
+                            <span class="task-name">${task.name}</span>
+                            <span class="task-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="task-desc">${task.description || ''}</div>
+                        <div class="task-reward">🏆 奖励：${rewardDesc}</div>
+                        <div class="task-progress">
+                            <span style="font-size:0.8rem;color:var(--gray);">${task.completedSessions || 0}/${task.targetSessions}</span>
+                            <div class="task-bar"><div class="task-fill" style="width:${progress}%;"></div></div>
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--gray);">📦 依赖：${depNames}</div>
+                        <div class="task-actions">
+                            <button class="btn btn-secondary btn-sm task-edit" data-id="${task.id}"><i class="fas fa-pen"></i> 编辑</button>
+                            <button class="btn btn-danger btn-sm task-delete" data-id="${task.id}"><i class="fas fa-trash"></i> 删除</button>
+                            ${isCompleted ? `<button class="btn btn-outline btn-sm task-reset" data-id="${task.id}"><i class="fas fa-undo"></i> 重置</button>` : ''}
+                        </div>
+                    `;
+                    taskListContainer.appendChild(div);
+
+                    // 编辑
+                    div.querySelector('.task-edit').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        editTask(id);
+                    });
+                    // 删除
+                    div.querySelector('.task-delete').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        if (confirm('确定删除此任务吗？')) deleteTask(id);
+                    });
+                    // 重置
+                    const resetBtn = div.querySelector('.task-reset');
+                    if (resetBtn) {
+                        resetBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const id = this.dataset.id;
+                            resetTask(id);
+                        });
+                    }
+                });
+            }
+
+            // 任务 CRUD
+            function addTask(taskData) {
+                const newTask = {
+                    id: 't_' + Date.now(),
+                    name: taskData.name,
+                    description: taskData.description || '',
+                    targetSessions: taskData.targetSessions,
+                    completedSessions: 0,
+                    completed: false,
+                    rewardType: taskData.rewardType,
+                    rewardAmount: taskData.rewardAmount || 1,
+                    rewardItemId: taskData.rewardItemId || null,
+                    dependencies: taskData.dependencies || []
+                };
+                data.tasks.push(newTask);
+                saveData();
+                renderTasks();
+                showNotification(`✅ 任务「${newTask.name}」已创建`, 'success');
+            }
+
+            function editTask(id) {
+                const task = data.tasks.find(t => t.id === id);
+                if (!task) return showNotification('任务不存在', 'error');
+                editingTaskId = id;
+                taskNameInput.value = task.name;
+                taskDescInput.value = task.description || '';
+                taskTargetInput.value = task.targetSessions;
+                taskRewardType.value = task.rewardType;
+                taskRewardAmount.value = task.rewardAmount || 1;
+                taskRewardItem.value = task.rewardItemId || '';
+                taskDepsInput.value = (task.dependencies || []).join(', ');
+                // 显示奖励物品输入框
+                toggleRewardItemInput(task.rewardType === 'item');
+                btnTaskSubmit.textContent = '更新任务';
+                taskFormContainer.style.display = 'block';
+                btnAddTask.style.display = 'none';
+                // 滚动到表单
+                taskFormContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function deleteTask(id) {
+                data.tasks = data.tasks.filter(t => t.id !== id);
+                saveData();
+                renderTasks();
+                showNotification('🗑️ 任务已删除', 'warning');
+                if (editingTaskId === id) cancelTaskEdit();
+            }
+
+            function resetTask(id) {
+                const task = data.tasks.find(t => t.id === id);
+                if (!task) return;
+                task.completed = false;
+                task.completedSessions = 0;
+                saveData();
+                renderTasks();
+                showNotification(`🔄 任务「${task.name}」已重置`, 'success');
+            }
+
+            function cancelTaskEdit() {
+                editingTaskId = null;
+                taskFormContainer.style.display = 'none';
+                btnAddTask.style.display = 'inline-block';
+                btnTaskSubmit.textContent = '保存任务';
+                taskForm.reset();
+                taskRewardItem.value = '';
+                toggleRewardItemInput(false);
+            }
+
+            function toggleRewardItemInput(show) {
+                taskRewardItemGroup.style.display = show ? 'block' : 'none';
+            }
+
+            // 监听奖励类型切换
+            taskRewardType.addEventListener('change', function() {
+                toggleRewardItemInput(this.value === 'item');
+            });
+
+            // 任务表单提交
+            taskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = taskNameInput.value.trim();
+                const description = taskDescInput.value.trim();
+                const targetSessions = parseInt(taskTargetInput.value);
+                const rewardType = taskRewardType.value;
+                const rewardAmount = parseInt(taskRewardAmount.value) || 1;
+                const rewardItemId = taskRewardItem.value.trim() || null;
+                const depsRaw = taskDepsInput.value.trim();
+                const dependencies = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+                if (!name || isNaN(targetSessions) || targetSessions < 1) {
+                    return showNotification('请正确填写任务名称和目标次数', 'error');
+                }
+
+                // 验证依赖是否存在
+                for (const depId of dependencies) {
+                    if (!findItem(depId)) {
+                        return showNotification(`依赖物品 "${depId}" 不存在，请先创建`, 'warning');
+                    }
+                }
+
+                // 验证奖励物品
+                if (rewardType === 'item' && rewardItemId) {
+                    if (!findItem(rewardItemId)) {
+                        return showNotification(`奖励物品 "${rewardItemId}" 不存在`, 'error');
+                    }
+                }
+
+                const taskData = {
+                    name,
+                    description,
+                    targetSessions,
+                    rewardType,
+                    rewardAmount,
+                    rewardItemId: rewardType === 'item' ? rewardItemId : null,
+                    dependencies
+                };
+
+                if (editingTaskId) {
+                    // 更新
+                    const idx = data.tasks.findIndex(t => t.id === editingTaskId);
+                    if (idx !== -1) {
+                        const old = data.tasks[idx];
+                        // 保留完成状态和已计数
+                        data.tasks[idx] = {
+                            ...old,
+                            name: taskData.name,
+                            description: taskData.description,
+                            targetSessions: taskData.targetSessions,
+                            rewardType: taskData.rewardType,
+                            rewardAmount: taskData.rewardAmount,
+                            rewardItemId: taskData.rewardItemId,
+                            dependencies: taskData.dependencies,
+                            // 如果目标次数改变，重置进度？
+                            // 保持原进度，但若已完成则保留完成状态
+                        };
+                        // 如果已完成，但目标次数改变，可能需要重置？
+                        // 简单处理：如果原任务已完成，不重置
+                        saveData();
+                        renderTasks();
+                        showNotification(`✅ 任务「${taskData.name}」已更新`, 'success');
+                        cancelTaskEdit();
+                    } else {
+                        showNotification('任务不存在', 'error');
+                    }
+                } else {
+                    addTask(taskData);
+                    cancelTaskEdit();
+                }
+            });
+
+            btnAddTask.addEventListener('click', function() {
+                taskFormContainer.style.display = 'block';
+                btnAddTask.style.display = 'none';
+                taskForm.reset();
+                editingTaskId = null;
+                btnTaskSubmit.textContent = '保存任务';
+                toggleRewardItemInput(false);
+                taskFormContainer.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            btnTaskCancel.addEventListener('click', function() {
+                cancelTaskEdit();
+            });
+
             // =========================================================
             //  商店渲染（含依赖显示）
             // =========================================================
@@ -1315,7 +1821,7 @@
                     const canBuy = data.tomatoes >= item.price;
                     const isUserItem = String(item.id).startsWith('u_');
                     const deps = item.dependencies || [];
-                    const depCheck = checkDependencies(item);
+                    const depCheck = checkDependencies(deps);
                     const hasDeps = deps.length > 0;
 
                     let depHTML = '';
@@ -1397,7 +1903,7 @@
             }
 
             // =========================================================
-            //  背包渲染（含依赖检查）
+            //  背包渲染
             // =========================================================
             function renderBackpack() {
                 const keys = Object.keys(data.backpack);
@@ -1411,7 +1917,7 @@
                     const item = data.backpack[key];
                     const fullItem = findItem(key);
                     const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
-                    const depCheck = checkDependencies(fullItem || item);
+                    const depCheck = checkDependencies(deps);
 
                     const div = document.createElement('div');
                     div.className = 'backpack-item';
@@ -1448,28 +1954,19 @@
                 });
             }
 
-            // =========================================================
-            //  使用物品（含开箱）
-            // =========================================================
             function useItem(itemId) {
                 const item = data.backpack[itemId];
                 if (!item || item.count <= 0) return;
-
-                // 再次检查依赖
                 const fullItem = findItem(itemId);
                 const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
-                const depCheck = checkDependencies(fullItem || item);
+                const depCheck = checkDependencies(deps);
                 if (!depCheck.ok) {
                     const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
                     showNotification(`❌ 缺少依赖物品: ${miss}`, 'error');
                     return;
                 }
-
-                // 应用效果
                 const effect = item.effect || (fullItem ? fullItem.effect : 'rest');
-
                 if (effect === 'lootbox') {
-                    // 🎁 开箱！
                     const result = openLootbox();
                     let msg = '';
                     if (result.type === 'tomato') {
@@ -1482,7 +1979,6 @@
                     } else {
                         msg = '😅 宝箱是空的…';
                     }
-                    // 消耗一个物品
                     item.count--;
                     if (item.count <= 0) delete data.backpack[itemId];
                     saveData();
@@ -1492,8 +1988,6 @@
                     showNotification(`🎁 ${msg}`, 'success');
                     return;
                 }
-
-                // 普通效果
                 applyEffect(item);
                 item.count--;
                 if (item.count <= 0) delete data.backpack[itemId];
@@ -1559,7 +2053,6 @@
                     showNotification('请完整填写表单', 'error');
                     return false;
                 }
-                // 检查依赖是否存在（可选）
                 for (const depId of data.dependencies) {
                     if (!findItem(depId)) {
                         showNotification(`⚠️ 依赖物品 ID "${depId}" 不存在，请先创建它`, 'warning');
@@ -1614,7 +2107,7 @@
             //  导出单个商品
             // =========================================================
             function exportSingleItem(item, filenamePrefix = '商品') {
-                const exportData = { userItems: [item], backpack: {}, version: '1.0' };
+                const exportData = { userItems: [item], backpack: {}, tasks: [], version: '1.0' };
                 const json = JSON.stringify(exportData, null, 2);
                 const blob = new Blob([json], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -1713,6 +2206,7 @@
                 if (target === 'stats') renderStats();
                 if (target === 'store') renderStore();
                 if (target === 'backpack') renderBackpack();
+                if (target === 'tasks') renderTasks();
             }
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function() { switchSection(this.dataset.target); });
@@ -1741,25 +2235,30 @@
             }
 
             // =========================================================
-            //  导入 / 导出 全部（合并）
+            //  导入 / 导出 全部（含任务）
             // =========================================================
             const exportBtn = $('btn-export-items');
             const importBtn = $('btn-import-items');
             const fileInput = $('file-input-import');
 
             exportBtn.addEventListener('click', function() {
-                const exportData = { userItems: data.userItems, backpack: data.backpack, version: '1.0' };
+                const exportData = {
+                    userItems: data.userItems,
+                    backpack: data.backpack,
+                    tasks: data.tasks,
+                    version: '1.0'
+                };
                 const json = JSON.stringify(exportData, null, 2);
                 const blob = new Blob([json], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `番茄模组_${new Date().toISOString().slice(0,10)}.shem`;
+                a.download = `番茄模组_全量_${new Date().toISOString().slice(0,10)}.shem`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showNotification('✅ 全部数据已导出', 'success');
+                showNotification('✅ 全部数据（含任务）已导出', 'success');
             });
 
             importBtn.addEventListener('click', function() { fileInput.click(); });
@@ -1776,12 +2275,14 @@
                                 updated = 0,
                                 bpAdded = 0,
                                 bpUpdated = 0;
+                            // 合并商品
                             imported.userItems.forEach(imp => {
                                 const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
                                 if (idx !== -1) { data.userItems[idx] = imp;
                                     updated++; } else { data.userItems.push(imp);
                                     added++; }
                             });
+                            // 合并背包
                             for (const [key, val] of Object.entries(imported.backpack)) {
                                 if (data.backpack[key]) {
                                     data.backpack[key].count += val.count;
@@ -1795,12 +2296,26 @@
                                     bpAdded++;
                                 }
                             }
+                            // 合并任务
+                            let taskAdded = 0;
+                            if (imported.tasks) {
+                                imported.tasks.forEach(impTask => {
+                                    const exists = data.tasks.some(t => t.id === impTask.id);
+                                    if (!exists) {
+                                        data.tasks.push(impTask);
+                                        taskAdded++;
+                                    } else {
+                                        // 可选的更新逻辑：替换或忽略，这里简单忽略重复
+                                    }
+                                });
+                            }
                             saveData();
                             renderStore();
                             renderBackpack();
+                            renderTasks();
                             updateStatsUI();
                             showNotification(
-                                `✅ 合并完成：新增 ${added} 个商品，更新 ${updated} 个；背包新增 ${bpAdded} 种，更新 ${bpUpdated} 种`,
+                                `✅ 合并完成：新增 ${added} 个商品，更新 ${updated} 个；背包新增 ${bpAdded} 种，更新 ${bpUpdated} 种；新增 ${taskAdded} 个任务`,
                                 'success');
                         } else {
                             showNotification('❌ 无效的 .shem 文件', 'error');
@@ -1844,12 +2359,16 @@
                 setButtons(false, false);
                 renderStore();
                 renderBackpack();
+                renderTasks();
                 switchSection('timer');
                 renderStats();
                 updateStatus('🍅 准备开始工作吧！');
+                // 隐藏任务表单初始状态
+                taskFormContainer.style.display = 'none';
+                btnAddTask.style.display = 'inline-block';
             }
             init();
-            console.log('🍅 番茄闹钟 模组版 已启动！支持开箱 & 依赖联动');
+            console.log('🍅 番茄闹钟 任务模组版 已启动！');
         });
     </script>
 </body>
