@@ -111,7 +111,7 @@ MIT 许可证 —— 自由使用、修改和分享。
 ## 📧 联系方式
 
 - GitHub: [@FI0m9ySans](https://github.com/FI0m9ySans)
-- Discord 服务器: [@FI0m9ySans 的社区中心](https://discord.gg/Kxp3KGBJr8)
+- Discord 服务器: [FI0m9ySans's Community Hub](https://discord.gg/Kxp3KGBJr8)
 - 邮箱: fi0m9ysans@foxmail.com
 
 ---
