@@ -965,7 +965,7 @@
             <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> <span data-i18n="nav-stats">统计</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v3.4 · 存档 · 多格式</div>
+        <div class="sidebar-footer">v3.5 · .shom / .zid</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -1023,12 +1023,12 @@
                 <h2 class="panel-title"><i class="fas fa-store"></i> <span data-i18n="store-title">番茄商店</span></h2>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-secondary" id="btn-refresh-store"><i class="fas fa-sync-alt"></i> <span data-i18n="store-refresh">刷新</span></button>
-                    <button class="btn btn-gold btn-sm" id="btn-export-shem"><i class="fas fa-download"></i> <span data-i18n="store-export-shem">导出物品 (.shem)</span></button>
-                    <button class="btn btn-gold btn-sm" id="btn-import-shem"><i class="fas fa-upload"></i> <span data-i18n="store-import-shem">导入物品</span></button>
-                    <button class="btn btn-gold btn-sm" id="btn-export-zod"><i class="fas fa-download"></i> <span data-i18n="store-export-zod">导出模组 (.zod)</span></button>
-                    <button class="btn btn-gold btn-sm" id="btn-import-zod"><i class="fas fa-upload"></i> <span data-i18n="store-import-zod">导入模组</span></button>
-                    <input type="file" id="file-input-import-shem" class="file-input-hidden" accept=".shem" />
-                    <input type="file" id="file-input-import-zod" class="file-input-hidden" accept=".zod" />
+                    <button class="btn btn-gold btn-sm" id="btn-export-shom"><i class="fas fa-download"></i> <span data-i18n="store-export-shom">导出商品 (.shom)</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-shom"><i class="fas fa-upload"></i> <span data-i18n="store-import-shom">导入商品</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-export-zid"><i class="fas fa-download"></i> <span data-i18n="store-export-zid">导出模组 (.zid)</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-zid"><i class="fas fa-upload"></i> <span data-i18n="store-import-zid">导入模组</span></button>
+                    <input type="file" id="file-input-import-shom" class="file-input-hidden" accept=".shom" />
+                    <input type="file" id="file-input-import-zid" class="file-input-hidden" accept=".zid" />
                 </div>
             </div>
             <div class="items-grid" id="store-items"></div>
@@ -1165,7 +1165,7 @@
                         <i class="fas fa-save"></i> <span id="submit-btn-text" data-i18n="create-submit">创建商品</span>
                     </button>
                     <button type="button" class="btn btn-gold" id="btn-export-single">
-                        <i class="fas fa-file-export"></i> <span data-i18n="create-export-single">创建物品文件</span>
+                        <i class="fas fa-file-export"></i> <span data-i18n="create-export-single">创建商品文件</span>
                     </button>
                     <button type="button" class="btn btn-gold" id="btn-export-and-load">
                         <i class="fas fa-file-import"></i> <span data-i18n="create-export-load">创建并加载</span>
@@ -1205,7 +1205,7 @@
     <!-- ============================================================ -->
     <script>
         // =========================================================
-        //  国际化 (i18n) 翻译表 (新增存档/多格式)
+        //  国际化 (i18n) 翻译表
         // =========================================================
         const TRANSLATIONS = {
             'zh': {
@@ -1215,7 +1215,7 @@
                 'nav-tasks': '任务',
                 'nav-create': '创建商品',
                 'nav-stats': '统计',
-                'footer-text': '存档 · 多格式',
+                'footer-text': '.shom / .zid',
                 'header-title': '专注工作',
                 'stat-tomato': '番茄币',
                 'stat-exp': '经验值',
@@ -1228,10 +1228,10 @@
                 'status-ready': '🍅 准备开始工作吧！',
                 'store-title': '番茄商店',
                 'store-refresh': '刷新',
-                'store-export-shem': '导出物品 (.shem)',
-                'store-import-shem': '导入物品',
-                'store-export-zod': '导出模组 (.zod)',
-                'store-import-zod': '导入模组',
+                'store-export-shom': '导出商品 (.shom)',
+                'store-import-shom': '导入商品',
+                'store-export-zid': '导出模组 (.zid)',
+                'store-import-zid': '导入模组',
                 'backpack-title': '我的背包',
                 'tasks-title': '任务清单',
                 'tasks-add': '新建任务',
@@ -1269,7 +1269,7 @@
                 'item-deps-label': '依赖物品 (ID，逗号分隔)',
                 'item-deps-hint': '输入依赖的物品ID，使用前需拥有这些物品',
                 'create-submit': '创建商品',
-                'create-export-single': '创建物品文件',
+                'create-export-single': '创建商品文件',
                 'create-export-load': '创建并加载',
                 'create-hint': '<i class="fas fa-info-circle"></i> “开箱”效果使用时会随机获得奖励。',
                 'stats-title': '数据统计',
@@ -1301,14 +1301,14 @@
                 'notif_removed': '🗑️ 已移除「{name}」',
                 'notif_created': '✅ 创建商品「{name}」成功！',
                 'notif_updated': '✅ 已更新「{name}」',
-                'notif_exported': '📄 已导出「{name}」为 .shem 文件',
+                'notif_exported': '📄 已导出「{name}」为 .shom 文件',
                 'notif_export_tasks': '📄 已导出 {count} 个任务为 .taem 文件',
-                'notif_export_shem': '📄 已导出 {count} 个物品和背包为 .shem 文件',
-                'notif_export_zod': '📄 已导出完整模组 (.zod)',
+                'notif_export_shom': '📄 已导出 {count} 个商品和背包为 .shom 文件',
+                'notif_export_zid': '📄 已导出完整模组 (.zid)',
                 'notif_export_save': '💾 已导出完整存档 (.saop)',
-                'notif_import_shem': '✅ 物品导入完成：新增 {added} 个，更新 {updated} 个',
+                'notif_import_shom': '✅ 商品导入完成：新增 {added} 个，更新 {updated} 个',
                 'notif_import_tasks': '✅ 任务导入完成：新增 {added} 个，更新 {updated} 个',
-                'notif_import_zod': '✅ 模组导入完成：商品新增 {itemAdded} 更新 {itemUpdated}，任务新增 {taskAdded} 更新 {taskUpdated}，标签新增 {tabAdded}',
+                'notif_import_zid': '✅ 模组导入完成：商品新增 {itemAdded} 更新 {itemUpdated}，任务新增 {taskAdded} 更新 {taskUpdated}，标签新增 {tabAdded}',
                 'notif_import_save': '✅ 存档已恢复',
                 'notif_task_created': '✅ 任务「{name}」已创建',
                 'notif_task_updated': '✅ 任务「{name}」已更新',
@@ -1353,7 +1353,7 @@
                 'nav-tasks': 'Tasks',
                 'nav-create': 'Create Item',
                 'nav-stats': 'Statistics',
-                'footer-text': 'Save · Multi-Format',
+                'footer-text': '.shom / .zid',
                 'header-title': 'Focus & Work',
                 'stat-tomato': 'Tomatoes',
                 'stat-exp': 'EXP',
@@ -1366,10 +1366,10 @@
                 'status-ready': '🍅 Ready to focus!',
                 'store-title': 'Tomato Store',
                 'store-refresh': 'Refresh',
-                'store-export-shem': 'Export Items (.shem)',
-                'store-import-shem': 'Import Items',
-                'store-export-zod': 'Export Mod (.zod)',
-                'store-import-zod': 'Import Mod',
+                'store-export-shom': 'Export Items (.shom)',
+                'store-import-shom': 'Import Items',
+                'store-export-zid': 'Export Mod (.zid)',
+                'store-import-zid': 'Import Mod',
                 'backpack-title': 'My Backpack',
                 'tasks-title': 'Task List',
                 'tasks-add': 'New Task',
@@ -1439,14 +1439,14 @@
                 'notif_removed': '🗑️ Removed "{name}"',
                 'notif_created': '✅ Created item "{name}" successfully!',
                 'notif_updated': '✅ Updated "{name}"',
-                'notif_exported': '📄 Exported "{name}" as .shem file',
+                'notif_exported': '📄 Exported "{name}" as .shom file',
                 'notif_export_tasks': '📄 Exported {count} tasks as .taem file',
-                'notif_export_shem': '📄 Exported {count} items and backpack as .shem file',
-                'notif_export_zod': '📄 Exported full mod (.zod)',
+                'notif_export_shom': '📄 Exported {count} items and backpack as .shom file',
+                'notif_export_zid': '📄 Exported full mod (.zid)',
                 'notif_export_save': '💾 Exported full save (.saop)',
-                'notif_import_shem': '✅ Items imported: added {added}, updated {updated}',
+                'notif_import_shom': '✅ Items imported: added {added}, updated {updated}',
                 'notif_import_tasks': '✅ Tasks imported: added {added}, updated {updated}',
-                'notif_import_zod': '✅ Mod imported: items added {itemAdded} updated {itemUpdated}, tasks added {taskAdded} updated {taskUpdated}, tabs added {tabAdded}',
+                'notif_import_zid': '✅ Mod imported: items added {itemAdded} updated {itemUpdated}, tasks added {taskAdded} updated {taskUpdated}, tabs added {tabAdded}',
                 'notif_import_save': '✅ Save restored',
                 'notif_task_created': '✅ Task "{name}" created',
                 'notif_task_updated': '✅ Task "{name}" updated',
@@ -2466,7 +2466,7 @@
         });
 
         // =========================================================
-        //  导出单个商品 (.shem)
+        //  导出单个商品 (.shom)
         // =========================================================
         function exportSingleItem(item, filenamePrefix = '商品') {
             const exportData = { userItems: [item], backpack: {}, tasks: [], customTabs: [], version: '1.0' };
@@ -2476,7 +2476,7 @@
             const a = document.createElement('a');
             a.href = url;
             const safeName = item.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
-            a.download = `${safeName}_${new Date().toISOString().slice(0,10)}.shem`;
+            a.download = `${safeName}_${new Date().toISOString().slice(0,10)}.shom`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2598,7 +2598,6 @@
                         data.customTabs = data.customTabs.filter(t => t.id !== id);
                         saveData();
                         renderCustomTabs();
-                        // 如果当前激活的是这个标签，切换到计时器
                         if (document.getElementById('custom_' + id)?.classList.contains('active')) {
                             switchSection('timer');
                         }
@@ -2611,37 +2610,28 @@
                     switchSection('custom_' + tab.id);
                 });
             });
-
-            // 重新激活当前选中的导航
-            // 不自动切换，保持当前
         }
 
         // =========================================================
         //  导航
         // =========================================================
         function switchSection(target) {
-            // 隐藏所有面板
             document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-            // 显示目标面板
             const section = document.getElementById(target + '-section') || document.getElementById(target);
             if (section) section.classList.add('active');
 
-            // 更新导航高亮
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItem = document.querySelector(`.nav-item[data-target="${target}"]`);
             if (navItem) navItem.classList.add('active');
 
-            // 如果目标是以 custom_ 开头，说明是自定义面板，无需额外操作
             if (target.startsWith('custom_')) return;
 
-            // 内置面板刷新
             if (target === 'stats') renderStats();
             if (target === 'store') renderStore();
             if (target === 'backpack') renderBackpack();
             if (target === 'tasks') renderTasks();
         }
 
-        // 导航点击事件（内置+自定义）
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function() {
                 const target = this.dataset.target;
@@ -2649,7 +2639,6 @@
             });
         });
 
-        // 统计标签切换
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -2677,7 +2666,6 @@
         //  多格式导入/导出函数
         // =========================================================
 
-        // 通用下载
         function downloadJSON(data, filename) {
             const json = JSON.stringify(data, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
@@ -2691,7 +2679,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // 通用导入（文件选择）
         function importFile(accept, callback) {
             const input = document.createElement('input');
             input.type = 'file';
@@ -2735,15 +2722,12 @@
             showNotification(t('notif_export_save'), 'success');
         });
 
-        // 导入存档 (.saop)
         $('btn-import-save').addEventListener('click', function() {
             if (!confirm('导入存档将完全替换当前所有数据（包括进度、物品、任务等），确定继续吗？')) return;
             importFile('.saop', function(imported) {
-                // 验证关键字段
                 if (typeof imported.tomatoes !== 'number' || typeof imported.exp !== 'number') {
                     return showNotification(t('notif_error_import_invalid'), 'error');
                 }
-                // 直接覆盖
                 data.tomatoes = imported.tomatoes || 0;
                 data.exp = imported.exp || 0;
                 data.level = imported.level || 1;
@@ -2754,10 +2738,8 @@
                 data.customTabs = imported.customTabs || [];
                 data.stats = imported.stats || { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0,
                         exp: 0, sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } };
-                // 确保任务有依赖字段
                 data.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
                 saveData();
-                // 刷新所有
                 updateStatsUI();
                 updateTimerDisplay();
                 updateProgress();
@@ -2773,21 +2755,20 @@
         });
 
         // =========================================================
-        //  导出物品 (.shem)
+        //  导出商品 (.shom)
         // =========================================================
-        $('btn-export-shem').addEventListener('click', function() {
+        $('btn-export-shom').addEventListener('click', function() {
             const exportData = {
                 userItems: data.userItems,
                 backpack: data.backpack,
                 version: '1.0'
             };
-            downloadJSON(exportData, `物品_${new Date().toISOString().slice(0,10)}.shem`);
-            showNotification(t('notif_export_shem', { count: data.userItems.length }), 'success');
+            downloadJSON(exportData, `商品_${new Date().toISOString().slice(0,10)}.shom`);
+            showNotification(t('notif_export_shom', { count: data.userItems.length }), 'success');
         });
 
-        // 导入物品 (.shem)
-        $('btn-import-shem').addEventListener('click', function() {
-            importFile('.shem', function(imported) {
+        $('btn-import-shom').addEventListener('click', function() {
+            importFile('.shom', function(imported) {
                 if (!imported.userItems || !imported.backpack) {
                     return showNotification(t('notif_error_import_invalid'), 'error');
                 }
@@ -2813,14 +2794,14 @@
                 saveData();
                 renderStore();
                 renderBackpack();
-                showNotification(t('notif_import_shem', { added, updated }), 'success');
+                showNotification(t('notif_import_shom', { added, updated }), 'success');
             });
         });
 
         // =========================================================
-        //  导出模组 (.zod) —— 含物品+背包+任务+自定义标签
+        //  导出模组 (.zid) —— 商品+背包+任务+自定义标签
         // =========================================================
-        $('btn-export-zod').addEventListener('click', function() {
+        $('btn-export-zid').addEventListener('click', function() {
             const exportData = {
                 userItems: data.userItems,
                 backpack: data.backpack,
@@ -2828,13 +2809,12 @@
                 customTabs: data.customTabs,
                 version: '1.0'
             };
-            downloadJSON(exportData, `模组_${new Date().toISOString().slice(0,10)}.zod`);
-            showNotification(t('notif_export_zod'), 'success');
+            downloadJSON(exportData, `模组_${new Date().toISOString().slice(0,10)}.zid`);
+            showNotification(t('notif_export_zid'), 'success');
         });
 
-        // 导入模组 (.zod)
-        $('btn-import-zod').addEventListener('click', function() {
-            importFile('.zod', function(imported) {
+        $('btn-import-zid').addEventListener('click', function() {
+            importFile('.zid', function(imported) {
                 if (!imported.userItems || !imported.backpack) {
                     return showNotification(t('notif_error_import_invalid'), 'error');
                 }
@@ -2844,14 +2824,12 @@
                     taskUpdated = 0,
                     tabAdded = 0;
 
-                // 物品
                 imported.userItems.forEach(imp => {
                     const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
                     if (idx !== -1) { data.userItems[idx] = imp;
                         itemUpdated++; } else { data.userItems.push(imp);
                         itemAdded++; }
                 });
-                // 背包
                 for (const [key, val] of Object.entries(imported.backpack)) {
                     if (data.backpack[key]) {
                         data.backpack[key].count += val.count;
@@ -2863,13 +2841,11 @@
                         data.backpack[key] = val;
                     }
                 }
-                // 任务
                 if (imported.tasks) {
                     imported.tasks.forEach(impTask => {
                         if (!impTask.dependencies) impTask.dependencies = [];
                         const idx = data.tasks.findIndex(t => t.id === impTask.id);
                         if (idx !== -1) {
-                            // 保留进度
                             const old = data.tasks[idx];
                             data.tasks[idx] = {
                                 ...impTask,
@@ -2883,7 +2859,6 @@
                         }
                     });
                 }
-                // 自定义标签
                 if (imported.customTabs) {
                     imported.customTabs.forEach(impTab => {
                         if (!data.customTabs.some(t => t.id === impTab.id)) {
@@ -2898,16 +2873,14 @@
                 renderBackpack();
                 renderTasks();
                 renderCustomTabs();
-                showNotification(t('notif_import_zod', { itemAdded, itemUpdated, taskAdded, taskUpdated,
+                showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated,
                     tabAdded }), 'success');
             });
         });
 
         // =========================================================
-        //  导出任务 (.taem) 和 导入任务 (已经存在，但扩展文件扩展名)
+        //  导出任务 (.taem) 和 导入任务
         // =========================================================
-        // 修改已有的任务导出/导入以使用 .taem
-        const originalExportTasks = $('btn-export-tasks').click;
         $('btn-export-tasks').addEventListener('click', function() {
             if (data.tasks.length === 0) {
                 return showNotification('没有任务可导出', 'warning');
@@ -2931,7 +2904,6 @@
                     if (!impTask.dependencies) impTask.dependencies = [];
                     const idx = data.tasks.findIndex(t => t.id === impTask.id);
                     if (idx !== -1) {
-                        // 保留进度
                         const old = data.tasks[idx];
                         data.tasks[idx] = {
                             ...impTask,
@@ -2967,7 +2939,7 @@
         });
 
         // =========================================================
-        //  语言切换按钮事件
+        //  语言切换按钮
         // =========================================================
         document.getElementById('lang-toggle').addEventListener('click', function() {
             const newLang = currentLang === 'zh' ? 'en' : 'zh';
@@ -3007,7 +2979,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 存档·多格式·自定义标签 已启动！');
+        console.log('🍅 番茄闹钟 v3.5 · .shom / .zid 已启动！');
     </script>
 </body>
 </html>
