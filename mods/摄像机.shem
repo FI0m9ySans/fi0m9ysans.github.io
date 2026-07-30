@@ -1,0 +1,14 @@
+{
+    "userItems": [
+        {
+            "id": "u_1",
+            "name": "摄像机",
+            "desc": "录视频、照相等专用",
+            "price": 200,
+            "icon": "fas fa-camera",
+            "effect": "focus"
+        }
+    ],
+    "backpack": {},
+    "version": "1.0"
+}
