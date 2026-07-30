@@ -1,0 +1,30 @@
+{
+    "userItems": [
+        {
+            "id": "u_1789012345678",
+            "name": "极速专注药水",
+            "desc": "使用后本次倒计时直接减少10分钟，快速完成番茄",
+            "price": 8,
+            "icon": "fas fa-flask",
+            "effect": "focus"
+        },
+        {
+            "id": "u_1789012400123",
+            "name": "双倍经验卷轴",
+            "desc": "完成番茄时额外获得50%经验加成",
+            "price": 12,
+            "icon": "fas fa-scroll",
+            "effect": "exp"
+        },
+        {
+            "id": "u_1789012456789",
+            "name": "番茄丰收符",
+            "desc": "使用立刻获取5枚番茄币",
+            "price": 15,
+            "icon": "fas fa-wheat-awn",
+            "effect": "tomato"
+        }
+    ],
+    "backpack": {},
+    "version": "1.0"
+}
