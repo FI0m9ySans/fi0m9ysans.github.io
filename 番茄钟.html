@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🍅 番茄闹钟 · 模组版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        :root {
+            --primary: #e74c3c;
+            --primary-dark: #c0392b;
+            --secondary: #3498db;
+            --accent: #2ecc71;
+            --gold: #f1c40f;
+            --dark: #1e2a3a;
+            --gray: #7f8c8d;
+            --white: #ffffff;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --radius: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body {
+            background: linear-gradient(145deg, #f0f2f5 0%, #dbe0e8 100%);
+            min-height: 100vh;
+            display: flex;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        /* ===== 侧边栏 ===== */
+        .sidebar {
+            width: 230px;
+            background: var(--dark);
+            color: var(--white);
+            padding: 24px 0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+        }
+        .logo {
+            text-align: center;
+            padding: 8px 20px 24px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 16px;
+        }
+        .logo i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .logo span {
+            color: var(--gold);
+        }
+        .nav-items {
+            flex: 1;
+        }
+        .nav-item {
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            margin: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .nav-item i {
+            margin-right: 14px;
+            width: 22px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--white);
+        }
+        .nav-item.active {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--white);
+            border-left-color: var(--primary);
+        }
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.35);
+            text-align: center;
+        }
+        /* ===== 主内容 ===== */
+        .main-content {
+            flex: 1;
+            padding: 24px 28px 40px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        /* ===== 顶部状态栏 ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--white);
+            padding: 16px 28px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        .header h1 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .stats {
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            background: var(--light);
+        }
+        .stat-icon.tomato {
+            background: #fde8e8;
+            color: var(--primary);
+        }
+        .stat-icon.exp {
+            background: #e3f0fd;
+            color: var(--secondary);
+        }
+        .stat-icon.level {
+            background: #e3f9ec;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        /* ===== 面板 ===== */
+        .panel {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 28px;
+            transition: var(--transition);
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        .panel-title i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        .content-section {
+            display: none;
+            animation: fadeUp 0.35s ease;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* ===== 计时器 ===== */
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .timer-display {
+            font-size: 5.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+            margin: 8px 0 12px;
+            background: linear-gradient(135deg, var(--dark), #3a4a5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .timer-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
+        }
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.35);
+        }
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+        .btn-accent:hover:not(:disabled) {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.35);
+        }
+        .btn-gold {
+            background: var(--gold);
+            color: var(--dark);
+        }
+        .btn-gold:hover:not(:disabled) {
+            background: #f39c12;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(241, 196, 15, 0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--gray);
+            border: 2px solid #ddd;
+        }
+        .btn-outline:hover:not(:disabled) {
+            border-color: var(--gray);
+            color: var(--dark);
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+        .btn-xs {
+            padding: 4px 10px;
+            font-size: 0.7rem;
+        }
+        .progress-container {
+            width: 100%;
+            max-width: 500px;
+            height: 8px;
+            background: var(--light);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 12px 0 8px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--gold));
+            width: 0%;
+            transition: width 0.5s linear;
+            border-radius: 8px;
+        }
+        .status-message {
+            font-size: 1.05rem;
+            color: var(--gray);
+            margin-top: 6px;
+            min-height: 28px;
+        }
+        /* 专注时长设置 */
+        .duration-setting {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0 6px;
+            flex-wrap: wrap;
+        }
+        .duration-setting label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .duration-setting input {
+            width: 70px;
+            padding: 6px 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .duration-setting input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        .duration-setting span {
+            font-weight: 500;
+            color: var(--gray);
+        }
+        /* ===== 商店 & 背包 ===== */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 18px;
+        }
+        .item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+            border-color: #e0e4e8;
+        }
+        .item-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        .item-name {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2px;
+        }
+        .item-desc {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-align: center;
+            margin-bottom: 8px;
+            min-height: 36px;
+            line-height: 1.3;
+        }
+        .item-price {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .item .btn {
+            width: 100%;
+            justify-content: center;
+            font-size: 0.85rem;
+            padding: 10px 12px;
+        }
+        .item .btn:disabled {
+            background: #ccc;
+            color: #888;
+        }
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .item-actions .btn {
+            flex: 1;
+        }
+        .item-actions .btn-danger,
+        .item-actions .btn-secondary {
+            flex: 0 0 auto;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+        .dependency-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+        .dep-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        .dep-miss {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .dep-list {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin: 4px 0 8px;
+            text-align: center;
+            max-width: 100%;
+            word-break: break-all;
+        }
+        .backpack-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 14px;
+        }
+        .backpack-item {
+            position: relative;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .backpack-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+        .item-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--primary);
+            color: white;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+        }
+        .backpack-item .item-name {
+            font-size: 0.9rem;
+        }
+        .backpack-item .btn {
+            width: 100%;
+            justify-content: center;
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            margin-top: 6px;
+        }
+        .empty-message {
+            text-align: center;
+            color: var(--gray);
+            padding: 30px 0;
+            font-size: 1rem;
+        }
+        .empty-message i {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 12px;
+            color: #ddd;
+        }
+        /* ===== 表单 ===== */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid #e8ecf0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background: #fafbfc;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.12);
+            background: var(--white);
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .form-actions .btn {
+            flex: 1 1 auto;
+        }
+        /* ===== 统计 ===== */
+        .tab-container {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 10px 22px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: var(--gray);
+            transition: var(--transition);
+            border-radius: 8px 8px 0 0;
+        }
+        .tab:hover {
+            color: var(--dark);
+            background: #f5f6f8;
+        }
+        .tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(231, 76, 60, 0.04);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeUp 0.25s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 18px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        .stat-card .icon {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+        .level-bar {
+            height: 8px;
+            background: #eef0f2;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .level-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #27ae60);
+            border-radius: 8px;
+            transition: width 0.6s ease;
+        }
+        /* ===== 通知 ===== */
+        .notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            background: var(--dark);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            transform: translateX(calc(100% + 40px));
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 420px;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+            background: rgba(30, 42, 58, 0.92);
+        }
+        .notification i {
+            font-size: 1.3rem;
+            color: var(--gold);
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success i {
+            color: var(--accent);
+        }
+        .notification.warning i {
+            color: var(--gold);
+        }
+        .notification.error i {
+            color: var(--primary);
+        }
+        /* ===== 响应式 ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+                padding: 16px 0;
+            }
+            .logo {
+                font-size: 1.3rem;
+                padding: 4px 16px 16px;
+            }
+            .nav-item {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                height: auto;
+                position: relative;
+                padding: 10px 0;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .logo {
+                padding: 4px 16px;
+                border-bottom: none;
+                margin-bottom: 0;
+                font-size: 1.1rem;
+            }
+            .nav-items {
+                display: flex;
+                overflow-x: auto;
+                padding: 4px 8px;
+                gap: 4px;
+                flex: 1;
+                justify-content: flex-start;
+            }
+            .nav-item {
+                padding: 8px 14px;
+                margin: 0 2px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            .nav-item.active {
+                border-left: none;
+                border-bottom-color: var(--primary);
+            }
+            .sidebar-footer {
+                display: none;
+            }
+            .main-content {
+                padding: 16px;
+                max-height: none;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                padding: 16px;
+            }
+            .stats {
+                justify-content: space-around;
+            }
+            .timer-display {
+                font-size: 3.8rem;
+            }
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            .backpack-items {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .panel {
+                padding: 18px;
+            }
+            .notification {
+                top: 12px;
+                right: 12px;
+                left: 12px;
+                max-width: none;
+                font-size: 0.9rem;
+                padding: 14px 18px;
+            }
+        }
+        @media (max-width: 480px) {
+            .timer-display {
+                font-size: 2.8rem;
+            }
+            .stat-item {
+                gap: 6px;
+            }
+            .stat-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+            .stat-value {
+                font-size: 1rem;
+            }
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+            }
+        }
+        .file-input-hidden {
+            display: none;
+        }
+        .edit-badge {
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 2px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .mod-group {
+            font-size: 0.7rem;
+            color: var(--secondary);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 侧边栏 ===== -->
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-stopwatch"></i> 番茄<span>模组</span></div>
+        <nav class="nav-items">
+            <div class="nav-item active" data-target="timer"><i class="fas fa-clock"></i> 番茄计时</div>
+            <div class="nav-item" data-target="store"><i class="fas fa-store"></i> 商店</div>
+            <div class="nav-item" data-target="backpack"><i class="fas fa-backpack"></i> 背包</div>
+            <div class="nav-item" data-target="create"><i class="fas fa-plus-circle"></i> 创建商品</div>
+            <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> 统计</div>
+        </nav>
+        <div class="sidebar-footer">v3.0 · 开箱 & 模组依赖</div>
+    </aside>
+
+    <!-- ===== 主内容 ===== -->
+    <main class="main-content">
+
+        <!-- 顶部状态栏 -->
+        <header class="header">
+            <h1><i class="fas fa-apple-alt"></i> 专注工作</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-icon tomato"><i class="fas fa-apple-alt"></i></div>
+                    <div><div class="stat-value" id="tomato-counter">0</div><div class="stat-label">番茄币</div></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon exp"><i class="fas fa-star"></i></div>
+                    <div><div class="stat-value" id="exp-counter">0 / 100</div><div class="stat-label">经验值</div></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon level"><i class="fas fa-level-up-alt"></i></div>
+                    <div><div class="stat-value" id="level-counter">1</div><div class="stat-label">等级</div></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== 番茄计时 ===== -->
+        <section class="panel content-section active" id="timer-section">
+            <div class="timer-container">
+                <div class="duration-setting">
+                    <label for="duration-input">⏱️ 专注时长</label>
+                    <input type="number" id="duration-input" min="1" max="99" value="25" />
+                    <span>分钟</span>
+                </div>
+                <div class="timer-display" id="timer-display">25:00</div>
+                <div class="timer-controls">
+                    <button class="btn btn-primary" id="btn-start"><i class="fas fa-play"></i> 开始</button>
+                    <button class="btn btn-secondary" id="btn-pause" disabled><i class="fas fa-pause"></i> 暂停</button>
+                    <button class="btn btn-outline" id="btn-reset" disabled><i class="fas fa-undo"></i> 重置</button>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+                <div class="status-message" id="status">🍅 准备开始工作吧！</div>
+            </div>
+        </section>
+
+        <!-- ===== 商店 ===== -->
+        <section class="panel content-section" id="store-section">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-store"></i> 番茄商店</h2>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" id="btn-refresh-store"><i class="fas fa-sync-alt"></i> 刷新</button>
+                    <button class="btn btn-gold" id="btn-export-items"><i class="fas fa-download"></i> 导出全部</button>
+                    <button class="btn btn-gold" id="btn-import-items"><i class="fas fa-upload"></i> 导入合并</button>
+                    <input type="file" id="file-input-import" class="file-input-hidden" accept=".shem" />
+                </div>
+            </div>
+            <div class="items-grid" id="store-items"></div>
+        </section>
+
+        <!-- ===== 背包 ===== -->
+        <section class="panel content-section" id="backpack-section">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-backpack"></i> 我的背包</h2>
+            </div>
+            <div class="backpack-items" id="backpack-items"></div>
+        </section>
+
+        <!-- ===== 创建商品 ===== -->
+        <section class="panel content-section" id="create-section">
+            <div class="panel-header">
+                <h2 class="panel-title" id="create-panel-title">
+                    <i class="fas fa-plus-circle"></i> 创建商品
+                    <span id="edit-badge" class="edit-badge" style="display:none;">编辑中</span>
+                </h2>
+                <button class="btn btn-outline btn-sm" id="btn-cancel-edit" style="display:none;"><i class="fas fa-times"></i> 取消编辑</button>
+            </div>
+            <form id="item-form">
+                <div class="form-group">
+                    <label for="item-name">商品名称</label>
+                    <input type="text" id="item-name" required placeholder="输入商品名称" />
+                </div>
+                <div class="form-group">
+                    <label for="item-desc">商品描述</label>
+                    <textarea id="item-desc" required placeholder="输入商品描述"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-price">价格（番茄币）</label>
+                        <input type="number" id="item-price" required min="1" placeholder="价格" />
+                    </div>
+                    <div class="form-group">
+                        <label for="item-icon">图标</label>
+                        <select id="item-icon" required>
+                            <option value="fas fa-coffee">☕ 咖啡</option>
+                            <option value="fas fa-music">🎵 音乐</option>
+                            <option value="fas fa-book">📚 书籍</option>
+                            <option value="fas fa-gamepad">🎮 游戏</option>
+                            <option value="fas fa-headphones">🎧 耳机</option>
+                            <option value="fas fa-lightbulb">💡 灯泡</option>
+                            <option value="fas fa-pizza-slice">🍕 披萨</option>
+                            <option value="fas fa-crown">👑 王冠</option>
+                            <option value="fas fa-camera">📷 相机</option>
+                            <option value="fas fa-box">📦 箱子</option>
+                            <option value="fas fa-microchip">💻 芯片</option>
+                            <option value="fas fa-bolt">⚡ 闪电</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-effect">效果</label>
+                        <select id="item-effect" required>
+                            <option value="rest">🛌 休息时间增加</option>
+                            <option value="focus">🎯 专注时间增加</option>
+                            <option value="tomato">🍅 番茄币奖励</option>
+                            <option value="exp">⭐ 经验值奖励</option>
+                            <option value="lootbox">🎁 开箱随机奖励</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-deps">依赖物品 (ID，用逗号分隔)</label>
+                        <input type="text" id="item-deps" placeholder="例如: u_123, u_456" />
+                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">
+                            输入依赖的物品ID，使用前需拥有这些物品（父子模组联动）
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="btn-submit-form">
+                        <i class="fas fa-save"></i> <span id="submit-btn-text">创建商品</span>
+                    </button>
+                    <button type="button" class="btn btn-gold" id="btn-export-single">
+                        <i class="fas fa-file-export"></i> 创建物品文件
+                    </button>
+                    <button type="button" class="btn btn-gold" id="btn-export-and-load">
+                        <i class="fas fa-file-import"></i> 创建并加载
+                    </button>
+                </div>
+                <div style="margin-top:12px;font-size:0.85rem;color:var(--gray);">
+                    <i class="fas fa-info-circle"></i> “开箱”效果使用时会随机获得奖励。
+                </div>
+            </form>
+        </section>
+
+        <!-- ===== 统计 ===== -->
+        <section class="panel content-section" id="stats-section">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-chart-line"></i> 数据统计</h2>
+            </div>
+            <div class="tab-container">
+                <div class="tab active" data-tab="daily">📅 今日</div>
+                <div class="tab" data-tab="weekly">📆 本周</div>
+                <div class="tab" data-tab="monthly">📊 本月</div>
+            </div>
+            <div class="tab-content active" id="daily-stats"></div>
+            <div class="tab-content" id="weekly-stats"></div>
+            <div class="tab-content" id="monthly-stats"></div>
+        </section>
+    </main>
+
+    <!-- ===== 通知 ===== -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">消息</span>
+    </div>
+
+    <!-- ============================================================ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // =========================================================
+            //  数据层
+            // =========================================================
+            const STORAGE_KEY = 'tomato_data_v3';
+
+            function getDefaultData() {
+                return {
+                    tomatoes: 0,
+                    exp: 0,
+                    level: 1,
+                    backpack: {},
+                    userItems: [],
+                    history: [],
+                    stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
+                            sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
+                };
+            }
+
+            let data = loadData();
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        const def = getDefaultData();
+                        for (const key in def) { if (!(key in parsed)) parsed[key] = def[key]; }
+                        return parsed;
+                    }
+                } catch (_) {}
+                return getDefaultData();
+            }
+
+            function saveData() {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+            }
+
+            // =========================================================
+            //  预设商品（含一个开箱示例）
+            // =========================================================
+            const PRESET_ITEMS = [
+                { id: 'p1', name: '休息 5 分钟', price: 1, icon: 'fas fa-coffee', effect: 'rest',
+                desc: '增加 5 分钟休息时间', dependencies: [] },
+                { id: 'p2', name: '专注加成', price: 2, icon: 'fas fa-brain', effect: 'focus',
+                desc: '下次专注 +10 分钟', dependencies: [] },
+                { id: 'p3', name: '双倍奖励', price: 5, icon: 'fas fa-gem', effect: 'tomato',
+                desc: '下次番茄币 x2', dependencies: [] },
+                { id: 'p4', name: '经验加成', price: 3, icon: 'fas fa-star', effect: 'exp',
+                desc: '获得 25% 额外经验', dependencies: [] },
+                { id: 'p5', name: '惊喜宝箱', price: 8, icon: 'fas fa-box', effect: 'lootbox',
+                    desc: '开箱获得随机奖励！', dependencies: [] },
+                { id: 'p6', name: '高级特权', price: 30, icon: 'fas fa-crown', effect: 'premium',
+                    desc: '解锁所有功能', dependencies: [] }
+            ];
+
+            function getAllItems() {
+                return [...PRESET_ITEMS, ...data.userItems];
+            }
+
+            function findItem(id) {
+                return getAllItems().find(item => String(item.id) === String(id));
+            }
+
+            // =========================================================
+            //  DOM 引用
+            // =========================================================
+            const $ = id => document.getElementById(id);
+            const timerDisplay = $('timer-display');
+            const progressBar = $('progress-bar');
+            const statusMsg = $('status');
+            const tomatoCounter = $('tomato-counter');
+            const expCounter = $('exp-counter');
+            const levelCounter = $('level-counter');
+            const btnStart = $('btn-start');
+            const btnPause = $('btn-pause');
+            const btnReset = $('btn-reset');
+            const storeItemsEl = $('store-items');
+            const backpackItemsEl = $('backpack-items');
+            const notification = $('notification');
+            const notificationText = $('notification-text');
+            const itemForm = $('item-form');
+            const durationInput = $('duration-input');
+            const createPanelTitle = $('create-panel-title');
+            const editBadge = $('edit-badge');
+            const cancelEditBtn = $('btn-cancel-edit');
+            const submitBtnText = $('submit-btn-text');
+            const btnSubmitForm = $('btn-submit-form');
+            const btnExportSingle = $('btn-export-single');
+            const btnExportAndLoad = $('btn-export-and-load');
+
+            // =========================================================
+            //  编辑状态
+            // =========================================================
+            let editingItemId = null;
+
+            function startEditing(itemId) {
+                const item = data.userItems.find(i => String(i.id) === String(itemId));
+                if (!item) return showNotification('商品不存在', 'error');
+                editingItemId = String(itemId);
+                $('item-name').value = item.name;
+                $('item-desc').value = item.desc || '';
+                $('item-price').value = item.price;
+                $('item-icon').value = item.icon;
+                $('item-effect').value = item.effect;
+                $('item-deps').value = (item.dependencies || []).join(', ');
+                editBadge.style.display = 'inline';
+                cancelEditBtn.style.display = 'inline-block';
+                submitBtnText.textContent = '更新商品';
+                createPanelTitle.innerHTML =
+                    `<i class="fas fa-edit"></i> 编辑商品 <span id="edit-badge" class="edit-badge" style="display:inline;">编辑中</span>`;
+                switchSection('create');
+                showNotification(`✏️ 正在编辑「${item.name}」`, 'warning');
+            }
+
+            function cancelEditing() {
+                editingItemId = null;
+                editBadge.style.display = 'none';
+                cancelEditBtn.style.display = 'none';
+                submitBtnText.textContent = '创建商品';
+                createPanelTitle.innerHTML = `<i class="fas fa-plus-circle"></i> 创建商品`;
+                itemForm.reset();
+                $('item-deps').value = '';
+            }
+            cancelEditBtn.addEventListener('click', cancelEditing);
+
+            // =========================================================
+            //  计时器
+            // =========================================================
+            let WORK_TIME = 25 * 60;
+            let timeLeft = WORK_TIME;
+            let timerInterval = null;
+            let isRunning = false;
+            let isPaused = false;
+
+            function updateStatsUI() {
+                tomatoCounter.textContent = data.tomatoes;
+                const expNeeded = data.level * 100;
+                expCounter.textContent = `${data.exp} / ${expNeeded}`;
+                levelCounter.textContent = data.level;
+            }
+
+            function updateTimerDisplay() {
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                timerDisplay.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+
+            function updateProgress() {
+                const total = WORK_TIME;
+                const progress = ((total - timeLeft) / total) * 100;
+                progressBar.style.width = `${Math.min(100, progress)}%`;
+            }
+
+            function updateStatus(text) { statusMsg.textContent = text; }
+
+            function setButtons(running, paused) {
+                btnStart.disabled = running || paused;
+                btnPause.disabled = !running || paused;
+                btnReset.disabled = !running && !paused;
+                if (paused) btnStart.disabled = false;
+            }
+
+            durationInput.addEventListener('change', function() {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 1) val = 1;
+                if (val > 99) val = 99;
+                this.value = val;
+                WORK_TIME = val * 60;
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                isPaused = false;
+                timeLeft = WORK_TIME;
+                updateTimerDisplay();
+                updateProgress();
+                setButtons(false, false);
+                updateStatus('⏱️ 时长已更新');
+            });
+
+            function startTimer() {
+                if (isRunning && !isPaused) return;
+                if (timeLeft <= 0) { resetTimer(); return; }
+                isRunning = true;
+                isPaused = false;
+                setButtons(true, false);
+                updateStatus('🍅 专注工作中…');
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    updateProgress();
+                    if (timeLeft <= 0) completeTimer();
+                }, 1000);
+            }
+
+            function pauseTimer() {
+                if (!isRunning || isPaused) return;
+                isPaused = true;
+                clearInterval(timerInterval);
+                timerInterval = null;
+                setButtons(true, true);
+                updateStatus('⏸️ 已暂停');
+            }
+
+            function resetTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                isPaused = false;
+                timeLeft = WORK_TIME;
+                updateTimerDisplay();
+                updateProgress();
+                setButtons(false, false);
+                updateStatus('🍅 准备开始工作吧！');
+            }
+
+            function completeTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                isPaused = false;
+                setButtons(false, false);
+                const earnedTomato = 1,
+                    earnedExp = 10;
+                data.tomatoes += earnedTomato;
+                data.exp += earnedExp;
+                data.history.push({ date: new Date().toISOString(), tomatoesEarned: earnedTomato, expEarned: earnedExp });
+                checkLevelUp();
+                saveData();
+                updateStatsUI();
+                updateStatus('🎉 完成！获得 1 🍅 + 10 ⭐');
+                showNotification('🎉 完成一个番茄！获得 1 番茄币和 10 经验值', 'success');
+                timeLeft = WORK_TIME;
+                updateTimerDisplay();
+                updateProgress();
+                if (document.getElementById('stats-section').classList.contains('active')) renderStats();
+            }
+
+            function checkLevelUp() {
+                let needed = data.level * 100;
+                while (data.exp >= needed) {
+                    data.exp -= needed;
+                    data.level++;
+                    showNotification(`🎊 升级！当前等级 ${data.level}`, 'success');
+                    needed = data.level * 100;
+                }
+                if (data.exp >= data.level * 100) checkLevelUp();
+            }
+
+            // =========================================================
+            //  依赖检查工具
+            // =========================================================
+            function checkDependencies(item) {
+                const deps = item.dependencies || [];
+                if (deps.length === 0) return { ok: true, missing: [] };
+                const missing = [];
+                for (const depId of deps) {
+                    const depKey = String(depId).trim();
+                    if (!depKey) continue;
+                    // 检查背包中是否有该物品（任意数量）
+                    if (!data.backpack[depKey] || data.backpack[depKey].count <= 0) {
+                        missing.push(depKey);
+                    }
+                }
+                return { ok: missing.length === 0, missing };
+            }
+
+            function getDependencyNames(depIds) {
+                return depIds.map(id => {
+                    const item = findItem(id);
+                    return item ? item.name : id;
+                });
+            }
+
+            // =========================================================
+            //  开箱（Lootbox）逻辑
+            // =========================================================
+            function openLootbox() {
+                const rewards = [
+                    { type: 'tomato', amount: 2, label: '2 🍅 番茄币', weight: 30 },
+                    { type: 'tomato', amount: 5, label: '5 🍅 番茄币', weight: 15 },
+                    { type: 'exp', amount: 10, label: '10 ⭐ 经验值', weight: 25 },
+                    { type: 'exp', amount: 25, label: '25 ⭐ 经验值', weight: 10 },
+                    { type: 'nothing', label: '😅 什么也没有…', weight: 20 },
+                ];
+                const totalWeight = rewards.reduce((s, r) => s + r.weight, 0);
+                let roll = Math.random() * totalWeight;
+                for (const r of rewards) {
+                    roll -= r.weight;
+                    if (roll <= 0) return r;
+                }
+                return rewards[0];
+            }
+
+            // =========================================================
+            //  商店渲染（含依赖显示）
+            // =========================================================
+            function renderStore() {
+                const items = getAllItems();
+                storeItemsEl.innerHTML = '';
+                if (items.length === 0) {
+                    storeItemsEl.innerHTML = `<div class="empty-message"><i class="fas fa-store"></i> 商店暂无商品</div>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    const canBuy = data.tomatoes >= item.price;
+                    const isUserItem = String(item.id).startsWith('u_');
+                    const deps = item.dependencies || [];
+                    const depCheck = checkDependencies(item);
+                    const hasDeps = deps.length > 0;
+
+                    let depHTML = '';
+                    if (hasDeps) {
+                        const depNames = getDependencyNames(deps);
+                        const statusClass = depCheck.ok ? 'dep-ok' : 'dep-miss';
+                        const statusText = depCheck.ok ? '✅ 依赖满足' : '❌ 缺依赖';
+                        depHTML = `
+                            <div class="dep-list">📦 依赖: ${depNames.join(' → ')}</div>
+                            <span class="dependency-badge ${statusClass}">${statusText}</span>
+                        `;
+                    }
+
+                    let actionsHTML = `
+                        <button class="btn btn-accent btn-buy" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>
+                            ${canBuy ? '购买' : '余额不足'}
+                        </button>
+                    `;
+                    if (isUserItem) {
+                        actionsHTML += `
+                            <button class="btn btn-secondary btn-sm btn-edit" data-id="${item.id}" title="编辑"><i class="fas fa-pen"></i></button>
+                            <button class="btn btn-danger btn-sm btn-remove" data-id="${item.id}" title="移除"><i class="fas fa-trash"></i></button>
+                        `;
+                    }
+
+                    div.innerHTML = `
+                        <div class="item-icon"><i class="${item.icon}"></i></div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-desc">${item.desc || ' '}</div>
+                        <div class="item-price">${item.price} 🍅</div>
+                        ${depHTML}
+                        <div class="item-actions">${actionsHTML}</div>
+                    `;
+                    storeItemsEl.appendChild(div);
+
+                    div.querySelector('.btn-buy').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        purchaseItem(this.dataset.id);
+                    });
+                    const editBtn = div.querySelector('.btn-edit');
+                    if (editBtn) editBtn.addEventListener('click', function(e) { e.stopPropagation();
+                        startEditing(this.dataset.id); });
+                    const removeBtn = div.querySelector('.btn-remove');
+                    if (removeBtn) removeBtn.addEventListener('click', function(e) { e.stopPropagation();
+                        removeUserItem(this.dataset.id); });
+                });
+            }
+
+            function purchaseItem(itemId) {
+                const item = findItem(itemId);
+                if (!item) return showNotification('商品不存在', 'error');
+                if (data.tomatoes < item.price) return showNotification('番茄币不足！', 'error');
+                data.tomatoes -= item.price;
+                const key = String(item.id);
+                if (data.backpack[key]) {
+                    data.backpack[key].count++;
+                } else {
+                    data.backpack[key] = { id: item.id, name: item.name, icon: item.icon, effect: item.effect,
+                        count: 1, dependencies: item.dependencies || [] };
+                }
+                saveData();
+                updateStatsUI();
+                renderStore();
+                renderBackpack();
+                showNotification(`✅ 购买了「${item.name}」`, 'success');
+            }
+
+            function removeUserItem(itemId) {
+                const idx = data.userItems.findIndex(i => String(i.id) === String(itemId));
+                if (idx === -1) return showNotification('无法移除默认商品', 'error');
+                const removed = data.userItems.splice(idx, 1)[0];
+                const key = String(itemId);
+                if (data.backpack[key]) delete data.backpack[key];
+                saveData();
+                renderStore();
+                renderBackpack();
+                if (editingItemId === String(itemId)) cancelEditing();
+                showNotification(`🗑️ 已移除「${removed.name}」`, 'warning');
+            }
+
+            // =========================================================
+            //  背包渲染（含依赖检查）
+            // =========================================================
+            function renderBackpack() {
+                const keys = Object.keys(data.backpack);
+                backpackItemsEl.innerHTML = '';
+                if (keys.length === 0) {
+                    backpackItemsEl.innerHTML =
+                        `<div class="empty-message"><i class="fas fa-backpack"></i> 背包空空，去商店逛逛吧</div>`;
+                    return;
+                }
+                keys.forEach(key => {
+                    const item = data.backpack[key];
+                    const fullItem = findItem(key);
+                    const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
+                    const depCheck = checkDependencies(fullItem || item);
+
+                    const div = document.createElement('div');
+                    div.className = 'backpack-item';
+
+                    let depStatus = '';
+                    if (deps.length > 0) {
+                        const depNames = getDependencyNames(deps);
+                        const cls = depCheck.ok ? 'dep-ok' : 'dep-miss';
+                        const txt = depCheck.ok ? '✅' : '❌';
+                        depStatus = `<div style="font-size:0.65rem;color:var(--gray);">${txt} ${depNames.join(' → ')}</div>`;
+                    }
+
+                    const canUse = depCheck.ok;
+
+                    div.innerHTML = `
+                        <div class="item-count">${item.count}</div>
+                        <div class="item-icon"><i class="${item.icon}"></i></div>
+                        <div class="item-name">${item.name}</div>
+                        ${depStatus}
+                        <button class="btn ${canUse ? 'btn-primary' : 'btn-outline'} btn-use" data-id="${key}" ${canUse ? '' : 'disabled'}>
+                            ${canUse ? '使用' : '缺依赖'}
+                        </button>
+                    `;
+                    backpackItemsEl.appendChild(div);
+                    div.querySelector('.btn-use').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (!canUse) {
+                            const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
+                            showNotification(`❌ 缺少依赖物品: ${miss}`, 'error');
+                            return;
+                        }
+                        useItem(key);
+                    });
+                });
+            }
+
+            // =========================================================
+            //  使用物品（含开箱）
+            // =========================================================
+            function useItem(itemId) {
+                const item = data.backpack[itemId];
+                if (!item || item.count <= 0) return;
+
+                // 再次检查依赖
+                const fullItem = findItem(itemId);
+                const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
+                const depCheck = checkDependencies(fullItem || item);
+                if (!depCheck.ok) {
+                    const miss = depCheck.missing.map(id => findItem(id)?.name || id).join(', ');
+                    showNotification(`❌ 缺少依赖物品: ${miss}`, 'error');
+                    return;
+                }
+
+                // 应用效果
+                const effect = item.effect || (fullItem ? fullItem.effect : 'rest');
+
+                if (effect === 'lootbox') {
+                    // 🎁 开箱！
+                    const result = openLootbox();
+                    let msg = '';
+                    if (result.type === 'tomato') {
+                        data.tomatoes += result.amount;
+                        msg = `🍅 获得 ${result.amount} 番茄币！`;
+                    } else if (result.type === 'exp') {
+                        data.exp += result.amount;
+                        checkLevelUp();
+                        msg = `⭐ 获得 ${result.amount} 经验值！`;
+                    } else {
+                        msg = '😅 宝箱是空的…';
+                    }
+                    // 消耗一个物品
+                    item.count--;
+                    if (item.count <= 0) delete data.backpack[itemId];
+                    saveData();
+                    updateStatsUI();
+                    renderBackpack();
+                    renderStore();
+                    showNotification(`🎁 ${msg}`, 'success');
+                    return;
+                }
+
+                // 普通效果
+                applyEffect(item);
+                item.count--;
+                if (item.count <= 0) delete data.backpack[itemId];
+                saveData();
+                updateStatsUI();
+                renderBackpack();
+                renderStore();
+            }
+
+            function applyEffect(item) {
+                const effect = item.effect;
+                switch (effect) {
+                    case 'rest':
+                        timeLeft = Math.max(timeLeft, 5 * 60);
+                        updateTimerDisplay();
+                        updateProgress();
+                        updateStatus('🛌 休息 5 分钟');
+                        showNotification('☕ 已使用休息时间', 'success');
+                        break;
+                    case 'focus':
+                        timeLeft = Math.min(timeLeft + 10 * 60, 45 * 60);
+                        updateTimerDisplay();
+                        updateProgress();
+                        updateStatus('🎯 专注时间 +10 分钟');
+                        showNotification('🎯 专注时间增加 10 分钟', 'success');
+                        break;
+                    case 'tomato':
+                        data.tomatoes += 2;
+                        saveData();
+                        updateStatsUI();
+                        showNotification('🍅 获得 2 番茄币！', 'success');
+                        break;
+                    case 'exp':
+                        data.exp += 25;
+                        checkLevelUp();
+                        saveData();
+                        updateStatsUI();
+                        showNotification('⭐ 获得 25 经验值！', 'success');
+                        break;
+                    default:
+                        showNotification(`使用了「${item.name}」`, 'success');
+                }
+            }
+
+            // =========================================================
+            //  创建 / 更新商品（含 dependencies）
+            // =========================================================
+            function getFormData() {
+                const depsRaw = $('item-deps').value.trim();
+                const deps = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+                return {
+                    name: $('item-name').value.trim(),
+                    desc: $('item-desc').value.trim(),
+                    price: parseInt($('item-price').value),
+                    icon: $('item-icon').value,
+                    effect: $('item-effect').value,
+                    dependencies: deps
+                };
+            }
+
+            function validateForm(data) {
+                if (!data.name || !data.desc || isNaN(data.price) || data.price < 1) {
+                    showNotification('请完整填写表单', 'error');
+                    return false;
+                }
+                // 检查依赖是否存在（可选）
+                for (const depId of data.dependencies) {
+                    if (!findItem(depId)) {
+                        showNotification(`⚠️ 依赖物品 ID "${depId}" 不存在，请先创建它`, 'warning');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function saveItemFromForm() {
+                const formData = getFormData();
+                if (!validateForm(formData)) return null;
+
+                if (editingItemId) {
+                    const index = data.userItems.findIndex(i => String(i.id) === editingItemId);
+                    if (index === -1) { showNotification('要编辑的商品已不存在', 'error');
+                        cancelEditing(); return null; }
+                    const oldItem = data.userItems[index];
+                    const updated = { ...oldItem, ...formData };
+                    data.userItems[index] = updated;
+                    const key = editingItemId;
+                    if (data.backpack[key]) {
+                        data.backpack[key].name = updated.name;
+                        data.backpack[key].icon = updated.icon;
+                        data.backpack[key].effect = updated.effect;
+                        data.backpack[key].dependencies = updated.dependencies;
+                    }
+                    saveData();
+                    showNotification(`✅ 已更新「${updated.name}」`, 'success');
+                    cancelEditing();
+                    return updated;
+                } else {
+                    const newItem = { id: 'u_' + Date.now(), ...formData };
+                    data.userItems.push(newItem);
+                    saveData();
+                    showNotification(`✅ 创建商品「${newItem.name}」成功！`, 'success');
+                    itemForm.reset();
+                    $('item-deps').value = '';
+                    return newItem;
+                }
+            }
+
+            itemForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const saved = saveItemFromForm();
+                if (saved) { renderStore();
+                    renderBackpack();
+                    updateStatsUI(); }
+            });
+
+            // =========================================================
+            //  导出单个商品
+            // =========================================================
+            function exportSingleItem(item, filenamePrefix = '商品') {
+                const exportData = { userItems: [item], backpack: {}, version: '1.0' };
+                const json = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const safeName = item.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
+                a.download = `${safeName}_${new Date().toISOString().slice(0,10)}.shem`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showNotification(`📄 已导出「${item.name}」为 .shem 文件`, 'success');
+            }
+
+            btnExportSingle.addEventListener('click', function() {
+                const formData = getFormData();
+                if (!validateForm(formData)) return;
+                const tempItem = { id: 'temp_' + Date.now(), ...formData };
+                exportSingleItem(tempItem, formData.name);
+            });
+
+            btnExportAndLoad.addEventListener('click', function() {
+                const saved = saveItemFromForm();
+                if (saved) {
+                    renderStore();
+                    renderBackpack();
+                    updateStatsUI();
+                    exportSingleItem(saved, saved.name);
+                    if (!editingItemId) { itemForm.reset();
+                        $('item-deps').value = ''; }
+                }
+            });
+
+            // =========================================================
+            //  统计
+            // =========================================================
+            function renderStats() {
+                const dailyEl = $('daily-stats');
+                const weeklyEl = $('weekly-stats');
+                const monthlyEl = $('monthly-stats');
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - now.getDay());
+                weekStart.setHours(0, 0, 0, 0);
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                function filterHistory(startDate) {
+                    return data.history.filter(h => new Date(h.date) >= startDate);
+                }
+
+                function calcStats(records) {
+                    let tomatoes = 0,
+                        exp = 0,
+                        sessions = records.length;
+                    records.forEach(r => { tomatoes += r.tomatoesEarned || 0;
+                        exp += r.expEarned || 0; });
+                    return { tomatoes, exp, sessions };
+                }
+
+                function renderStatBlock(el, records, label) {
+                    const s = calcStats(records);
+                    const expNeeded = data.level * 100;
+                    const expProgress = Math.min(100, (data.exp / expNeeded) * 100);
+                    el.innerHTML = `
+                        <div class="stat-grid">
+                            <div class="stat-card"><div class="icon">🍅</div><div class="number">${s.tomatoes}</div><div class="label">番茄币</div></div>
+                            <div class="stat-card"><div class="icon">⏱️</div><div class="number">${s.sessions}</div><div class="label">完成番茄</div></div>
+                            <div class="stat-card"><div class="icon">⭐</div><div class="number">${s.exp}</div><div class="label">经验值</div></div>
+                            <div class="stat-card"><div class="icon">📊</div><div class="number">${data.level}</div><div class="label">当前等级</div></div>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--gray);">
+                                <span>等级进度</span><span>${data.exp} / ${expNeeded}</span>
+                            </div>
+                            <div class="level-bar"><div class="level-progress" style="width:${expProgress}%;"></div></div>
+                        </div>
+                        <p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">${label} · 共 ${s.sessions} 个番茄</p>
+                    `;
+                }
+                renderStatBlock(dailyEl, filterHistory(today), '今日');
+                renderStatBlock(weeklyEl, filterHistory(weekStart), '本周');
+                renderStatBlock(monthlyEl, filterHistory(monthStart), '本月');
+            }
+
+            // =========================================================
+            //  导航
+            // =========================================================
+            function switchSection(target) {
+                document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+                const section = document.getElementById(`${target}-section`);
+                if (section) section.classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                const navItem = document.querySelector(`.nav-item[data-target="${target}"]`);
+                if (navItem) navItem.classList.add('active');
+                if (target === 'stats') renderStats();
+                if (target === 'store') renderStore();
+                if (target === 'backpack') renderBackpack();
+            }
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() { switchSection(this.dataset.target); });
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const tabId = this.dataset.tab;
+                    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                    const target = document.getElementById(`${tabId}-stats`);
+                    if (target) target.classList.add('active');
+                });
+            });
+
+            // =========================================================
+            //  通知
+            // =========================================================
+            let notiTimer = null;
+
+            function showNotification(text, type = 'success') {
+                notificationText.textContent = text;
+                notification.className = 'notification show ' + type;
+                clearTimeout(notiTimer);
+                notiTimer = setTimeout(() => notification.classList.remove('show'), 3500);
+            }
+
+            // =========================================================
+            //  导入 / 导出 全部（合并）
+            // =========================================================
+            const exportBtn = $('btn-export-items');
+            const importBtn = $('btn-import-items');
+            const fileInput = $('file-input-import');
+
+            exportBtn.addEventListener('click', function() {
+                const exportData = { userItems: data.userItems, backpack: data.backpack, version: '1.0' };
+                const json = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `番茄模组_${new Date().toISOString().slice(0,10)}.shem`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showNotification('✅ 全部数据已导出', 'success');
+            });
+
+            importBtn.addEventListener('click', function() { fileInput.click(); });
+
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        if (imported.userItems && imported.backpack) {
+                            let added = 0,
+                                updated = 0,
+                                bpAdded = 0,
+                                bpUpdated = 0;
+                            imported.userItems.forEach(imp => {
+                                const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
+                                if (idx !== -1) { data.userItems[idx] = imp;
+                                    updated++; } else { data.userItems.push(imp);
+                                    added++; }
+                            });
+                            for (const [key, val] of Object.entries(imported.backpack)) {
+                                if (data.backpack[key]) {
+                                    data.backpack[key].count += val.count;
+                                    data.backpack[key].name = val.name;
+                                    data.backpack[key].icon = val.icon;
+                                    data.backpack[key].effect = val.effect;
+                                    data.backpack[key].dependencies = val.dependencies || [];
+                                    bpUpdated++;
+                                } else {
+                                    data.backpack[key] = val;
+                                    bpAdded++;
+                                }
+                            }
+                            saveData();
+                            renderStore();
+                            renderBackpack();
+                            updateStatsUI();
+                            showNotification(
+                                `✅ 合并完成：新增 ${added} 个商品，更新 ${updated} 个；背包新增 ${bpAdded} 种，更新 ${bpUpdated} 种`,
+                                'success');
+                        } else {
+                            showNotification('❌ 无效的 .shem 文件', 'error');
+                        }
+                    } catch (err) { showNotification('❌ 文件解析失败', 'error');
+                        console.error(err); }
+                };
+                reader.readAsText(file);
+                fileInput.value = '';
+            });
+
+            // =========================================================
+            //  键盘快捷键
+            // =========================================================
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')
+                    return;
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (isRunning && !isPaused) pauseTimer();
+                    else if (isRunning && isPaused) startTimer();
+                    else startTimer();
+                }
+                if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) { e.preventDefault();
+                    resetTimer(); }
+            });
+
+            // =========================================================
+            //  初始化
+            // =========================================================
+            btnStart.addEventListener('click', startTimer);
+            btnPause.addEventListener('click', pauseTimer);
+            btnReset.addEventListener('click', resetTimer);
+            $('btn-refresh-store').addEventListener('click', renderStore);
+
+            function init() {
+                durationInput.value = Math.floor(WORK_TIME / 60);
+                updateStatsUI();
+                updateTimerDisplay();
+                updateProgress();
+                setButtons(false, false);
+                renderStore();
+                renderBackpack();
+                switchSection('timer');
+                renderStats();
+                updateStatus('🍅 准备开始工作吧！');
+            }
+            init();
+            console.log('🍅 番茄闹钟 模组版 已启动！支持开箱 & 依赖联动');
+        });
+    </script>
+</body>
+</html>
