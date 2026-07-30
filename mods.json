@@ -1,0 +1,18 @@
+{
+  "name": "🍅 番茄模组仓库",
+  "description": "全球番茄闹钟模组分享平台",
+  "mods": [
+    {
+      "id": "xbox_controller",
+      "name": "Xbox 手柄",
+      "author": "FI0m9ySans",
+      "version": "1.0",
+      "description": "经典手感，助你专注闯关！使用后增加10分钟专注时间。",
+      "icon": "fa-gamepad",
+      "file": "mods/xbox_controller.shom",
+      "type": "shom",
+      "downloads": 42,
+      "tags": ["硬件", "游戏"]
+    }
+  ]
+}
