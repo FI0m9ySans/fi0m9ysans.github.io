@@ -87,7 +87,7 @@ MIT License
 ## 📧 联系
 
 - GitHub: [@FI0m9ySans](https://github.com/FI0m9ySans)
-- Discord: @FI0m9ySans
+- My Discord Server: [@FI0m9ySans's Community Hub](https://discord.gg/Kxp3KGBJr8)
 - Mail: fi0m9ysans@foxmail.com
 
 ---
