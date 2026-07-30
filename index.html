@@ -99,6 +99,9 @@
         .nav-item.custom-tab {
             border-left-color: var(--gold);
         }
+        .nav-item.mod-item {
+            border-left-color: var(--secondary);
+        }
         .sidebar-footer {
             padding: 16px 24px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -971,6 +974,39 @@
             min-height: 200px;
             padding: 10px 0;
         }
+
+        /* 模组管理卡片 */
+        .mod-item-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-left: 4px solid var(--secondary);
+        }
+        .mod-item-card .mod-info {
+            flex: 1;
+        }
+        .mod-item-card .mod-info .mod-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .mod-item-card .mod-info .mod-meta {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        .mod-item-card .mod-actions .btn {
+            padding: 6px 16px;
+            font-size: 0.8rem;
+        }
+        .mod-grid-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
     </style>
 </head>
 <body>
@@ -986,11 +1022,11 @@
             <div class="nav-item" data-target="tasks"><i class="fas fa-tasks"></i> <span data-i18n="nav-tasks">任务</span></div>
             <div class="nav-item" data-target="create"><i class="fas fa-plus-circle"></i> <span data-i18n="nav-create">创建商品</span></div>
             <div class="nav-item" data-target="stats"><i class="fas fa-chart-line"></i> <span data-i18n="nav-stats">统计</span></div>
-            <!-- 新增：模组市场 -->
             <div class="nav-item" data-target="market"><i class="fas fa-globe"></i> <span data-i18n="nav-market">模组市场</span></div>
+            <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v3.6 · 支持市场</div>
+        <div class="sidebar-footer">v3.7 · 完整版</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -1228,6 +1264,20 @@
             </div>
         </section>
 
+        <!-- ===== 模组管理 ===== -->
+        <section class="panel content-section" id="modmanager-section">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-cubes"></i> <span data-i18n="modmanager-title">📦 模组管理</span></h2>
+                <button class="btn btn-secondary btn-sm" id="btn-refresh-modmanager"><i class="fas fa-sync-alt"></i> <span data-i18n="modmanager-refresh">刷新</span></button>
+            </div>
+            <div id="modmanager-list" class="mod-grid-list">
+                <div class="empty-message"><i class="fas fa-cubes"></i> 暂无已安装的模组</div>
+            </div>
+            <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;font-size:0.85rem;color:var(--gray);">
+                <i class="fas fa-info-circle"></i> <span data-i18n="modmanager-hint">卸载模组会删除其所有商品、背包物品、任务和自定义标签页。此操作不可撤销，请谨慎操作。</span>
+            </div>
+        </section>
+
         <!-- ===== 自定义标签面板（动态生成） ===== -->
         <!-- 将由 JS 动态创建 -->
     </main>
@@ -1241,7 +1291,7 @@
     <!-- ============================================================ -->
     <script>
         // =========================================================
-        //  国际化 (i18n) 翻译表 (新增市场)
+        //  国际化 (i18n) 翻译表 (新增模组管理)
         // =========================================================
         const TRANSLATIONS = {
             'zh': {
@@ -1252,7 +1302,8 @@
                 'nav-create': '创建商品',
                 'nav-stats': '统计',
                 'nav-market': '模组市场',
-                'footer-text': 'v3.6 · 支持市场',
+                'nav-modmanager': '模组管理',
+                'footer-text': 'v3.7 · 完整版',
                 'header-title': '专注工作',
                 'stat-tomato': '番茄币',
                 'stat-exp': '经验值',
@@ -1278,6 +1329,9 @@
                 'save-import': '导入存档 (.saop)',
                 'market-title': '🌐 模组市场',
                 'market-refresh': '刷新',
+                'modmanager-title': '📦 模组管理',
+                'modmanager-refresh': '刷新',
+                'modmanager-hint': '卸载模组会删除其所有商品、背包物品、任务和自定义标签页。此操作不可撤销，请谨慎操作。',
                 'task-name-label': '任务名称',
                 'task-target-label': '目标番茄数',
                 'task-desc-label': '任务描述',
@@ -1377,6 +1431,8 @@
                 'notif_error_import_parse': '❌ 文件解析失败',
                 'notif_error_market_load': '❌ 加载模组列表失败，请检查网络或仓库地址',
                 'notif_install_success': '✅ 模组「{name}」安装成功！',
+                'notif_uninstall_success': '🗑️ 已卸载模组「{name}」',
+                'notif_uninstall_error': '❌ 卸载失败：{error}',
                 'task_edit': '编辑',
                 'task_delete': '删除',
                 'task_reset': '重置',
@@ -1395,6 +1451,10 @@
                 'market_type_shom': '📄 商品',
                 'market_type_zid': '🧩 模组',
                 'market_type_taem': '📋 任务',
+                'modmanager_empty': '暂无已安装的模组',
+                'modmanager_uninstall': '卸载',
+                'modmanager_uninstalling': '卸载中...',
+                'modmanager_confirm': '确定要卸载模组「{name}」吗？这将删除其所有商品、背包物品、任务和自定义标签页。此操作不可撤销。',
             },
             'en': {
                 'nav-timer': 'Pomodoro Timer',
@@ -1404,7 +1464,8 @@
                 'nav-create': 'Create Item',
                 'nav-stats': 'Statistics',
                 'nav-market': 'Mod Market',
-                'footer-text': 'v3.6 · Market',
+                'nav-modmanager': 'Mod Manager',
+                'footer-text': 'v3.7 · Full',
                 'header-title': 'Focus & Work',
                 'stat-tomato': 'Tomatoes',
                 'stat-exp': 'EXP',
@@ -1430,6 +1491,9 @@
                 'save-import': 'Import Save (.saop)',
                 'market-title': '🌐 Mod Market',
                 'market-refresh': 'Refresh',
+                'modmanager-title': '📦 Mod Manager',
+                'modmanager-refresh': 'Refresh',
+                'modmanager-hint': 'Uninstalling a mod will delete all its items, backpack items, tasks, and custom tabs. This action is irreversible.',
                 'task-name-label': 'Task Name',
                 'task-target-label': 'Target Pomodoros',
                 'task-desc-label': 'Task Description',
@@ -1529,6 +1593,8 @@
                 'notif_error_import_parse': '❌ Failed to parse file',
                 'notif_error_market_load': '❌ Failed to load mod list, check network or repo address',
                 'notif_install_success': '✅ Mod "{name}" installed successfully!',
+                'notif_uninstall_success': '🗑️ Uninstalled mod "{name}"',
+                'notif_uninstall_error': '❌ Uninstall failed: {error}',
                 'task_edit': 'Edit',
                 'task_delete': 'Delete',
                 'task_reset': 'Reset',
@@ -1547,6 +1613,10 @@
                 'market_type_shom': '📄 Item',
                 'market_type_zid': '🧩 Mod',
                 'market_type_taem': '📋 Task',
+                'modmanager_empty': 'No installed mods',
+                'modmanager_uninstall': 'Uninstall',
+                'modmanager_uninstalling': 'Uninstalling...',
+                'modmanager_confirm': 'Are you sure you want to uninstall mod "{name}"? This will delete all its items, backpack items, tasks, and custom tabs. This action is irreversible.',
             }
         };
 
@@ -1574,12 +1644,14 @@
                 el.textContent = t(key);
             });
             document.getElementById('lang-toggle').textContent = lang === 'zh' ? '🌐 English' : '🌐 中文';
+            // 重新渲染所有动态内容
             renderStore();
             renderBackpack();
             renderTasks();
             renderStats();
             renderCustomTabs();
-            renderMarket(); // 市场也重新渲染
+            renderMarket();
+            renderModManager();
             updateStatus(t('status-ready'));
             document.getElementById('status').textContent = t('status-ready');
             if (editingItemId) {
@@ -1589,7 +1661,7 @@
         }
 
         // =========================================================
-        //  数据层（含 customTabs）
+        //  数据层（含 installedMods）
         // =========================================================
         const STORAGE_KEY = 'tomato_data_v3';
 
@@ -1603,6 +1675,7 @@
                 tasks: [],
                 history: [],
                 customTabs: [],
+                installedMods: [], // 记录已安装模组：{ id, name, itemIds, taskIds, tabIds, importedAt }
                 stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
                         sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
             };
@@ -1621,6 +1694,7 @@
                         parsed.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
                     }
                     if (!parsed.customTabs) parsed.customTabs = [];
+                    if (!parsed.installedMods) parsed.installedMods = [];
                     return parsed;
                 }
             } catch (_) {}
@@ -2699,7 +2773,8 @@
             if (target === 'store') renderStore();
             if (target === 'backpack') renderBackpack();
             if (target === 'tasks') renderTasks();
-            if (target === 'market') renderMarket(); // 市场渲染
+            if (target === 'market') renderMarket();
+            if (target === 'modmanager') renderModManager();
         }
 
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -2773,7 +2848,7 @@
         }
 
         // =========================================================
-        //  存档导入/导出 (保持不变)
+        //  存档导入/导出
         // =========================================================
         $('btn-export-save').addEventListener('click', function() {
             const saveData = {
@@ -2785,6 +2860,7 @@
                 tasks: data.tasks,
                 history: data.history,
                 customTabs: data.customTabs,
+                installedMods: data.installedMods,
                 stats: data.stats,
                 version: '1.0'
             };
@@ -2793,7 +2869,7 @@
         });
 
         $('btn-import-save').addEventListener('click', function() {
-            if (!confirm('导入存档将完全替换当前所有数据（包括进度、物品、任务等），确定继续吗？')) return;
+            if (!confirm('导入存档将完全替换当前所有数据（包括进度、物品、任务、模组等），确定继续吗？')) return;
             importFile('.saop', function(imported) {
                 if (typeof imported.tomatoes !== 'number' || typeof imported.exp !== 'number') {
                     return showNotification(t('notif_error_import_invalid'), 'error');
@@ -2806,6 +2882,7 @@
                 data.tasks = imported.tasks || [];
                 data.history = imported.history || [];
                 data.customTabs = imported.customTabs || [];
+                data.installedMods = imported.installedMods || [];
                 data.stats = imported.stats || { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0,
                         exp: 0, sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } };
                 data.tasks.forEach(t => { if (!t.dependencies) t.dependencies = []; });
@@ -2818,6 +2895,7 @@
                 renderBackpack();
                 renderTasks();
                 renderCustomTabs();
+                renderModManager();
                 renderStats();
                 updateStatus(t('status-ready'));
                 showNotification(t('notif_import_save'), 'success');
@@ -2825,7 +2903,7 @@
         });
 
         // =========================================================
-        //  商品 (.shom / .shem) 导入/导出
+        //  商品 (.shom / .shem)
         // =========================================================
         $('btn-export-shom').addEventListener('click', function() {
             const exportData = {
@@ -2869,7 +2947,7 @@
         });
 
         // =========================================================
-        //  模组 (.zid / .zod) 导入/导出
+        //  模组 (.zid / .zod) —— 导入时记录 installedMods
         // =========================================================
         $('btn-export-zid').addEventListener('click', function() {
             const exportData = {
@@ -2888,6 +2966,7 @@
                 if (!imported.userItems || !imported.backpack) {
                     return showNotification(t('notif_error_import_invalid'), 'error');
                 }
+                // 合并数据
                 let itemAdded = 0,
                     itemUpdated = 0,
                     taskAdded = 0,
@@ -2938,18 +3017,34 @@
                     });
                 }
 
+                // 记录模组安装信息
+                const modName = imported.name || '未命名模组';
+                const modId = 'mod_' + Date.now();
+                const itemIds = imported.userItems.map(i => i.id);
+                const taskIds = (imported.tasks || []).map(t => t.id);
+                const tabIds = (imported.customTabs || []).map(t => t.id);
+                data.installedMods.push({
+                    id: modId,
+                    name: modName,
+                    itemIds: itemIds,
+                    taskIds: taskIds,
+                    tabIds: tabIds,
+                    importedAt: new Date().toISOString()
+                });
+
                 saveData();
                 renderStore();
                 renderBackpack();
                 renderTasks();
                 renderCustomTabs();
+                renderModManager();
                 showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated,
                     tabAdded }), 'success');
             });
         });
 
         // =========================================================
-        //  任务 (.taem) 导入/导出
+        //  任务 (.taem)
         // =========================================================
         $('btn-export-tasks').addEventListener('click', function() {
             if (data.tasks.length === 0) {
@@ -2995,11 +3090,10 @@
         // =========================================================
         //  🌐 模组市场
         // =========================================================
-        // 配置 - 修改为你的 GitHub 仓库
         const MARKET_CONFIG = {
-            REPO_OWNER: 'FI0m9ySans',          // 你的 GitHub 用户名（注意大小写）
-            REPO_NAME: 'fi0m9ysans.github.io', // 你的仓库名
-            INDEX_PATH: 'mods.json',           // 保持不变
+            REPO_OWNER: 'FI0m9ySans',
+            REPO_NAME: 'fi0m9ysans.github.io',
+            INDEX_PATH: 'mods.json',
         };
 
         function getRawUrl(path) {
@@ -3062,7 +3156,7 @@
                         </div>
                         <div class="item-desc">${mod.description || '暂无描述'}</div>
                         <div class="item-actions">
-                            <button class="btn btn-primary btn-install" data-file="${fileUrl}" data-name="${mod.name}" data-type="${mod.type}">
+                            <button class="btn btn-primary btn-install" data-file="${fileUrl}" data-name="${mod.name}" data-type="${mod.type}" data-moddata='${JSON.stringify(mod).replace(/'/g,"&#39;")}'>
                                 <i class="fas fa-download"></i> ${t('market_install')}
                             </button>
                             <button class="btn btn-secondary btn-sm" onclick="alert('📦 ${mod.name}\\n👤 ${mod.author || '匿名'}\\n📄 ${typeLabel}\\n📌 v${mod.version || '1.0'}\\n\\n📝 ${mod.description || '暂无描述'}\\n\\n🏷️ ${(mod.tags || []).join('、') || '无'}')">
@@ -3079,18 +3173,17 @@
                     const fileUrl = this.dataset.file;
                     const name = this.dataset.name;
                     const type = this.dataset.type;
+                    const modData = JSON.parse(this.dataset.moddata);
                     this.disabled = true;
                     this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('market_installing')}`;
                     try {
                         const response = await fetch(fileUrl);
                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
                         const imported = await response.json();
-                        // 根据类型调用不同的导入逻辑
+
+                        // 根据类型调用不同的导入逻辑，并记录模组信息
                         if (type === 'shom' || type === 'shem') {
-                            // 商品导入
-                            if (!imported.userItems || !imported.backpack) {
-                                throw new Error('无效的商品文件');
-                            }
+                            if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
                             let added = 0, updated = 0;
                             imported.userItems.forEach(imp => {
                                 const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
@@ -3107,15 +3200,23 @@
                                     data.backpack[key] = val;
                                 }
                             }
+                            // 记录模组
+                            const modId = 'mod_' + Date.now();
+                            data.installedMods.push({
+                                id: modId,
+                                name: name,
+                                itemIds: imported.userItems.map(i => i.id),
+                                taskIds: [],
+                                tabIds: [],
+                                importedAt: new Date().toISOString()
+                            });
                             saveData();
                             renderStore();
                             renderBackpack();
+                            renderModManager();
                             showNotification(t('notif_import_shom', { added, updated }), 'success');
                         } else if (type === 'zid' || type === 'zod') {
-                            // 模组导入
-                            if (!imported.userItems || !imported.backpack) {
-                                throw new Error('无效的模组文件');
-                            }
+                            if (!imported.userItems || !imported.backpack) throw new Error('无效的模组文件');
                             let itemAdded = 0, itemUpdated = 0, taskAdded = 0, taskUpdated = 0, tabAdded = 0;
                             imported.userItems.forEach(imp => {
                                 const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
@@ -3154,17 +3255,25 @@
                                     }
                                 });
                             }
+                            // 记录模组
+                            const modId = 'mod_' + Date.now();
+                            data.installedMods.push({
+                                id: modId,
+                                name: name,
+                                itemIds: imported.userItems.map(i => i.id),
+                                taskIds: (imported.tasks || []).map(t => t.id),
+                                tabIds: (imported.customTabs || []).map(t => t.id),
+                                importedAt: new Date().toISOString()
+                            });
                             saveData();
                             renderStore();
                             renderBackpack();
                             renderTasks();
                             renderCustomTabs();
+                            renderModManager();
                             showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated, tabAdded }), 'success');
                         } else if (type === 'taem') {
-                            // 任务导入
-                            if (!imported.tasks || !Array.isArray(imported.tasks)) {
-                                throw new Error('无效的任务文件');
-                            }
+                            if (!imported.tasks || !Array.isArray(imported.tasks)) throw new Error('无效的任务文件');
                             let added = 0, updated = 0;
                             imported.tasks.forEach(impTask => {
                                 if (!impTask.dependencies) impTask.dependencies = [];
@@ -3178,8 +3287,19 @@
                                     added++;
                                 }
                             });
+                            // 记录模组（任务模组）
+                            const modId = 'mod_' + Date.now();
+                            data.installedMods.push({
+                                id: modId,
+                                name: name,
+                                itemIds: [],
+                                taskIds: imported.tasks.map(t => t.id),
+                                tabIds: [],
+                                importedAt: new Date().toISOString()
+                            });
                             saveData();
                             renderTasks();
+                            renderModManager();
                             showNotification(t('notif_import_tasks', { added, updated }), 'success');
                         } else {
                             throw new Error('未知模组类型');
@@ -3196,15 +3316,90 @@
             });
         }
 
-        // 市场刷新
         function renderMarket() {
             const container = document.getElementById('market-list');
             container.innerHTML = `<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 加载模组列表中...</div>`;
             loadMarketMods();
         }
 
-        // 刷新按钮
         $('btn-refresh-market').addEventListener('click', renderMarket);
+
+        // =========================================================
+        //  📦 模组管理
+        // =========================================================
+        function renderModManager() {
+            const container = document.getElementById('modmanager-list');
+            const mods = data.installedMods;
+            if (mods.length === 0) {
+                container.innerHTML = `<div class="empty-message"><i class="fas fa-cubes"></i> ${t('modmanager_empty')}</div>`;
+                return;
+            }
+            container.innerHTML = mods.map(mod => `
+                <div class="mod-item-card" data-modid="${mod.id}">
+                    <div class="mod-info">
+                        <div class="mod-name">${mod.name}</div>
+                        <div class="mod-meta">
+                            🧩 ${mod.itemIds.length} 个物品 · 📋 ${mod.taskIds.length} 个任务 · 📑 ${mod.tabIds.length} 个标签
+                            <span style="margin-left:12px;">📅 ${new Date(mod.importedAt).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="mod-actions">
+                        <button class="btn btn-danger btn-sm btn-uninstall" data-modid="${mod.id}" data-modname="${mod.name}">
+                            <i class="fas fa-trash"></i> ${t('modmanager_uninstall')}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 绑定卸载事件
+            container.querySelectorAll('.btn-uninstall').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modId = this.dataset.modid;
+                    const modName = this.dataset.modname;
+                    if (confirm(t('modmanager_confirm', { name: modName }))) {
+                        uninstallMod(modId);
+                    }
+                });
+            });
+        }
+
+        function uninstallMod(modId) {
+            const modIndex = data.installedMods.findIndex(m => m.id === modId);
+            if (modIndex === -1) {
+                showNotification(t('notif_uninstall_error', { error: '模组不存在' }), 'error');
+                return;
+            }
+            const mod = data.installedMods[modIndex];
+            try {
+                // 删除物品
+                data.userItems = data.userItems.filter(i => !mod.itemIds.includes(i.id));
+                // 删除背包中的对应物品（如果有）
+                mod.itemIds.forEach(id => {
+                    delete data.backpack[id];
+                });
+                // 删除任务
+                data.tasks = data.tasks.filter(t => !mod.taskIds.includes(t.id));
+                // 删除自定义标签
+                data.customTabs = data.customTabs.filter(t => !mod.tabIds.includes(t.id));
+                // 移除记录
+                data.installedMods.splice(modIndex, 1);
+
+                saveData();
+                // 刷新所有界面
+                renderStore();
+                renderBackpack();
+                renderTasks();
+                renderCustomTabs();
+                renderModManager();
+                showNotification(t('notif_uninstall_success', { name: mod.name }), 'success');
+            } catch (err) {
+                console.error(err);
+                showNotification(t('notif_uninstall_error', { error: err.message }), 'error');
+            }
+        }
+
+        // 刷新模组管理按钮
+        $('btn-refresh-modmanager').addEventListener('click', renderModManager);
 
         // =========================================================
         //  键盘快捷键
@@ -3234,6 +3429,7 @@
             renderStats();
             renderCustomTabs();
             renderMarket();
+            renderModManager();
             updateStatus(t('status-ready'));
         });
 
@@ -3257,8 +3453,8 @@
             renderBackpack();
             renderTasks();
             renderCustomTabs();
-            // 加载市场（但不切换）
             renderMarket();
+            renderModManager();
             switchSection('timer');
             renderStats();
             updateStatus(t('status-ready'));
@@ -3266,7 +3462,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v3.6 · 支持模组市场！');
+        console.log('🍅 番茄闹钟 v3.7 · 完整版（含模组管理）已启动！');
     </script>
 </body>
 </html>
