@@ -2,7 +2,7 @@
 name: "\U0001F4E6 模组提交 / Mod Submission"
 about: 提交你的番茄闹钟模组 / Submit your tomato clock mod
 title: "[新模组]"
-labels: ''
+labels: status/pending
 assignees: ''
 
 ---

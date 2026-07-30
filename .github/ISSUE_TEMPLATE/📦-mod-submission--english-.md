@@ -2,7 +2,7 @@
 name: "\U0001F4E6 Mod Submission (English)"
 about: Submit your tomato clock mod
 title: "[New Mod]"
-labels: ''
+labels: status/pending
 assignees: ''
 
 ---
