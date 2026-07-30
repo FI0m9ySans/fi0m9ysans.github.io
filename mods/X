@@ -1,0 +1,14 @@
+{
+  "userItems": [
+    {
+      "id": "u_1712345678901",
+      "name": "Xbox 360 手柄",
+      "desc": "经典手感，助你专注闯关！使用后增加 10 分钟专注时间。",
+      "price": 5,
+      "icon": "fas fa-gamepad",
+      "effect": "focus"
+    }
+  ],
+  "backpack": {},
+  "version": "1.0"
+}
