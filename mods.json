@@ -25,6 +25,18 @@
       "type": "shem",
       "downloads": 0,
       "tags": ["工具", "摄影"]
+    },
+    {
+      "id": "three_item_box_mod",
+      "name": "道具礼包模组",
+      "author": "FI0m9ySans",
+      "version": "1.0",
+      "description": "内含三个物品的模组。",
+      "icon": "fa-box",
+      "file": "mods/道具礼包.shem",
+      "type": "shem",
+      "downloads": 0,
+      "tags": ["道具", "礼包"]
     }
   ]
 }
