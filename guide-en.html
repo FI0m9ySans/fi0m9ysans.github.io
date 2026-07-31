@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📖 Mod Development Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f0f2f5 0%, #dbe0e8 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 50px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        h1 { color: #1e2a3a; margin-bottom: 10px; }
+        h1 i { color: #e74c3c; margin-right: 12px; }
+        .subtitle { color: #7f8c8d; margin-bottom: 30px; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover { text-decoration: underline; }
+        h2 { color: #1e2a3a; margin: 30px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        h2 i { color: #e74c3c; margin-right: 10px; }
+        code {
+            background: #f0f2f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        pre {
+            background: #1e2a3a;
+            color: #ecf0f1;
+            padding: 16px 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 0.85rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .feature-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+        }
+        .feature-card i { font-size: 2rem; color: #e74c3c; margin-bottom: 8px; }
+        .feature-card h4 { color: #1e2a3a; }
+        .feature-card p { color: #7f8c8d; font-size: 0.85rem; }
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 16px;
+        }
+        .lang-switch a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 4px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        .lang-switch a:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+        .footer a { color: #3498db; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <a href="./guide.html">🇨🇳 中文</a>
+        </div>
+        <a href="./" class="back-link"><i class="fas fa-arrow-left"></i> Back to Tomato Clock</a>
+        <h1><i class="fas fa-book-open"></i> Mod Development Guide</h1>
+        <p class="subtitle">Learn how to create mods for Tomato Clock</p>
+
+        <h2><i class="fas fa-rocket"></i> Quick Start</h2>
+        <p>A mod is a JSON file that adds new features to Tomato Clock. The simplest mod:</p>
+        <pre>{
+  "userItems": [
+    {
+      "id": "my_first_item",
+      "name": "My First Item",
+      "price": 10,
+      "icon": "fa-star",
+      "effect": "focus",
+      "desc": "Adds 10 minutes of focus time!",
+      "dependencies": []
+    }
+  ],
+  "backpack": {},
+  "tasks": [],
+  "customTabs": [],
+  "version": "1.0"
+}</pre>
+
+        <h2><i class="fas fa-file-code"></i> File Formats</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <i class="fas fa-cube"></i>
+                <h4>.shom</h4>
+                <p>Items + Backpack<br/><strong>Recommended</strong></p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-layer-group"></i>
+                <h4>.zid</h4>
+                <p>Items + Tasks + Tabs<br/>Full Mod</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-list-check"></i>
+                <h4>.taem</h4>
+                <p>Task List<br/>Tasks only</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-floppy-disk"></i>
+                <h4>.saop</h4>
+                <p>Full Save<br/>Backup progress</p>
+            </div>
+        </div>
+
+        <h2><i class="fas fa-gem"></i> Effect Types</h2>
+        <ul style="line-height:2;margin-left:20px;">
+            <li><strong>rest</strong> — Adds rest time (e.g. Rest 5 minutes)</li>
+            <li><strong>focus</strong> — Adds focus time (e.g. Focus +10 minutes)</li>
+            <li><strong>tomato</strong> — Rewards Tomato Coins (e.g. Get 2 Tomato Coins)</li>
+            <li><strong>exp</strong> — Rewards EXP (e.g. Gain 25 EXP)</li>
+            <li><strong>lootbox</strong> — Random lootbox reward</li>
+        </ul>
+
+        <h2><i class="fas fa-link"></i> Related Links</h2>
+        <ul style="line-height:2.4;margin-left:20px;">
+            <li><a href="./">🍅 Tomato Clock</a></li>
+            <li><a href="https://github.com/FI0m9ySans/fi0m9ysans.github.io">🐙 GitHub Repository</a></li>
+            <li><a href="https://github.com/FI0m9ySans/fi0m9ysans.github.io/issues/new/choose">📤 Submit a Mod</a></li>
+            <li><a href="https://fontawesome.com/icons">🎨 FontAwesome Icons</a></li>
+        </ul>
+
+        <div class="footer">
+            <p>🍅 Tomato Clock · Mod Development Guide &mdash; <a href="./">Back to Home</a></p>
+        </div>
+    </div>
+</body>
+</html>
