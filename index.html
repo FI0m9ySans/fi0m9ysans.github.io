@@ -3194,6 +3194,7 @@
                 });
             });
         }
+    // 下载函数（独立）
     async function downloadModFile(url, fileName) {
         try {
             showNotification('⏳ 正在下载...', 'warning');
@@ -3213,35 +3214,40 @@
             console.error(err);
             showNotification('❌ 下载失败: ' + err.message, 'error');
         }
+    }  // <-- 这里闭合 downloadModFile
 
-        function renderMarket() {
-            const container = document.getElementById('market-list');
-            container.innerHTML = `<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 加载模组列表中...</div>`;
-            loadMarketMods();
+    // =========================================================
+    //  🌐 模组市场渲染
+    // =========================================================
+    function renderMarket() {
+        const container = document.getElementById('market-list');
+        container.innerHTML = `<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 加载模组列表中...</div>`;
+        loadMarketMods();
+    }
+    $('btn-refresh-market').addEventListener('click', renderMarket);
+
+    // =========================================================
+    //  📦 模组管理
+    // =========================================================
+    function renderModManager() {
+        const container = document.getElementById('modmanager-list');
+        const mods = data.installedMods;
+        if (mods.length === 0) {
+            container.innerHTML = `<div class="empty-message"><i class="fas fa-cubes"></i> ${t('modmanager_empty')}</div>`;
+            return;
         }
-        $('btn-refresh-market').addEventListener('click', renderMarket);
-
-        // =========================================================
-        //  📦 模组管理
-        // =========================================================
-        function renderModManager() {
-            const container = document.getElementById('modmanager-list');
-            const mods = data.installedMods;
-            if (mods.length === 0) {
-                container.innerHTML = `<div class="empty-message"><i class="fas fa-cubes"></i> ${t('modmanager_empty')}</div>`;
-                return;
-            }
-            container.innerHTML = mods.map(mod =>
-                `<div class="mod-item-card" data-modid="${mod.id}"><div class="mod-info"><div class="mod-name">${mod.name}</div><div class="mod-meta">🧩 ${mod.itemIds.length} 个物品 · 📋 ${mod.taskIds.length} 个任务 · 📑 ${mod.tabIds.length} 个标签 <span style="margin-left:12px;">📅 ${new Date(mod.importedAt).toLocaleDateString()}</span></div></div><div class="mod-actions"><button class="btn btn-danger btn-sm btn-uninstall" data-modid="${mod.id}" data-modname="${mod.name}"><i class="fas fa-trash"></i> ${t('modmanager_uninstall')}</button></div></div>`
-            ).join('');
-            container.querySelectorAll('.btn-uninstall').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const modId = this.dataset.modid;
-                    const modName = this.dataset.modname;
-                    if (confirm(t('modmanager_confirm', { name: modName }))) { uninstallMod(modId); }
-                });
+        container.innerHTML = mods.map(mod =>
+            `<div class="mod-item-card" data-modid="${mod.id}"><div class="mod-info"><div class="mod-name">${mod.name}</div><div class="mod-meta">🧩 ${mod.itemIds.length} 个物品 · 📋 ${mod.taskIds.length} 个任务 · 📑 ${mod.tabIds.length} 个标签 <span style="margin-left:12px;">📅 ${new Date(mod.importedAt).toLocaleDateString()}</span></div></div><div class="mod-actions"><button class="btn btn-danger btn-sm btn-uninstall" data-modid="${mod.id}" data-modname="${mod.name}"><i class="fas fa-trash"></i> ${t('modmanager_uninstall')}</button></div></div>`
+        ).join('');
+        container.querySelectorAll('.btn-uninstall').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modId = this.dataset.modid;
+                const modName = this.dataset.modname;
+                if (confirm(t('modmanager_confirm', { name: modName }))) { uninstallMod(modId); }
             });
-        }
+        });
+    }
+    $('btn-refresh-modmanager').addEventListener('click', renderModManager);
 
         function uninstallMod(modId) {
             const modIndex = data.installedMods.findIndex(m => m.id === modId);
@@ -3332,7 +3338,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.1 · 支持 source 外部 HTML 已启动！');
+        console.log('🍅 番茄闹钟 v4.2 · Completely fixed the error!');
     </script>
 </body>
 </html>
