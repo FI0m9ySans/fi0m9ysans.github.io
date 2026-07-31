@@ -2996,8 +2996,21 @@
                     this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('market_installing')}`;
                     try {
                         const response = await fetch(fileUrl);
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                        const imported = await response.json();
+                        const blob = await response.blob();
+                        const ext = fileUrl.split('.').pop().toLowerCase();
+                        
+                        if (ext === 'tomod') {
+                            // 用 JSZip 解压
+                            const zip = await JSZip.loadAsync(blob);
+                            const modJsonFile = zip.file('mod.json');
+                            const content = await modJsonFile.async('text');
+                            const imported = JSON.parse(content);
+                            // 继续处理 ...
+                        } else {
+                            // 旧格式：直接 JSON.parse
+                            const text = await blob.text();
+                            const imported = JSON.parse(text);
+                        }
                         if (type === 'shom' || type === 'shem') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
                             let added = 0,
