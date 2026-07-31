@@ -99,9 +99,6 @@
         .nav-item.custom-tab {
             border-left-color: var(--gold);
         }
-        .nav-item.mod-item {
-            border-left-color: var(--secondary);
-        }
         .sidebar-footer {
             padding: 16px 24px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -1291,7 +1288,7 @@
     <!-- ============================================================ -->
     <script>
         // =========================================================
-        //  国际化 (i18n) 翻译表 (新增模组管理)
+        //  国际化 (i18n) 翻译表
         // =========================================================
         const TRANSLATIONS = {
             'zh': {
@@ -1644,7 +1641,6 @@
                 el.textContent = t(key);
             });
             document.getElementById('lang-toggle').textContent = lang === 'zh' ? '🌐 English' : '🌐 中文';
-            // 重新渲染所有动态内容
             renderStore();
             renderBackpack();
             renderTasks();
@@ -1675,7 +1671,7 @@
                 tasks: [],
                 history: [],
                 customTabs: [],
-                installedMods: [], // 记录已安装模组：{ id, name, itemIds, taskIds, tabIds, importedAt }
+                installedMods: [],
                 stats: { daily: { tomatoes: 0, exp: 0, sessions: 0 }, weekly: { tomatoes: 0, exp: 0,
                         sessions: 0 }, monthly: { tomatoes: 0, exp: 0, sessions: 0 } }
             };
@@ -2699,7 +2695,7 @@
         }
 
         // =========================================================
-        //  自定义标签页系统
+        //  自定义标签页系统（含脚本执行修复）
         // =========================================================
         function renderCustomTabs() {
             const navContainer = document.getElementById('sidebar-nav');
@@ -2713,7 +2709,7 @@
             existingPanels.forEach(el => el.remove());
 
             // 重新构建
-            data.customTabs.forEach((tab, index) => {
+            data.customTabs.forEach((tab) => {
                 // 侧边栏项
                 const navItem = document.createElement('div');
                 navItem.className = 'nav-item custom-tab';
@@ -2734,7 +2730,16 @@
                 `;
                 mainContent.appendChild(panel);
 
-                // 绑定删除事件
+                // ⭐ 关键修复：执行面板内的脚本
+                const scripts = panel.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = oldScript.textContent;
+                    if (oldScript.src) newScript.src = oldScript.src;
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+
+                // 删除标签
                 panel.querySelector('.btn-delete-custom-tab').addEventListener('click', function() {
                     const id = this.dataset.id;
                     if (confirm(`确定删除标签 "${data.customTabs.find(t => t.id === id)?.name}" 吗？`)) {
@@ -2947,7 +2952,7 @@
         });
 
         // =========================================================
-        //  模组 (.zid / .zod) —— 导入时记录 installedMods
+        //  模组 (.zid / .zod)
         // =========================================================
         $('btn-export-zid').addEventListener('click', function() {
             const exportData = {
@@ -2966,7 +2971,6 @@
                 if (!imported.userItems || !imported.backpack) {
                     return showNotification(t('notif_error_import_invalid'), 'error');
                 }
-                // 合并数据
                 let itemAdded = 0,
                     itemUpdated = 0,
                     taskAdded = 0,
@@ -3017,7 +3021,6 @@
                     });
                 }
 
-                // 记录模组安装信息
                 const modName = imported.name || '未命名模组';
                 const modId = 'mod_' + Date.now();
                 const itemIds = imported.userItems.map(i => i.id);
@@ -3181,7 +3184,6 @@
                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
                         const imported = await response.json();
 
-                        // 根据类型调用不同的导入逻辑，并记录模组信息
                         if (type === 'shom' || type === 'shem') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
                             let added = 0, updated = 0;
@@ -3200,7 +3202,6 @@
                                     data.backpack[key] = val;
                                 }
                             }
-                            // 记录模组
                             const modId = 'mod_' + Date.now();
                             data.installedMods.push({
                                 id: modId,
@@ -3255,7 +3256,6 @@
                                     }
                                 });
                             }
-                            // 记录模组
                             const modId = 'mod_' + Date.now();
                             data.installedMods.push({
                                 id: modId,
@@ -3287,7 +3287,6 @@
                                     added++;
                                 }
                             });
-                            // 记录模组（任务模组）
                             const modId = 'mod_' + Date.now();
                             data.installedMods.push({
                                 id: modId,
@@ -3351,7 +3350,6 @@
                 </div>
             `).join('');
 
-            // 绑定卸载事件
             container.querySelectorAll('.btn-uninstall').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const modId = this.dataset.modid;
@@ -3371,21 +3369,15 @@
             }
             const mod = data.installedMods[modIndex];
             try {
-                // 删除物品
                 data.userItems = data.userItems.filter(i => !mod.itemIds.includes(i.id));
-                // 删除背包中的对应物品（如果有）
                 mod.itemIds.forEach(id => {
                     delete data.backpack[id];
                 });
-                // 删除任务
                 data.tasks = data.tasks.filter(t => !mod.taskIds.includes(t.id));
-                // 删除自定义标签
                 data.customTabs = data.customTabs.filter(t => !mod.tabIds.includes(t.id));
-                // 移除记录
                 data.installedMods.splice(modIndex, 1);
 
                 saveData();
-                // 刷新所有界面
                 renderStore();
                 renderBackpack();
                 renderTasks();
@@ -3398,7 +3390,6 @@
             }
         }
 
-        // 刷新模组管理按钮
         $('btn-refresh-modmanager').addEventListener('click', renderModManager);
 
         // =========================================================
@@ -3462,7 +3453,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v3.7 · 完整版（含模组管理）已启动！');
+        console.log('🍅 番茄闹钟 v3.7 · 完整版（含模组管理 + 脚本执行修复）已启动！');
     </script>
 </body>
 </html>
