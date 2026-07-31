@@ -531,22 +531,37 @@
             transform: translateY(-3px);
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
         }
+        /* ===== 修复：背包数量显示超过四位数被截断 ===== */
         .item-count {
             position: absolute;
             top: -6px;
             right: -6px;
             background: var(--primary);
             color: white;
-            width: 26px;
+            min-width: 24px;
             height: 26px;
+            padding: 0 6px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+            white-space: nowrap;
+            line-height: 1.2;
+            box-sizing: border-box;
         }
+        /* 如果数量超过 999，缩小字体 */
+        .item-count.large {
+            font-size: 0.6rem;
+            padding: 0 4px;
+        }
+        .item-count.xlarge {
+            font-size: 0.5rem;
+            padding: 0 3px;
+        }
+        /* ===== 修复结束 ===== */
         .backpack-item .item-name {
             font-size: 0.9rem;
         }
@@ -2404,7 +2419,7 @@
         }
 
         // =========================================================
-        //  背包渲染
+        //  背包渲染（修复：数量超过四位显示异常）
         // =========================================================
         function renderBackpack() {
             const keys = Object.keys(data.backpack);
@@ -2432,9 +2447,15 @@
                 }
 
                 const canUse = depCheck.ok;
+                const count = item.count || 0;
+
+                // 根据数量动态添加类名，用于缩小字体
+                let countClass = '';
+                if (count >= 10000) countClass = 'xlarge';
+                else if (count >= 1000) countClass = 'large';
 
                 div.innerHTML = `
-                    <div class="item-count">${item.count}</div>
+                    <div class="item-count ${countClass}">${count}</div>
                     <div class="item-icon"><i class="${item.icon}"></i></div>
                     <div class="item-name">${item.name}</div>
                     ${depStatus}
@@ -3453,7 +3474,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v3.7 · 完整版（含模组管理 + 脚本执行修复）已启动！');
+        console.log('🍅 番茄闹钟 v3.7 · 完整版（含模组管理 + 脚本执行修复 + 背包数量显示修复）已启动！');
     </script>
 </body>
 </html>
