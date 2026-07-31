@@ -49,6 +49,18 @@
       "type": "zid",
       "downloads": 0,
       "tags": ["主题", "外观", "定制", "UI"]
+    },
+    {
+      "id": "neotomator",
+      "name": "⚙️ NeoTomator Loader",
+      "author": "豆包 + FI0m9ySans",
+      "version": "1.0",
+      "description": "A loader-themed mod inspired by Fabric, Forge and NeoForge. Contains utility items and a core dependency system.",
+      "icon": "fa-cogs",
+      "file": "mods/neotomator.tomod",
+      "type": "zid",
+      "downloads": 0,
+      "tags": ["loader", "framework", "api", "utility"]
     }
   ]
 }
