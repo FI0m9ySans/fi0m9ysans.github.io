@@ -57,7 +57,7 @@
       "version": "1.0",
       "description": "A loader-themed mod inspired by Fabric, Forge and NeoForge. Contains utility items and a core dependency system.",
       "icon": "fa-cogs",
-      "file": "mods/neotomator.tomod",
+      "file": "mods/neotomator1.tomod",
       "type": "zid",
       "downloads": 0,
       "tags": ["loader", "framework", "api", "utility"]
