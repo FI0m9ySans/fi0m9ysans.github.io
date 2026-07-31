@@ -2530,12 +2530,21 @@
                 panel.innerHTML =
                     `<div class="panel-header"><h2 class="panel-title"><i class="${tab.icon || 'fas fa-puzzle-piece'}"></i> ${tab.name}</h2><button class="btn btn-danger btn-sm btn-delete-custom-tab" data-id="${tab.id}"><i class="fas fa-trash"></i> ${t('custom_tab_delete')}</button></div><div class="panel-content custom-tab-content">${tab.content || ''}</div>`;
                 mainContent.appendChild(panel);
-                // 执行脚本
+                // 执行脚本（用 IIFE 包裹，防止全局变量冲突）
                 panel.querySelectorAll('script').forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    newScript.textContent = oldScript.textContent;
-                    if (oldScript.src) newScript.src = oldScript.src;
-                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                    if (oldScript.src) {
+                        // 外部脚本：直接创建新标签加载
+                        const newScript = document.createElement('script');
+                        newScript.src = oldScript.src;
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    } else {
+                        // 内联脚本：用 IIFE 包裹，避免变量重复声明
+                        const scriptText = oldScript.textContent;
+                        const wrapped = `(function(){ ${scriptText} })();`;
+                        const newScript = document.createElement('script');
+                        newScript.textContent = wrapped;
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    }
                 });
                 panel.querySelector('.btn-delete-custom-tab').addEventListener('click', function() {
                     const id = this.dataset.id;
