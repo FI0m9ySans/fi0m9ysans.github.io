@@ -2999,17 +2999,27 @@
                         const blob = await response.blob();
                         const ext = fileUrl.split('.').pop().toLowerCase();
                         
+                        let imported;  // ← 提升到外部作用域
+                        let zipData = null; // 用于 .tomod 的 source 支持
+                    
                         if (ext === 'tomod') {
                             // 用 JSZip 解压
                             const zip = await JSZip.loadAsync(blob);
+                            zipData = {};
+                            for (const [path, zipEntry] of Object.entries(zip.files)) {
+                                if (!zipEntry.dir) {
+                                    const content = await zipEntry.async('string');
+                                    zipData[path] = content;
+                                }
+                            }
                             const modJsonFile = zip.file('mod.json');
+                            if (!modJsonFile) throw new Error('mod.json not found in .tomod!');
                             const content = await modJsonFile.async('text');
-                            const imported = JSON.parse(content);
-                            // 继续处理 ...
+                            imported = JSON.parse(content);
                         } else {
                             // 旧格式：直接 JSON.parse
                             const text = await blob.text();
-                            const imported = JSON.parse(text);
+                            imported = JSON.parse(text);
                         }
                         if (type === 'shom' || type === 'shem') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
@@ -3078,9 +3088,19 @@
                                 });
                             }
                             if (imported.customTabs) {
-                                imported.customTabs.forEach(impTab => {
-                                    if (!data.customTabs.some(t => t.id === impTab.id)) {
-                                        data.customTabs.push(impTab);
+                                imported.customTabs.forEach(tab => {
+                                    if (tab.source && zipData) {
+                                        const filePath = tab.source;
+                                        if (zipData[filePath]) {
+                                            tab.content = zipData[filePath];
+                                            delete tab.source;
+                                        } else {
+                                            console.warn('Source file not found:', filePath);
+                                            return;
+                                        }
+                                    }
+                                    if (!data.customTabs.some(t => t.id === tab.id)) {
+                                        data.customTabs.push(tab);
                                         tabAdded++;
                                     }
                                 });
