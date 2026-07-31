@@ -78,6 +78,42 @@
         }
         .footer a { color: #3498db; text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
+
+        /* ===== 语言切换栏样式 ===== */
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 16px;
+        }
+        .lang-switch a {
+            display: inline-block;
+            padding: 4px 16px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .lang-switch a:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .lang-switch a.active {
+            background: #1e2a3a;
+            color: white;
+            border-color: #1e2a3a;
+            cursor: default;
+        }
+        .lang-switch a.active:hover {
+            background: #1e2a3a;
+        }
+        .lang-switch .sep {
+            color: #ddd;
+            margin: 0 4px;
+        }
+
         @media (max-width: 768px) {
             .container { padding: 20px; }
         }
@@ -85,9 +121,14 @@
 </head>
 <body>
     <div class="container">
+
+        <!-- ===== 语言切换栏（中文版标识当前语言） ===== -->
         <div class="lang-switch">
-            <a href="./guide-en.html">ENGLISH</a>
+            <a href="./guide.html" class="active">🇨🇳 中文</a>
+            <span class="sep">|</span>
+            <a href="./guide-en.html">🇬🇧 English</a>
         </div>
+
         <a href="./" class="back-link"><i class="fas fa-arrow-left"></i> 返回番茄闹钟</a>
         <h1><i class="fas fa-book-open"></i> 模组开发文档</h1>
         <p class="subtitle">学习如何为番茄闹钟创建模组</p>
