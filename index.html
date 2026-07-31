@@ -3193,25 +3193,25 @@
                     }
                 });
             });
-        async function downloadModFile(url, fileName) {
-            try {
-                showNotification('⏳ 正在下载...', 'warning');
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const blob = await response.blob();
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
-                showNotification(`✅ 已下载: ${fileName}`, 'success');
-                saveData();
-            } catch (err) {
-                console.error(err);
-                showNotification('❌ 下载失败: ' + err.message, 'error');
-            }
+        }
+    async function downloadModFile(url, fileName) {
+        try {
+            showNotification('⏳ 正在下载...', 'warning');
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const blob = await response.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            showNotification(`✅ 已下载: ${fileName}`, 'success');
+            saveData();
+        } catch (err) {
+            console.error(err);
+            showNotification('❌ 下载失败: ' + err.message, 'error');
         }
 
         function renderMarket() {
