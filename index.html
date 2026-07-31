@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🍅 番茄闹钟 · 模组版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- JSZip 用于解压 .tomod 模组 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         /* ===== 全局重置 & 变量 ===== */
         * {
@@ -531,7 +533,6 @@
             transform: translateY(-3px);
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
         }
-        /* ===== 修复：背包数量显示超过四位数被截断 ===== */
         .item-count {
             position: absolute;
             top: -6px;
@@ -552,16 +553,8 @@
             line-height: 1.2;
             box-sizing: border-box;
         }
-        /* 如果数量超过 999，缩小字体 */
-        .item-count.large {
-            font-size: 0.6rem;
-            padding: 0 4px;
-        }
-        .item-count.xlarge {
-            font-size: 0.5rem;
-            padding: 0 3px;
-        }
-        /* ===== 修复结束 ===== */
+        .item-count.large { font-size: 0.6rem; padding: 0 4px; }
+        .item-count.xlarge { font-size: 0.5rem; padding: 0 3px; }
         .backpack-item .item-name {
             font-size: 0.9rem;
         }
@@ -1038,7 +1031,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v3.7 · 完整版</div>
+        <div class="sidebar-footer">v4.0 · 支持 .tomod</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -1076,7 +1069,7 @@
             <div class="timer-container">
                 <div class="duration-setting">
                     <label for="duration-input" data-i18n="duration-label">⏱️ 专注时长</label>
-                    <input type="number" id="duration-input" min="1" max="99" value="25" />
+                    <input type="number" id="duration-input" min="1" max="999" value="25" />
                     <span data-i18n="duration-unit">分钟</span>
                 </div>
                 <div class="timer-display" id="timer-display">25:00</div>
@@ -1099,9 +1092,9 @@
                     <button class="btn btn-gold btn-sm" id="btn-export-shom"><i class="fas fa-download"></i> <span data-i18n="store-export-shom">导出商品 (.shom)</span></button>
                     <button class="btn btn-gold btn-sm" id="btn-import-shom"><i class="fas fa-upload"></i> <span data-i18n="store-import-shom">导入商品 (.shom / .shem)</span></button>
                     <button class="btn btn-gold btn-sm" id="btn-export-zid"><i class="fas fa-download"></i> <span data-i18n="store-export-zid">导出模组 (.zid)</span></button>
-                    <button class="btn btn-gold btn-sm" id="btn-import-zid"><i class="fas fa-upload"></i> <span data-i18n="store-import-zid">导入模组 (.zid / .zod)</span></button>
+                    <button class="btn btn-gold btn-sm" id="btn-import-zid"><i class="fas fa-upload"></i> <span data-i18n="store-import-zid">导入模组 (.zid / .zod / .tomod)</span></button>
                     <input type="file" id="file-input-import-shom" class="file-input-hidden" accept=".shom,.shem" />
-                    <input type="file" id="file-input-import-zid" class="file-input-hidden" accept=".zid,.zod" />
+                    <input type="file" id="file-input-import-zid" class="file-input-hidden" accept=".zid,.zod,.tomod" />
                 </div>
             </div>
             <div class="items-grid" id="store-items"></div>
@@ -1129,47 +1122,17 @@
             <div id="task-form-container" style="display:none;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
                 <form id="task-form">
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="task-name" data-i18n="task-name-label">任务名称</label>
-                            <input type="text" id="task-name" required placeholder="输入任务名称" />
-                        </div>
-                        <div class="form-group">
-                            <label for="task-target" data-i18n="task-target-label">目标番茄数</label>
-                            <input type="number" id="task-target" required min="1" value="5" />
-                        </div>
+                        <div class="form-group"><label for="task-name" data-i18n="task-name-label">任务名称</label><input type="text" id="task-name" required placeholder="输入任务名称" /></div>
+                        <div class="form-group"><label for="task-target" data-i18n="task-target-label">目标番茄数</label><input type="number" id="task-target" required min="1" value="5" /></div>
                     </div>
-                    <div class="form-group">
-                        <label for="task-desc" data-i18n="task-desc-label">任务描述</label>
-                        <textarea id="task-desc" placeholder="任务描述（可选）"></textarea>
-                    </div>
+                    <div class="form-group"><label for="task-desc" data-i18n="task-desc-label">任务描述</label><textarea id="task-desc" placeholder="任务描述（可选）"></textarea></div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="task-reward-type" data-i18n="task-reward-type-label">奖励类型</label>
-                            <select id="task-reward-type">
-                                <option value="tomato">🍅 <span data-i18n="reward-tomato">番茄币</span></option>
-                                <option value="exp">⭐ <span data-i18n="reward-exp">经验值</span></option>
-                                <option value="item">🎁 <span data-i18n="reward-item">指定物品</span></option>
-                                <option value="lootbox">🎁 <span data-i18n="reward-lootbox">开箱</span></option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="task-reward-item-group" style="display:none;">
-                            <label for="task-reward-item" data-i18n="task-reward-item-label">物品ID</label>
-                            <input type="text" id="task-reward-item" placeholder="输入物品ID (例如 u_123)" />
-                        </div>
+                        <div class="form-group"><label for="task-reward-type" data-i18n="task-reward-type-label">奖励类型</label><select id="task-reward-type"><option value="tomato">🍅 <span data-i18n="reward-tomato">番茄币</span></option><option value="exp">⭐ <span data-i18n="reward-exp">经验值</span></option><option value="item">🎁 <span data-i18n="reward-item">指定物品</span></option><option value="lootbox">🎁 <span data-i18n="reward-lootbox">开箱</span></option></select></div>
+                        <div class="form-group" id="task-reward-item-group" style="display:none;"><label for="task-reward-item" data-i18n="task-reward-item-label">物品ID</label><input type="text" id="task-reward-item" placeholder="输入物品ID (例如 u_123)" /></div>
                     </div>
-                    <div class="form-group">
-                        <label for="task-reward-amount" data-i18n="task-reward-amount-label">奖励数量</label>
-                        <input type="number" id="task-reward-amount" min="1" value="1" />
-                    </div>
-                    <div class="form-group">
-                        <label for="task-deps" data-i18n="task-deps-label">依赖物品 (ID，逗号分隔)</label>
-                        <input type="text" id="task-deps" placeholder="例如: u_123, u_456" />
-                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" data-i18n="task-deps-hint">拥有这些物品才能开始此任务</div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="btn-task-submit"><i class="fas fa-save"></i> <span data-i18n="task-save">保存任务</span></button>
-                        <button type="button" class="btn btn-outline" id="btn-task-cancel"><span data-i18n="task-cancel">取消</span></button>
-                    </div>
+                    <div class="form-group"><label for="task-reward-amount" data-i18n="task-reward-amount-label">奖励数量</label><input type="number" id="task-reward-amount" min="1" value="1" /></div>
+                    <div class="form-group"><label for="task-deps" data-i18n="task-deps-label">依赖物品 (ID，逗号分隔)</label><input type="text" id="task-deps" placeholder="例如: u_123, u_456" /><div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" data-i18n="task-deps-hint">拥有这些物品才能开始此任务</div></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary" id="btn-task-submit"><i class="fas fa-save"></i> <span data-i18n="task-save">保存任务</span></button><button type="button" class="btn btn-outline" id="btn-task-cancel"><span data-i18n="task-cancel">取消</span></button></div>
                 </form>
             </div>
             <div id="task-list-container" class="task-list"></div>
@@ -1178,88 +1141,33 @@
         <!-- ===== 创建商品 ===== -->
         <section class="panel content-section" id="create-section">
             <div class="panel-header">
-                <h2 class="panel-title" id="create-panel-title">
-                    <i class="fas fa-plus-circle"></i> <span data-i18n="create-title">创建商品</span>
-                    <span id="edit-badge" class="edit-badge" style="display:none;" data-i18n="create-editing">编辑中</span>
-                </h2>
+                <h2 class="panel-title" id="create-panel-title"><i class="fas fa-plus-circle"></i> <span data-i18n="create-title">创建商品</span><span id="edit-badge" class="edit-badge" style="display:none;" data-i18n="create-editing">编辑中</span></h2>
                 <button class="btn btn-outline btn-sm" id="btn-cancel-edit" style="display:none;"><i class="fas fa-times"></i> <span data-i18n="create-cancel">取消编辑</span></button>
             </div>
             <form id="item-form">
-                <div class="form-group">
-                    <label for="item-name" data-i18n="item-name-label">商品名称</label>
-                    <input type="text" id="item-name" required placeholder="输入商品名称" />
-                </div>
-                <div class="form-group">
-                    <label for="item-desc" data-i18n="item-desc-label">商品描述</label>
-                    <textarea id="item-desc" required placeholder="输入商品描述"></textarea>
+                <div class="form-group"><label for="item-name" data-i18n="item-name-label">商品名称</label><input type="text" id="item-name" required placeholder="输入商品名称" /></div>
+                <div class="form-group"><label for="item-desc" data-i18n="item-desc-label">商品描述</label><textarea id="item-desc" required placeholder="输入商品描述"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="item-price" data-i18n="item-price-label">价格（番茄币）</label><input type="number" id="item-price" required min="1" placeholder="价格" /></div>
+                    <div class="form-group"><label for="item-icon" data-i18n="item-icon-label">图标</label><select id="item-icon" required><option value="fas fa-coffee">☕ 咖啡</option><option value="fas fa-music">🎵 音乐</option><option value="fas fa-book">📚 书籍</option><option value="fas fa-gamepad">🎮 游戏</option><option value="fas fa-headphones">🎧 耳机</option><option value="fas fa-lightbulb">💡 灯泡</option><option value="fas fa-pizza-slice">🍕 披萨</option><option value="fas fa-crown">👑 王冠</option><option value="fas fa-camera">📷 相机</option><option value="fas fa-box">📦 箱子</option><option value="fas fa-microchip">💻 芯片</option><option value="fas fa-bolt">⚡ 闪电</option></select></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="item-price" data-i18n="item-price-label">价格（番茄币）</label>
-                        <input type="number" id="item-price" required min="1" placeholder="价格" />
-                    </div>
-                    <div class="form-group">
-                        <label for="item-icon" data-i18n="item-icon-label">图标</label>
-                        <select id="item-icon" required>
-                            <option value="fas fa-coffee">☕ 咖啡</option>
-                            <option value="fas fa-music">🎵 音乐</option>
-                            <option value="fas fa-book">📚 书籍</option>
-                            <option value="fas fa-gamepad">🎮 游戏</option>
-                            <option value="fas fa-headphones">🎧 耳机</option>
-                            <option value="fas fa-lightbulb">💡 灯泡</option>
-                            <option value="fas fa-pizza-slice">🍕 披萨</option>
-                            <option value="fas fa-crown">👑 王冠</option>
-                            <option value="fas fa-camera">📷 相机</option>
-                            <option value="fas fa-box">📦 箱子</option>
-                            <option value="fas fa-microchip">💻 芯片</option>
-                            <option value="fas fa-bolt">⚡ 闪电</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="item-effect" data-i18n="item-effect-label">效果</label>
-                        <select id="item-effect" required>
-                            <option value="rest"><span data-i18n="effect-rest">🛌 休息时间增加</span></option>
-                            <option value="focus"><span data-i18n="effect-focus">🎯 专注时间增加</span></option>
-                            <option value="tomato"><span data-i18n="effect-tomato">🍅 番茄币奖励</span></option>
-                            <option value="exp"><span data-i18n="effect-exp">⭐ 经验值奖励</span></option>
-                            <option value="lootbox"><span data-i18n="effect-lootbox">🎁 开箱随机奖励</span></option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="item-deps" data-i18n="item-deps-label">依赖物品 (ID，逗号分隔)</label>
-                        <input type="text" id="item-deps" placeholder="例如: u_123, u_456" />
-                        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" data-i18n="item-deps-hint">输入依赖的物品ID，使用前需拥有这些物品</div>
-                    </div>
+                    <div class="form-group"><label for="item-effect" data-i18n="item-effect-label">效果</label><select id="item-effect" required><option value="rest"><span data-i18n="effect-rest">🛌 休息时间增加</span></option><option value="focus"><span data-i18n="effect-focus">🎯 专注时间增加</span></option><option value="tomato"><span data-i18n="effect-tomato">🍅 番茄币奖励</span></option><option value="exp"><span data-i18n="effect-exp">⭐ 经验值奖励</span></option><option value="lootbox"><span data-i18n="effect-lootbox">🎁 开箱随机奖励</span></option></select></div>
+                    <div class="form-group"><label for="item-deps" data-i18n="item-deps-label">依赖物品 (ID，逗号分隔)</label><input type="text" id="item-deps" placeholder="例如: u_123, u_456" /><div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" data-i18n="item-deps-hint">输入依赖的物品ID，使用前需拥有这些物品</div></div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" id="btn-submit-form">
-                        <i class="fas fa-save"></i> <span id="submit-btn-text" data-i18n="create-submit">创建商品</span>
-                    </button>
-                    <button type="button" class="btn btn-gold" id="btn-export-single">
-                        <i class="fas fa-file-export"></i> <span data-i18n="create-export-single">创建商品文件</span>
-                    </button>
-                    <button type="button" class="btn btn-gold" id="btn-export-and-load">
-                        <i class="fas fa-file-import"></i> <span data-i18n="create-export-load">创建并加载</span>
-                    </button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-form"><i class="fas fa-save"></i> <span id="submit-btn-text" data-i18n="create-submit">创建商品</span></button>
+                    <button type="button" class="btn btn-gold" id="btn-export-single"><i class="fas fa-file-export"></i> <span data-i18n="create-export-single">创建商品文件</span></button>
+                    <button type="button" class="btn btn-gold" id="btn-export-and-load"><i class="fas fa-file-import"></i> <span data-i18n="create-export-load">创建并加载</span></button>
                 </div>
-                <div style="margin-top:12px;font-size:0.85rem;color:var(--gray);" data-i18n="create-hint">
-                    <i class="fas fa-info-circle"></i> “开箱”效果使用时会随机获得奖励。
-                </div>
+                <div style="margin-top:12px;font-size:0.85rem;color:var(--gray);" data-i18n="create-hint"><i class="fas fa-info-circle"></i> “开箱”效果使用时会随机获得奖励。</div>
             </form>
         </section>
 
         <!-- ===== 统计 ===== -->
         <section class="panel content-section" id="stats-section">
-            <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-chart-line"></i> <span data-i18n="stats-title">数据统计</span></h2>
-            </div>
-            <div class="tab-container">
-                <div class="tab active" data-tab="daily"><span data-i18n="stats-tab-daily">📅 今日</span></div>
-                <div class="tab" data-tab="weekly"><span data-i18n="stats-tab-weekly">📆 本周</span></div>
-                <div class="tab" data-tab="monthly"><span data-i18n="stats-tab-monthly">📊 本月</span></div>
-            </div>
+            <div class="panel-header"><h2 class="panel-title"><i class="fas fa-chart-line"></i> <span data-i18n="stats-title">数据统计</span></h2></div>
+            <div class="tab-container"><div class="tab active" data-tab="daily"><span data-i18n="stats-tab-daily">📅 今日</span></div><div class="tab" data-tab="weekly"><span data-i18n="stats-tab-weekly">📆 本周</span></div><div class="tab" data-tab="monthly"><span data-i18n="stats-tab-monthly">📊 本月</span></div></div>
             <div class="tab-content active" id="daily-stats"></div>
             <div class="tab-content" id="weekly-stats"></div>
             <div class="tab-content" id="monthly-stats"></div>
@@ -1267,38 +1175,22 @@
 
         <!-- ===== 模组市场 ===== -->
         <section class="panel content-section" id="market-section">
-            <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-globe"></i> <span data-i18n="market-title">🌐 模组市场</span></h2>
-                <button class="btn btn-secondary btn-sm" id="btn-refresh-market"><i class="fas fa-sync-alt"></i> <span data-i18n="market-refresh">刷新</span></button>
-            </div>
-            <div id="market-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
-                <div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 加载模组列表中...</div>
-            </div>
+            <div class="panel-header"><h2 class="panel-title"><i class="fas fa-globe"></i> <span data-i18n="market-title">🌐 模组市场</span></h2><button class="btn btn-secondary btn-sm" id="btn-refresh-market"><i class="fas fa-sync-alt"></i> <span data-i18n="market-refresh">刷新</span></button></div>
+            <div id="market-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;"><div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 加载模组列表中...</div></div>
         </section>
 
         <!-- ===== 模组管理 ===== -->
         <section class="panel content-section" id="modmanager-section">
-            <div class="panel-header">
-                <h2 class="panel-title"><i class="fas fa-cubes"></i> <span data-i18n="modmanager-title">📦 模组管理</span></h2>
-                <button class="btn btn-secondary btn-sm" id="btn-refresh-modmanager"><i class="fas fa-sync-alt"></i> <span data-i18n="modmanager-refresh">刷新</span></button>
-            </div>
-            <div id="modmanager-list" class="mod-grid-list">
-                <div class="empty-message"><i class="fas fa-cubes"></i> 暂无已安装的模组</div>
-            </div>
-            <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;font-size:0.85rem;color:var(--gray);">
-                <i class="fas fa-info-circle"></i> <span data-i18n="modmanager-hint">卸载模组会删除其所有商品、背包物品、任务和自定义标签页。此操作不可撤销，请谨慎操作。</span>
-            </div>
+            <div class="panel-header"><h2 class="panel-title"><i class="fas fa-cubes"></i> <span data-i18n="modmanager-title">📦 模组管理</span></h2><button class="btn btn-secondary btn-sm" id="btn-refresh-modmanager"><i class="fas fa-sync-alt"></i> <span data-i18n="modmanager-refresh">刷新</span></button></div>
+            <div id="modmanager-list" class="mod-grid-list"><div class="empty-message"><i class="fas fa-cubes"></i> 暂无已安装的模组</div></div>
+            <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;font-size:0.85rem;color:var(--gray);"><i class="fas fa-info-circle"></i> <span data-i18n="modmanager-hint">卸载模组会删除其所有商品、背包物品、任务和自定义标签页。此操作不可撤销，请谨慎操作。</span></div>
         </section>
 
         <!-- ===== 自定义标签面板（动态生成） ===== -->
-        <!-- 将由 JS 动态创建 -->
     </main>
 
     <!-- ===== 通知 ===== -->
-    <div class="notification" id="notification">
-        <i class="fas fa-check-circle"></i>
-        <span id="notification-text">消息</span>
-    </div>
+    <div class="notification" id="notification"><i class="fas fa-check-circle"></i><span id="notification-text">消息</span></div>
 
     <!-- ============================================================ -->
     <script>
@@ -1315,7 +1207,7 @@
                 'nav-stats': '统计',
                 'nav-market': '模组市场',
                 'nav-modmanager': '模组管理',
-                'footer-text': 'v3.7 · 完整版',
+                'footer-text': 'v4.0 · 支持 .tomod',
                 'header-title': '专注工作',
                 'stat-tomato': '番茄币',
                 'stat-exp': '经验值',
@@ -1331,7 +1223,7 @@
                 'store-export-shom': '导出商品 (.shom)',
                 'store-import-shom': '导入商品 (.shom / .shem)',
                 'store-export-zid': '导出模组 (.zid)',
-                'store-import-zid': '导入模组 (.zid / .zod)',
+                'store-import-zid': '导入模组 (.zid / .zod / .tomod)',
                 'backpack-title': '我的背包',
                 'tasks-title': '任务清单',
                 'tasks-add': '新建任务',
@@ -1477,7 +1369,7 @@
                 'nav-stats': 'Statistics',
                 'nav-market': 'Mod Market',
                 'nav-modmanager': 'Mod Manager',
-                'footer-text': 'v3.7 · Full',
+                'footer-text': 'v4.0 · .tomod support',
                 'header-title': 'Focus & Work',
                 'stat-tomato': 'Tomatoes',
                 'stat-exp': 'EXP',
@@ -1493,7 +1385,7 @@
                 'store-export-shom': 'Export Items (.shom)',
                 'store-import-shom': 'Import Items (.shom / .shem)',
                 'store-export-zid': 'Export Mod (.zid)',
-                'store-import-zid': 'Import Mod (.zid / .zod)',
+                'store-import-zid': 'Import Mod (.zid / .zod / .tomod)',
                 'backpack-title': 'My Backpack',
                 'tasks-title': 'Task List',
                 'tasks-add': 'New Task',
@@ -1674,7 +1566,7 @@
         // =========================================================
         //  数据层（含 installedMods）
         // =========================================================
-        const STORAGE_KEY = 'tomato_data_v3';
+        const STORAGE_KEY = 'tomato_data_v4';
 
         function getDefaultData() {
             return {
@@ -1869,7 +1761,7 @@
         durationInput.addEventListener('change', function() {
             let val = parseInt(this.value);
             if (isNaN(val) || val < 1) val = 1;
-            if (val > 99) val = 99;
+            if (val > 999) val = 999;
             this.value = val;
             WORK_TIME = val * 60;
             clearInterval(timerInterval);
@@ -2092,23 +1984,14 @@
                 const progress = Math.min(100, ((task.completedSessions || 0) / task.targetSessions) * 100);
                 const div = document.createElement('div');
                 div.className = `task-item ${isCompleted ? 'completed' : ''}`;
-
                 let statusText = '',
                     statusClass = '';
-                if (isCompleted) {
-                    statusText = t('task_status_done');
-                    statusClass = 'done';
-                } else if (status === 'locked') {
-                    statusText = t('task_status_locked');
-                    statusClass = 'locked';
-                } else {
-                    statusText = t('task_status_pending');
-                    statusClass = 'pending';
-                }
-
+                if (isCompleted) { statusText = t('task_status_done');
+                    statusClass = 'done'; } else if (status === 'locked') { statusText = t('task_status_locked');
+                    statusClass = 'locked'; } else { statusText = t('task_status_pending');
+                    statusClass = 'pending'; }
                 const depNames = (task.dependencies || []).length > 0 ? getDependencyNames(task.dependencies || [])
                     .join(' → ') : t('task_no_reward');
-
                 let rewardDesc = '';
                 switch (task.rewardType) {
                     case 'tomato':
@@ -2128,12 +2011,8 @@
                     default:
                         rewardDesc = t('task_no_reward');
                 }
-
                 div.innerHTML = `
-                    <div class="task-header">
-                        <span class="task-name">${task.name}</span>
-                        <span class="task-status ${statusClass}">${statusText}</span>
-                    </div>
+                    <div class="task-header"><span class="task-name">${task.name}</span><span class="task-status ${statusClass}">${statusText}</span></div>
                     <div class="task-desc">${task.description || ''}</div>
                     <div class="task-reward">${t('task_reward')}${rewardDesc}</div>
                     <div class="task-progress">
@@ -2148,25 +2027,13 @@
                     </div>
                 `;
                 taskListContainer.appendChild(div);
-
-                div.querySelector('.task-edit').addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const id = this.dataset.id;
-                    editTask(id);
-                });
-                div.querySelector('.task-delete').addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const id = this.dataset.id;
-                    if (confirm(t('task_delete') + '?')) deleteTask(id);
-                });
+                div.querySelector('.task-edit').addEventListener('click', function(e) { e.stopPropagation();
+                    editTask(this.dataset.id); });
+                div.querySelector('.task-delete').addEventListener('click', function(e) { e.stopPropagation(); if (
+                        confirm(t('task_delete') + '?')) deleteTask(this.dataset.id); });
                 const resetBtn = div.querySelector('.task-reset');
-                if (resetBtn) {
-                    resetBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const id = this.dataset.id;
-                        resetTask(id);
-                    });
-                }
+                if (resetBtn) resetBtn.addEventListener('click', function(e) { e.stopPropagation();
+                    resetTask(this.dataset.id); });
             });
         }
 
@@ -2238,10 +2105,7 @@
         function toggleRewardItemInput(show) {
             taskRewardItemGroup.style.display = show ? 'block' : 'none';
         }
-
-        taskRewardType.addEventListener('change', function() {
-            toggleRewardItemInput(this.value === 'item');
-        });
+        taskRewardType.addEventListener('change', function() { toggleRewardItemInput(this.value === 'item'); });
 
         taskForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -2253,58 +2117,30 @@
             const rewardItemId = taskRewardItem.value.trim() || null;
             const depsRaw = taskDepsInput.value.trim();
             const dependencies = depsRaw ? depsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-
-            if (!name || isNaN(targetSessions) || targetSessions < 1) {
-                return showNotification(t('notif_error_task_form'), 'error');
-            }
-
+            if (!name || isNaN(targetSessions) || targetSessions < 1) return showNotification(t(
+                'notif_error_task_form'), 'error');
             for (const depId of dependencies) {
-                if (!findItem(depId)) {
-                    return showNotification(t('notif_error_task_dep_missing', { id: depId }), 'warning');
-                }
+                if (!findItem(depId)) return showNotification(t('notif_error_task_dep_missing', { id: depId }),
+                    'warning');
             }
-
             if (rewardType === 'item' && rewardItemId) {
-                if (!findItem(rewardItemId)) {
-                    return showNotification(t('notif_error_task_reward_item_missing', { id: rewardItemId }), 'error');
-                }
+                if (!findItem(rewardItemId)) return showNotification(t(
+                    'notif_error_task_reward_item_missing', { id: rewardItemId }), 'error');
             }
-
-            const taskData = {
-                name,
-                description,
-                targetSessions,
-                rewardType,
-                rewardAmount,
-                rewardItemId: rewardType === 'item' ? rewardItemId : null,
-                dependencies
-            };
-
+            const taskData = { name, description, targetSessions, rewardType, rewardAmount, rewardItemId: rewardType ===
+                    'item' ? rewardItemId : null, dependencies };
             if (editingTaskId) {
                 const idx = data.tasks.findIndex(t => t.id === editingTaskId);
                 if (idx !== -1) {
                     const old = data.tasks[idx];
-                    data.tasks[idx] = {
-                        ...old,
-                        name: taskData.name,
-                        description: taskData.description,
-                        targetSessions: taskData.targetSessions,
-                        rewardType: taskData.rewardType,
-                        rewardAmount: taskData.rewardAmount,
-                        rewardItemId: taskData.rewardItemId,
-                        dependencies: taskData.dependencies,
-                    };
+                    data.tasks[idx] = { ...old, ...taskData };
                     saveData();
                     renderTasks();
                     showNotification(t('notif_task_updated', { name: taskData.name }), 'success');
                     cancelTaskEdit();
-                } else {
-                    showNotification(t('notif_error_task_missing'), 'error');
-                }
-            } else {
-                addTask(taskData);
-                cancelTaskEdit();
-            }
+                } else showNotification(t('notif_error_task_missing'), 'error');
+            } else { addTask(taskData);
+                cancelTaskEdit(); }
         });
 
         btnAddTask.addEventListener('click', function() {
@@ -2316,10 +2152,7 @@
             toggleRewardItemInput(false);
             taskFormContainer.scrollIntoView({ behavior: 'smooth' });
         });
-
-        btnTaskCancel.addEventListener('click', function() {
-            cancelTaskEdit();
-        });
+        btnTaskCancel.addEventListener('click', cancelTaskEdit);
 
         // =========================================================
         //  商店渲染
@@ -2339,44 +2172,25 @@
                 const deps = item.dependencies || [];
                 const depCheck = checkDependencies(deps);
                 const hasDeps = deps.length > 0;
-
                 let depHTML = '';
                 if (hasDeps) {
                     const depNames = getDependencyNames(deps);
                     const statusClass = depCheck.ok ? 'dep-ok' : 'dep-miss';
                     const statusText = depCheck.ok ? t('dependency_ok') : t('dependency_miss');
-                    depHTML = `
-                        <div class="dep-list">📦 ${t('dependencies')}: ${depNames.join(' → ')}</div>
-                        <span class="dependency-badge ${statusClass}">${statusText}</span>
-                    `;
+                    depHTML =
+                        `<div class="dep-list">📦 ${t('dependencies')}: ${depNames.join(' → ')}</div><span class="dependency-badge ${statusClass}">${statusText}</span>`;
                 }
-
-                let actionsHTML = `
-                    <button class="btn btn-accent btn-buy" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>
-                        ${canBuy ? t('btn_buy') : t('insufficient')}
-                    </button>
-                `;
+                let actionsHTML =
+                    `<button class="btn btn-accent btn-buy" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? t('btn_buy') : t('insufficient')}</button>`;
                 if (isUserItem) {
-                    actionsHTML += `
-                        <button class="btn btn-secondary btn-sm btn-edit" data-id="${item.id}" title="${t('btn_edit')}"><i class="fas fa-pen"></i></button>
-                        <button class="btn btn-danger btn-sm btn-remove" data-id="${item.id}" title="${t('btn_remove')}"><i class="fas fa-trash"></i></button>
-                    `;
+                    actionsHTML +=
+                        `<button class="btn btn-secondary btn-sm btn-edit" data-id="${item.id}" title="${t('btn_edit')}"><i class="fas fa-pen"></i></button><button class="btn btn-danger btn-sm btn-remove" data-id="${item.id}" title="${t('btn_remove')}"><i class="fas fa-trash"></i></button>`;
                 }
-
-                div.innerHTML = `
-                    <div class="item-icon"><i class="${item.icon}"></i></div>
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-desc">${item.desc || ' '}</div>
-                    <div class="item-price">${item.price} 🍅</div>
-                    ${depHTML}
-                    <div class="item-actions">${actionsHTML}</div>
-                `;
+                div.innerHTML =
+                    `<div class="item-icon"><i class="${item.icon}"></i></div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc || ' '}</div><div class="item-price">${item.price} 🍅</div>${depHTML}<div class="item-actions">${actionsHTML}</div>`;
                 storeItemsEl.appendChild(div);
-
-                div.querySelector('.btn-buy').addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    purchaseItem(this.dataset.id);
-                });
+                div.querySelector('.btn-buy').addEventListener('click', function(e) { e.stopPropagation();
+                    purchaseItem(this.dataset.id); });
                 const editBtn = div.querySelector('.btn-edit');
                 if (editBtn) editBtn.addEventListener('click', function(e) { e.stopPropagation();
                     startEditing(this.dataset.id); });
@@ -2392,12 +2206,9 @@
             if (data.tomatoes < item.price) return showNotification(t('notif_error_insufficient'), 'error');
             data.tomatoes -= item.price;
             const key = String(item.id);
-            if (data.backpack[key]) {
-                data.backpack[key].count++;
-            } else {
-                data.backpack[key] = { id: item.id, name: item.name, icon: item.icon, effect: item.effect,
-                    count: 1, dependencies: item.dependencies || [] };
-            }
+            if (data.backpack[key]) { data.backpack[key].count++; } else { data.backpack[key] = { id: item.id,
+                    name: item.name, icon: item.icon, effect: item.effect, count: 1, dependencies: item
+                        .dependencies || [] }; }
             saveData();
             updateStatsUI();
             renderStore();
@@ -2419,7 +2230,7 @@
         }
 
         // =========================================================
-        //  背包渲染（修复：数量超过四位显示异常）
+        //  背包渲染
         // =========================================================
         function renderBackpack() {
             const keys = Object.keys(data.backpack);
@@ -2434,10 +2245,8 @@
                 const fullItem = findItem(key);
                 const deps = fullItem ? (fullItem.dependencies || []) : (item.dependencies || []);
                 const depCheck = checkDependencies(deps);
-
                 const div = document.createElement('div');
                 div.className = 'backpack-item';
-
                 let depStatus = '';
                 if (deps.length > 0) {
                     const depNames = getDependencyNames(deps);
@@ -2445,24 +2254,13 @@
                     const txt = depCheck.ok ? '✅' : '❌';
                     depStatus = `<div style="font-size:0.65rem;color:var(--gray);">${txt} ${depNames.join(' → ')}</div>`;
                 }
-
                 const canUse = depCheck.ok;
                 const count = item.count || 0;
-
-                // 根据数量动态添加类名，用于缩小字体
                 let countClass = '';
                 if (count >= 10000) countClass = 'xlarge';
                 else if (count >= 1000) countClass = 'large';
-
-                div.innerHTML = `
-                    <div class="item-count ${countClass}">${count}</div>
-                    <div class="item-icon"><i class="${item.icon}"></i></div>
-                    <div class="item-name">${item.name}</div>
-                    ${depStatus}
-                    <button class="btn ${canUse ? 'btn-primary' : 'btn-outline'} btn-use" data-id="${key}" ${canUse ? '' : 'disabled'}>
-                        ${canUse ? t('btn_use') : t('btn_missing_dep')}
-                    </button>
-                `;
+                div.innerHTML =
+                    `<div class="item-count ${countClass}">${count}</div><div class="item-icon"><i class="${item.icon}"></i></div><div class="item-name">${item.name}</div>${depStatus}<button class="btn ${canUse ? 'btn-primary' : 'btn-outline'} btn-use" data-id="${key}" ${canUse ? '' : 'disabled'}>${canUse ? t('btn_use') : t('btn_missing_dep')}</button>`;
                 backpackItemsEl.appendChild(div);
                 div.querySelector('.btn-use').addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -2498,9 +2296,7 @@
                     data.exp += result.amount;
                     checkLevelUp();
                     msg = t('notif_lootbox_exp', { amount: result.amount });
-                } else {
-                    msg = t('notif_lootbox_empty');
-                }
+                } else { msg = t('notif_lootbox_empty'); }
                 item.count--;
                 if (item.count <= 0) delete data.backpack[itemId];
                 saveData();
@@ -2587,7 +2383,6 @@
         function saveItemFromForm() {
             const formData = getFormData();
             if (!validateForm(formData)) return null;
-
             if (editingItemId) {
                 const index = data.userItems.findIndex(i => String(i.id) === editingItemId);
                 if (index === -1) { showNotification(t('notif_error_item_not_found'), 'error');
@@ -2650,7 +2445,6 @@
             const tempItem = { id: 'temp_' + Date.now(), ...formData };
             exportSingleItem(tempItem, formData.name);
         });
-
         btnExportAndLoad.addEventListener('click', function() {
             const saved = saveItemFromForm();
             if (saved) {
@@ -2720,64 +2514,42 @@
         // =========================================================
         function renderCustomTabs() {
             const navContainer = document.getElementById('sidebar-nav');
-            // 移除已有的自定义标签（保留内置导航）
             const existingCustom = navContainer.querySelectorAll('.nav-item.custom-tab');
             existingCustom.forEach(el => el.remove());
-
-            // 移除已有的自定义面板
             const mainContent = document.querySelector('.main-content');
             const existingPanels = mainContent.querySelectorAll('.content-section.custom-panel');
             existingPanels.forEach(el => el.remove());
-
-            // 重新构建
             data.customTabs.forEach((tab) => {
-                // 侧边栏项
                 const navItem = document.createElement('div');
                 navItem.className = 'nav-item custom-tab';
                 navItem.dataset.target = 'custom_' + tab.id;
                 navItem.innerHTML = `<i class="${tab.icon || 'fas fa-puzzle-piece'}"></i> ${tab.name}`;
                 navContainer.appendChild(navItem);
-
-                // 面板
                 const panel = document.createElement('section');
                 panel.className = 'panel content-section custom-panel';
                 panel.id = 'custom_' + tab.id;
-                panel.innerHTML = `
-                    <div class="panel-header">
-                        <h2 class="panel-title"><i class="${tab.icon || 'fas fa-puzzle-piece'}"></i> ${tab.name}</h2>
-                        <button class="btn btn-danger btn-sm btn-delete-custom-tab" data-id="${tab.id}"><i class="fas fa-trash"></i> ${t('custom_tab_delete')}</button>
-                    </div>
-                    <div class="panel-content custom-tab-content">${tab.content || ''}</div>
-                `;
+                panel.innerHTML =
+                    `<div class="panel-header"><h2 class="panel-title"><i class="${tab.icon || 'fas fa-puzzle-piece'}"></i> ${tab.name}</h2><button class="btn btn-danger btn-sm btn-delete-custom-tab" data-id="${tab.id}"><i class="fas fa-trash"></i> ${t('custom_tab_delete')}</button></div><div class="panel-content custom-tab-content">${tab.content || ''}</div>`;
                 mainContent.appendChild(panel);
-
-                // ⭐ 关键修复：执行面板内的脚本
-                const scripts = panel.querySelectorAll('script');
-                scripts.forEach(oldScript => {
+                // 执行脚本
+                panel.querySelectorAll('script').forEach(oldScript => {
                     const newScript = document.createElement('script');
                     newScript.textContent = oldScript.textContent;
                     if (oldScript.src) newScript.src = oldScript.src;
                     oldScript.parentNode.replaceChild(newScript, oldScript);
                 });
-
-                // 删除标签
                 panel.querySelector('.btn-delete-custom-tab').addEventListener('click', function() {
                     const id = this.dataset.id;
                     if (confirm(`确定删除标签 "${data.customTabs.find(t => t.id === id)?.name}" 吗？`)) {
                         data.customTabs = data.customTabs.filter(t => t.id !== id);
                         saveData();
                         renderCustomTabs();
-                        if (document.getElementById('custom_' + id)?.classList.contains('active')) {
-                            switchSection('timer');
-                        }
+                        if (document.getElementById('custom_' + id)?.classList.contains('active')) switchSection(
+                            'timer');
                         showNotification('🗑️ 已删除自定义标签', 'warning');
                     }
                 });
-
-                // 点击导航切换
-                navItem.addEventListener('click', function() {
-                    switchSection('custom_' + tab.id);
-                });
+                navItem.addEventListener('click', function() { switchSection('custom_' + tab.id); });
             });
         }
 
@@ -2788,13 +2560,10 @@
             document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
             const section = document.getElementById(target + '-section') || document.getElementById(target);
             if (section) section.classList.add('active');
-
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItem = document.querySelector(`.nav-item[data-target="${target}"]`);
             if (navItem) navItem.classList.add('active');
-
             if (target.startsWith('custom_')) return;
-
             if (target === 'stats') renderStats();
             if (target === 'store') renderStore();
             if (target === 'backpack') renderBackpack();
@@ -2804,12 +2573,8 @@
         }
 
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const target = this.dataset.target;
-                switchSection(target);
-            });
+            item.addEventListener('click', function() { switchSection(this.dataset.target); });
         });
-
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -2836,7 +2601,6 @@
         // =========================================================
         //  多格式导入/导出函数
         // =========================================================
-
         function downloadJSON(data, filename) {
             const json = JSON.stringify(data, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
@@ -2893,7 +2657,6 @@
             downloadJSON(saveData, `存档_${new Date().toISOString().slice(0,10)}.saop`);
             showNotification(t('notif_export_save'), 'success');
         });
-
         $('btn-import-save').addEventListener('click', function() {
             if (!confirm('导入存档将完全替换当前所有数据（包括进度、物品、任务、模组等），确定继续吗？')) return;
             importFile('.saop', function(imported) {
@@ -2940,7 +2703,6 @@
             downloadJSON(exportData, `商品_${new Date().toISOString().slice(0,10)}.shom`);
             showNotification(t('notif_export_shom', { count: data.userItems.length }), 'success');
         });
-
         $('btn-import-shom').addEventListener('click', function() {
             importFile('.shom,.shem', function(imported) {
                 if (!imported.userItems || !imported.backpack) {
@@ -2973,7 +2735,7 @@
         });
 
         // =========================================================
-        //  模组 (.zid / .zod)
+        //  模组 (.zid / .zod / .tomod)
         // =========================================================
         $('btn-export-zid').addEventListener('click', function() {
             const exportData = {
@@ -2988,23 +2750,70 @@
         });
 
         $('btn-import-zid').addEventListener('click', function() {
-            importFile('.zid,.zod', function(imported) {
-                if (!imported.userItems || !imported.backpack) {
-                    return showNotification(t('notif_error_import_invalid'), 'error');
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.zid,.zod,.tomod';
+            fileInput.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                    let config;
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    if (ext === 'tomod') {
+                        // 处理 .tomod 压缩包
+                        const zip = await JSZip.loadAsync(file);
+                        const modJsonFile = zip.file('mod.json');
+                        if (!modJsonFile) {
+                            showNotification('❌ mod.json not found in .tomod file!', 'error');
+                            return;
+                        }
+                        const content = await modJsonFile.async('text');
+                        config = JSON.parse(content);
+                        // 提取资源文件（可选，此处只做基础支持）
+                        // 可以将 assets 保存到 IndexedDB 或内存中，此处略
+                    } else {
+                        // 旧格式
+                        const content = await file.text();
+                        config = JSON.parse(content);
+                    }
+                    // 合并数据
+                    mergeModData(config);
+                    saveData();
+                    renderStore();
+                    renderBackpack();
+                    renderTasks();
+                    renderCustomTabs();
+                    renderModManager();
+                    showNotification('✅ Mod imported successfully!', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showNotification('❌ Import failed: ' + err.message, 'error');
                 }
-                let itemAdded = 0,
-                    itemUpdated = 0,
-                    taskAdded = 0,
-                    taskUpdated = 0,
-                    tabAdded = 0;
+                fileInput.remove();
+            };
+            fileInput.click();
+        });
 
-                imported.userItems.forEach(imp => {
+        // 合并模组数据的通用函数
+        function mergeModData(config) {
+            let itemAdded = 0,
+                itemUpdated = 0,
+                taskAdded = 0,
+                taskUpdated = 0,
+                tabAdded = 0;
+
+            // 合并 userItems
+            if (config.userItems) {
+                config.userItems.forEach(imp => {
                     const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
                     if (idx !== -1) { data.userItems[idx] = imp;
                         itemUpdated++; } else { data.userItems.push(imp);
                         itemAdded++; }
                 });
-                for (const [key, val] of Object.entries(imported.backpack)) {
+            }
+            // 合并 backpack
+            if (config.backpack) {
+                for (const [key, val] of Object.entries(config.backpack)) {
                     if (data.backpack[key]) {
                         data.backpack[key].count += val.count;
                         data.backpack[key].name = val.name;
@@ -3015,73 +2824,64 @@
                         data.backpack[key] = val;
                     }
                 }
-                if (imported.tasks) {
-                    imported.tasks.forEach(impTask => {
-                        if (!impTask.dependencies) impTask.dependencies = [];
-                        const idx = data.tasks.findIndex(t => t.id === impTask.id);
-                        if (idx !== -1) {
-                            const old = data.tasks[idx];
-                            data.tasks[idx] = {
-                                ...impTask,
-                                completedSessions: old.completedSessions || 0,
-                                completed: old.completed || false
-                            };
-                            taskUpdated++;
-                        } else {
-                            data.tasks.push(impTask);
-                            taskAdded++;
-                        }
-                    });
-                }
-                if (imported.customTabs) {
-                    imported.customTabs.forEach(impTab => {
-                        if (!data.customTabs.some(t => t.id === impTab.id)) {
-                            data.customTabs.push(impTab);
-                            tabAdded++;
-                        }
-                    });
-                }
-
-                const modName = imported.name || '未命名模组';
-                const modId = 'mod_' + Date.now();
-                const itemIds = imported.userItems.map(i => i.id);
-                const taskIds = (imported.tasks || []).map(t => t.id);
-                const tabIds = (imported.customTabs || []).map(t => t.id);
-                data.installedMods.push({
-                    id: modId,
-                    name: modName,
-                    itemIds: itemIds,
-                    taskIds: taskIds,
-                    tabIds: tabIds,
-                    importedAt: new Date().toISOString()
+            }
+            // 合并 tasks
+            if (config.tasks) {
+                config.tasks.forEach(impTask => {
+                    if (!impTask.dependencies) impTask.dependencies = [];
+                    const idx = data.tasks.findIndex(t => t.id === impTask.id);
+                    if (idx !== -1) {
+                        const old = data.tasks[idx];
+                        data.tasks[idx] = {
+                            ...impTask,
+                            completedSessions: old.completedSessions || 0,
+                            completed: old.completed || false
+                        };
+                        taskUpdated++;
+                    } else {
+                        data.tasks.push(impTask);
+                        taskAdded++;
+                    }
                 });
+            }
+            // 合并 customTabs
+            if (config.customTabs) {
+                config.customTabs.forEach(impTab => {
+                    if (!data.customTabs.some(t => t.id === impTab.id)) {
+                        data.customTabs.push(impTab);
+                        tabAdded++;
+                    }
+                });
+            }
 
-                saveData();
-                renderStore();
-                renderBackpack();
-                renderTasks();
-                renderCustomTabs();
-                renderModManager();
-                showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated,
-                    tabAdded }), 'success');
+            // 记录安装信息
+            const modName = config.name || '未命名模组';
+            const modId = 'mod_' + Date.now();
+            const itemIds = (config.userItems || []).map(i => i.id);
+            const taskIds = (config.tasks || []).map(t => t.id);
+            const tabIds = (config.customTabs || []).map(t => t.id);
+            data.installedMods.push({
+                id: modId,
+                name: modName,
+                itemIds: itemIds,
+                taskIds: taskIds,
+                tabIds: tabIds,
+                importedAt: new Date().toISOString()
             });
-        });
+
+            showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated, tabAdded }),
+                'success');
+        }
 
         // =========================================================
         //  任务 (.taem)
         // =========================================================
         $('btn-export-tasks').addEventListener('click', function() {
-            if (data.tasks.length === 0) {
-                return showNotification('没有任务可导出', 'warning');
-            }
-            const exportData = {
-                tasks: data.tasks,
-                version: '1.0'
-            };
+            if (data.tasks.length === 0) return showNotification('没有任务可导出', 'warning');
+            const exportData = { tasks: data.tasks, version: '1.0' };
             downloadJSON(exportData, `任务清单_${new Date().toISOString().slice(0,10)}.taem`);
             showNotification(t('notif_export_tasks', { count: data.tasks.length }), 'success');
         });
-
         $('btn-import-tasks').addEventListener('click', function() {
             importFile('.taem', function(imported) {
                 if (!imported.tasks || !Array.isArray(imported.tasks)) {
@@ -3100,10 +2900,8 @@
                             completed: old.completed || false
                         };
                         updated++;
-                    } else {
-                        data.tasks.push(impTask);
-                        added++;
-                    }
+                    } else { data.tasks.push(impTask);
+                        added++; }
                 });
                 saveData();
                 renderTasks();
@@ -3140,15 +2938,8 @@
                 renderMarketList(marketMods);
             } catch (err) {
                 console.error('加载市场失败:', err);
-                container.innerHTML = `
-                    <div class="empty-message">
-                        <i class="fas fa-exclamation-triangle" style="color:var(--gold);"></i>
-                        ${t('notif_error_market_load')}
-                        <p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">
-                            💡 请检查仓库 <strong>${MARKET_CONFIG.REPO_OWNER}/${MARKET_CONFIG.REPO_NAME}</strong> 是否存在
-                        </p>
-                    </div>
-                `;
+                container.innerHTML =
+                    `<div class="empty-message"><i class="fas fa-exclamation-triangle" style="color:var(--gold);"></i> ${t('notif_error_market_load')}<p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">💡 请检查仓库 <strong>${MARKET_CONFIG.REPO_OWNER}/${MARKET_CONFIG.REPO_NAME}</strong> 是否存在</p></div>`;
             }
         }
 
@@ -3159,58 +2950,48 @@
                 return;
             }
             container.innerHTML = mods.map(mod => {
-                const iconClass = mod.icon ? (mod.icon.startsWith('fa-') ? `fas ${mod.icon}` : mod.icon) : 'fas fa-puzzle-piece';
+                const iconClass = mod.icon ? (mod.icon.startsWith('fa-') ? `fas ${mod.icon}` : mod.icon) :
+                    'fas fa-puzzle-piece';
                 const typeLabel = mod.type === 'shom' ? t('market_type_shom') :
-                                  mod.type === 'zid' ? t('market_type_zid') :
-                                  mod.type === 'taem' ? t('market_type_taem') : '📦 其他';
+                    mod.type === 'zid' ? t('market_type_zid') :
+                    mod.type === 'taem' ? t('market_type_taem') : '📦 其他';
                 const fileUrl = getRawUrl(mod.file);
-
                 return `
                     <div class="item market-card">
                         <div class="item-icon"><i class="${iconClass}"></i></div>
                         <div class="item-name">${mod.name}</div>
-                        <div style="font-size:0.85rem;color:var(--gray);">
-                            <i class="fas fa-user"></i> ${mod.author || '匿名'} · v${mod.version || '1.0'}
-                        </div>
-                        <div style="font-size:0.85rem;color:var(--gray);margin:4px 0 8px;">
-                            ${typeLabel} · ${mod.downloads || 0} 下载
-                        </div>
-                        <div class="mod-tags">
-                            ${mod.tags ? mod.tags.map(t => `<span>#${t}</span>`).join('') : ''}
-                        </div>
+                        <div style="font-size:0.85rem;color:var(--gray);"><i class="fas fa-user"></i> ${mod.author || '匿名'} · v${mod.version || '1.0'}</div>
+                        <div style="font-size:0.85rem;color:var(--gray);margin:4px 0 8px;">${typeLabel} · ${mod.downloads || 0} 下载</div>
+                        <div class="mod-tags">${mod.tags ? mod.tags.map(t => `<span>#${t}</span>`).join('') : ''}</div>
                         <div class="item-desc">${mod.description || '暂无描述'}</div>
                         <div class="item-actions">
-                            <button class="btn btn-primary btn-install" data-file="${fileUrl}" data-name="${mod.name}" data-type="${mod.type}" data-moddata='${JSON.stringify(mod).replace(/'/g,"&#39;")}'>
-                                <i class="fas fa-download"></i> ${t('market_install')}
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="alert('📦 ${mod.name}\\n👤 ${mod.author || '匿名'}\\n📄 ${typeLabel}\\n📌 v${mod.version || '1.0'}\\n\\n📝 ${mod.description || '暂无描述'}\\n\\n🏷️ ${(mod.tags || []).join('、') || '无'}')">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
+                            <button class="btn btn-primary btn-install" data-file="${fileUrl}" data-name="${mod.name}" data-type="${mod.type}" data-moddata='${JSON.stringify(mod).replace(/'/g,"&#39;")}'><i class="fas fa-download"></i> ${t('market_install')}</button>
+                            <button class="btn btn-secondary btn-sm" onclick="alert('📦 ${mod.name}\\n👤 ${mod.author || '匿名'}\\n📄 ${typeLabel}\\n📌 v${mod.version || '1.0'}\\n\\n📝 ${mod.description || '暂无描述'}\\n\\n🏷️ ${(mod.tags || []).join('、') || '无'}')"><i class="fas fa-info-circle"></i></button>
                         </div>
                     </div>
                 `;
             }).join('');
-
-            // 绑定安装事件
             container.querySelectorAll('.btn-install').forEach(btn => {
                 btn.addEventListener('click', async function() {
                     const fileUrl = this.dataset.file;
                     const name = this.dataset.name;
                     const type = this.dataset.type;
-                    const modData = JSON.parse(this.dataset.moddata);
                     this.disabled = true;
                     this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('market_installing')}`;
                     try {
                         const response = await fetch(fileUrl);
                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
                         const imported = await response.json();
-
                         if (type === 'shom' || type === 'shem') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
-                            let added = 0, updated = 0;
+                            let added = 0,
+                                updated = 0;
                             imported.userItems.forEach(imp => {
-                                const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
-                                if (idx !== -1) { data.userItems[idx] = imp; updated++; } else { data.userItems.push(imp); added++; }
+                                const idx = data.userItems.findIndex(i => String(i.id) === String(imp
+                                .id));
+                                if (idx !== -1) { data.userItems[idx] = imp;
+                                    updated++; } else { data.userItems.push(imp);
+                                    added++; }
                             });
                             for (const [key, val] of Object.entries(imported.backpack)) {
                                 if (data.backpack[key]) {
@@ -3219,19 +3000,12 @@
                                     data.backpack[key].icon = val.icon;
                                     data.backpack[key].effect = val.effect;
                                     data.backpack[key].dependencies = val.dependencies || [];
-                                } else {
-                                    data.backpack[key] = val;
-                                }
+                                } else { data.backpack[key] = val; }
                             }
                             const modId = 'mod_' + Date.now();
-                            data.installedMods.push({
-                                id: modId,
-                                name: name,
-                                itemIds: imported.userItems.map(i => i.id),
-                                taskIds: [],
-                                tabIds: [],
-                                importedAt: new Date().toISOString()
-                            });
+                            data.installedMods.push({ id: modId, name: name, itemIds: imported.userItems
+                                    .map(i => i.id), taskIds: [], tabIds: [], importedAt: new Date()
+                                    .toISOString() });
                             saveData();
                             renderStore();
                             renderBackpack();
@@ -3239,10 +3013,17 @@
                             showNotification(t('notif_import_shom', { added, updated }), 'success');
                         } else if (type === 'zid' || type === 'zod') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的模组文件');
-                            let itemAdded = 0, itemUpdated = 0, taskAdded = 0, taskUpdated = 0, tabAdded = 0;
+                            let itemAdded = 0,
+                                itemUpdated = 0,
+                                taskAdded = 0,
+                                taskUpdated = 0,
+                                tabAdded = 0;
                             imported.userItems.forEach(imp => {
-                                const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
-                                if (idx !== -1) { data.userItems[idx] = imp; itemUpdated++; } else { data.userItems.push(imp); itemAdded++; }
+                                const idx = data.userItems.findIndex(i => String(i.id) === String(imp
+                                .id));
+                                if (idx !== -1) { data.userItems[idx] = imp;
+                                    itemUpdated++; } else { data.userItems.push(imp);
+                                    itemAdded++; }
                             });
                             for (const [key, val] of Object.entries(imported.backpack)) {
                                 if (data.backpack[key]) {
@@ -3251,9 +3032,7 @@
                                     data.backpack[key].icon = val.icon;
                                     data.backpack[key].effect = val.effect;
                                     data.backpack[key].dependencies = val.dependencies || [];
-                                } else {
-                                    data.backpack[key] = val;
-                                }
+                                } else { data.backpack[key] = val; }
                             }
                             if (imported.tasks) {
                                 imported.tasks.forEach(impTask => {
@@ -3261,12 +3040,12 @@
                                     const idx = data.tasks.findIndex(t => t.id === impTask.id);
                                     if (idx !== -1) {
                                         const old = data.tasks[idx];
-                                        data.tasks[idx] = { ...impTask, completedSessions: old.completedSessions || 0, completed: old.completed || false };
+                                        data.tasks[idx] = { ...impTask,
+                                            completedSessions: old.completedSessions || 0,
+                                            completed: old.completed || false };
                                         taskUpdated++;
-                                    } else {
-                                        data.tasks.push(impTask);
-                                        taskAdded++;
-                                    }
+                                    } else { data.tasks.push(impTask);
+                                        taskAdded++; }
                                 });
                             }
                             if (imported.customTabs) {
@@ -3278,45 +3057,39 @@
                                 });
                             }
                             const modId = 'mod_' + Date.now();
-                            data.installedMods.push({
-                                id: modId,
-                                name: name,
-                                itemIds: imported.userItems.map(i => i.id),
-                                taskIds: (imported.tasks || []).map(t => t.id),
-                                tabIds: (imported.customTabs || []).map(t => t.id),
-                                importedAt: new Date().toISOString()
-                            });
+                            data.installedMods.push({ id: modId, name: name, itemIds: imported.userItems
+                                    .map(i => i.id), taskIds: (imported.tasks || []).map(t => t.id),
+                                tabIds: (imported.customTabs || []).map(t => t.id), importedAt: new Date()
+                                    .toISOString() });
                             saveData();
                             renderStore();
                             renderBackpack();
                             renderTasks();
                             renderCustomTabs();
                             renderModManager();
-                            showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated, tabAdded }), 'success');
+                            showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded,
+                                taskUpdated, tabAdded }), 'success');
                         } else if (type === 'taem') {
-                            if (!imported.tasks || !Array.isArray(imported.tasks)) throw new Error('无效的任务文件');
-                            let added = 0, updated = 0;
+                            if (!imported.tasks || !Array.isArray(imported.tasks)) throw new Error(
+                                '无效的任务文件');
+                            let added = 0,
+                                updated = 0;
                             imported.tasks.forEach(impTask => {
                                 if (!impTask.dependencies) impTask.dependencies = [];
                                 const idx = data.tasks.findIndex(t => t.id === impTask.id);
                                 if (idx !== -1) {
                                     const old = data.tasks[idx];
-                                    data.tasks[idx] = { ...impTask, completedSessions: old.completedSessions || 0, completed: old.completed || false };
+                                    data.tasks[idx] = { ...impTask,
+                                        completedSessions: old.completedSessions || 0,
+                                        completed: old.completed || false };
                                     updated++;
-                                } else {
-                                    data.tasks.push(impTask);
-                                    added++;
-                                }
+                                } else { data.tasks.push(impTask);
+                                    added++; }
                             });
                             const modId = 'mod_' + Date.now();
-                            data.installedMods.push({
-                                id: modId,
-                                name: name,
-                                itemIds: [],
-                                taskIds: imported.tasks.map(t => t.id),
-                                tabIds: [],
-                                importedAt: new Date().toISOString()
-                            });
+                            data.installedMods.push({ id: modId, name: name, itemIds: [], taskIds: imported
+                                    .tasks.map(t => t.id), tabIds: [], importedAt: new Date()
+                                    .toISOString() });
                             saveData();
                             renderTasks();
                             renderModManager();
@@ -3341,7 +3114,6 @@
             container.innerHTML = `<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 加载模组列表中...</div>`;
             loadMarketMods();
         }
-
         $('btn-refresh-market').addEventListener('click', renderMarket);
 
         // =========================================================
@@ -3354,30 +3126,14 @@
                 container.innerHTML = `<div class="empty-message"><i class="fas fa-cubes"></i> ${t('modmanager_empty')}</div>`;
                 return;
             }
-            container.innerHTML = mods.map(mod => `
-                <div class="mod-item-card" data-modid="${mod.id}">
-                    <div class="mod-info">
-                        <div class="mod-name">${mod.name}</div>
-                        <div class="mod-meta">
-                            🧩 ${mod.itemIds.length} 个物品 · 📋 ${mod.taskIds.length} 个任务 · 📑 ${mod.tabIds.length} 个标签
-                            <span style="margin-left:12px;">📅 ${new Date(mod.importedAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    <div class="mod-actions">
-                        <button class="btn btn-danger btn-sm btn-uninstall" data-modid="${mod.id}" data-modname="${mod.name}">
-                            <i class="fas fa-trash"></i> ${t('modmanager_uninstall')}
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-
+            container.innerHTML = mods.map(mod =>
+                `<div class="mod-item-card" data-modid="${mod.id}"><div class="mod-info"><div class="mod-name">${mod.name}</div><div class="mod-meta">🧩 ${mod.itemIds.length} 个物品 · 📋 ${mod.taskIds.length} 个任务 · 📑 ${mod.tabIds.length} 个标签 <span style="margin-left:12px;">📅 ${new Date(mod.importedAt).toLocaleDateString()}</span></div></div><div class="mod-actions"><button class="btn btn-danger btn-sm btn-uninstall" data-modid="${mod.id}" data-modname="${mod.name}"><i class="fas fa-trash"></i> ${t('modmanager_uninstall')}</button></div></div>`
+            ).join('');
             container.querySelectorAll('.btn-uninstall').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const modId = this.dataset.modid;
                     const modName = this.dataset.modname;
-                    if (confirm(t('modmanager_confirm', { name: modName }))) {
-                        uninstallMod(modId);
-                    }
+                    if (confirm(t('modmanager_confirm', { name: modName }))) { uninstallMod(modId); }
                 });
             });
         }
@@ -3391,13 +3147,10 @@
             const mod = data.installedMods[modIndex];
             try {
                 data.userItems = data.userItems.filter(i => !mod.itemIds.includes(i.id));
-                mod.itemIds.forEach(id => {
-                    delete data.backpack[id];
-                });
+                mod.itemIds.forEach(id => { delete data.backpack[id]; });
                 data.tasks = data.tasks.filter(t => !mod.taskIds.includes(t.id));
                 data.customTabs = data.customTabs.filter(t => !mod.tabIds.includes(t.id));
                 data.installedMods.splice(modIndex, 1);
-
                 saveData();
                 renderStore();
                 renderBackpack();
@@ -3410,7 +3163,6 @@
                 showNotification(t('notif_uninstall_error', { error: err.message }), 'error');
             }
         }
-
         $('btn-refresh-modmanager').addEventListener('click', renderModManager);
 
         // =========================================================
@@ -3474,7 +3226,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v3.7 · 完整版（含模组管理 + 脚本执行修复 + 背包数量显示修复）已启动！');
+        console.log('🍅 番茄闹钟 v4.0 · 支持 .tomod 压缩模格已启动！');
     </script>
 </body>
 </html>
