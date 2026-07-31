@@ -2996,12 +2996,14 @@
                     this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('market_installing')}`;
                     try {
                         const response = await fetch(fileUrl);
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
                         const blob = await response.blob();
                         const ext = fileUrl.split('.').pop().toLowerCase();
-                        
-                        let imported;
-                        let zipData = null;
-                    
+            
+                        let imported;      // 解析后的配置对象
+                        let zipData = null; // .tomod 中的文件内容
+            
+                        // ---- 处理 .tomod ----
                         if (ext === 'tomod') {
                             const zip = await JSZip.loadAsync(blob);
                             zipData = {};
@@ -3016,22 +3018,13 @@
                             const content = await modJsonFile.async('text');
                             imported = JSON.parse(content);
                         } else {
+                            // ---- 旧格式：直接 JSON ----
                             const text = await blob.text();
                             imported = JSON.parse(text);
                         }
-                    
-                        // 决定模组类型：优先使用 imported.type，否则根据内容推断
-                        let modType = imported.type || 'zid';
-                        if (!['shom', 'shem', 'zid', 'zod', 'taem'].includes(modType)) {
-                            // 如果 type 不是已知类型，则根据是否存在 userItems 等推断
-                            if (imported.userItems) modType = 'zid';
-                            else if (imported.tasks) modType = 'taem';
-                            else modType = 'zid';
-                        }
-                    
-                        // 现在根据 modType 处理
-                        if (modType === 'shom' || modType === 'shem') {
-                            // 商品文件
+            
+                        // ---- 根据 type 合并数据 ----
+                        if (type === 'shom' || type === 'shem') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
                             let added = 0, updated = 0;
                             imported.userItems.forEach(imp => {
@@ -3045,7 +3038,9 @@
                                     data.backpack[key].icon = val.icon;
                                     data.backpack[key].effect = val.effect;
                                     data.backpack[key].dependencies = val.dependencies || [];
-                                } else { data.backpack[key] = val; }
+                                } else {
+                                    data.backpack[key] = val;
+                                }
                             }
                             const modId = 'mod_' + Date.now();
                             data.installedMods.push({ id: modId, name: name, itemIds: imported.userItems.map(i => i.id), taskIds: [], tabIds: [], importedAt: new Date().toISOString() });
@@ -3054,14 +3049,27 @@
                             renderBackpack();
                             renderModManager();
                             showNotification(t('notif_import_shom', { added, updated }), 'success');
-                        } else if (modType === 'zid' || modType === 'zod') {
-                            // 完整模组
-                            if (!imported.userItems || !imported.backpack) throw new Error('无效的模组文件');
+            
+                        } else if (type === 'zid' || type === 'zod') {
+                            // ---- 模组（含任务/标签） ----
+                            // 核心检查：userItems 必须存在（可以为空数组）
+                            if (!imported.userItems || !Array.isArray(imported.userItems)) {
+                                throw new Error('无效的模组文件：缺少 userItems');
+                            }
+                            // backpack 可选
+                            if (!imported.backpack) imported.backpack = {};
+                            if (!imported.tasks) imported.tasks = [];
+                            if (!imported.customTabs) imported.customTabs = [];
+            
                             let itemAdded = 0, itemUpdated = 0, taskAdded = 0, taskUpdated = 0, tabAdded = 0;
+            
+                            // 合并 userItems
                             imported.userItems.forEach(imp => {
                                 const idx = data.userItems.findIndex(i => String(i.id) === String(imp.id));
                                 if (idx !== -1) { data.userItems[idx] = imp; itemUpdated++; } else { data.userItems.push(imp); itemAdded++; }
                             });
+            
+                            // 合并 backpack
                             for (const [key, val] of Object.entries(imported.backpack)) {
                                 if (data.backpack[key]) {
                                     data.backpack[key].count += val.count;
@@ -3069,8 +3077,12 @@
                                     data.backpack[key].icon = val.icon;
                                     data.backpack[key].effect = val.effect;
                                     data.backpack[key].dependencies = val.dependencies || [];
-                                } else { data.backpack[key] = val; }
+                                } else {
+                                    data.backpack[key] = val;
+                                }
                             }
+            
+                            // 合并 tasks
                             if (imported.tasks) {
                                 imported.tasks.forEach(impTask => {
                                     if (!impTask.dependencies) impTask.dependencies = [];
@@ -3079,20 +3091,24 @@
                                         const old = data.tasks[idx];
                                         data.tasks[idx] = { ...impTask, completedSessions: old.completedSessions || 0, completed: old.completed || false };
                                         taskUpdated++;
-                                    } else { data.tasks.push(impTask); taskAdded++; }
+                                    } else {
+                                        data.tasks.push(impTask);
+                                        taskAdded++;
+                                    }
                                 });
                             }
+            
+                            // 合并 customTabs（支持 source）
                             if (imported.customTabs) {
                                 imported.customTabs.forEach(impTab => {
-                                    // 处理 source
                                     if (impTab.source && zipData) {
-                                        const filePath = impTab.source;
-                                        if (zipData[filePath]) {
-                                            impTab.content = zipData[filePath];
+                                        const sourcePath = impTab.source;
+                                        if (zipData[sourcePath]) {
+                                            impTab.content = zipData[sourcePath];
                                             delete impTab.source;
                                         } else {
-                                            console.warn('Source file not found:', filePath);
-                                            return;
+                                            console.warn('Source file not found in .tomod:', sourcePath);
+                                            return; // 跳过该标签
                                         }
                                     }
                                     if (!data.customTabs.some(t => t.id === impTab.id)) {
@@ -3101,8 +3117,18 @@
                                     }
                                 });
                             }
+            
+                            // 记录安装信息
                             const modId = 'mod_' + Date.now();
-                            data.installedMods.push({ id: modId, name: name, itemIds: imported.userItems.map(i => i.id), taskIds: (imported.tasks || []).map(t => t.id), tabIds: (imported.customTabs || []).map(t => t.id), importedAt: new Date().toISOString() });
+                            data.installedMods.push({
+                                id: modId,
+                                name: name,
+                                itemIds: imported.userItems.map(i => i.id),
+                                taskIds: imported.tasks.map(t => t.id),
+                                tabIds: imported.customTabs.map(t => t.id),
+                                importedAt: new Date().toISOString()
+                            });
+            
                             saveData();
                             renderStore();
                             renderBackpack();
@@ -3110,8 +3136,9 @@
                             renderCustomTabs();
                             renderModManager();
                             showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated, tabAdded }), 'success');
-                        } else if (modType === 'taem') {
-                            // 任务文件
+            
+                        } else if (type === 'taem') {
+                            // ---- 任务文件 ----
                             if (!imported.tasks || !Array.isArray(imported.tasks)) throw new Error('无效的任务文件');
                             let added = 0, updated = 0;
                             imported.tasks.forEach(impTask => {
@@ -3121,7 +3148,10 @@
                                     const old = data.tasks[idx];
                                     data.tasks[idx] = { ...impTask, completedSessions: old.completedSessions || 0, completed: old.completed || false };
                                     updated++;
-                                } else { data.tasks.push(impTask); added++; }
+                                } else {
+                                    data.tasks.push(impTask);
+                                    added++;
+                                }
                             });
                             const modId = 'mod_' + Date.now();
                             data.installedMods.push({ id: modId, name: name, itemIds: [], taskIds: imported.tasks.map(t => t.id), tabIds: [], importedAt: new Date().toISOString() });
@@ -3129,12 +3159,17 @@
                             renderTasks();
                             renderModManager();
                             showNotification(t('notif_import_tasks', { added, updated }), 'success');
+            
                         } else {
-                            throw new Error('未知模组类型');
+                            throw new Error('未知的模组类型: ' + type);
                         }
+            
                     } catch (err) {
                         console.error(err);
                         showNotification('❌ 安装失败: ' + err.message, 'error');
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = `<i class="fas fa-download"></i> ${t('market_install')}`;
                     }
                 });
             });
