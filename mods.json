@@ -37,6 +37,18 @@
       "type": "shem",
       "downloads": 0,
       "tags": ["道具", "礼包"]
+    },
+    {
+      "id": "theme_customizer",
+      "name": "🎨 外观与主题定制中心",
+      "author": "千问 + FI0m9ySans",
+      "version": "1.0",
+      "description": "提供多种全局主题切换及动态背景特效，让你的番茄钟与众不同。",
+      "icon": "fa-palette",
+      "file": "mods/theme_customizer.tomod",
+      "type": "zid",
+      "downloads": 0,
+      "tags": ["主题", "外观", "定制", "UI"]
     }
   ]
 }
