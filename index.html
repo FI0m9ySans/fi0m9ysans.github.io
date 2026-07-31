@@ -2636,6 +2636,7 @@
                     try {
                         const data = JSON.parse(ev.target.result);
                         callback(data);
+                        saveData();
                     } catch (err) {
                         showNotification(t('notif_error_import_parse'), 'error');
                         console.error(err);
@@ -2799,6 +2800,7 @@
                     renderCustomTabs();
                     renderModManager();
                     showNotification('✅ Mod imported successfully!', 'success');
+                    saveData();
                 } catch (err) {
                     console.error(err);
                     showNotification('❌ Import failed: ' + err.message, 'error');
@@ -2963,6 +2965,7 @@
                 marketMods = data.mods;
                 marketLoaded = true;
                 renderMarketList(marketMods);
+                saveData();
             } catch (err) {
                 console.error('加载市场失败:', err);
                 container.innerHTML =
@@ -3164,7 +3167,7 @@
                         } else {
                             throw new Error('未知的模组类型: ' + type);
                         }
-        
+        saveData();
                     } catch (err) {
                         console.error(err);
                         showNotification('❌ 安装失败: ' + err.message, 'error');
@@ -3361,7 +3364,7 @@
                         } else {
                             throw new Error('未知的模组类型: ' + type);
                         }
-            
+            saveData();
                     } catch (err) {
                         console.error(err);
                         showNotification('❌ 安装失败: ' + err.message, 'error');
@@ -3385,6 +3388,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(a.href);
                 showNotification(`✅ 已下载: ${fileName}`, 'success');
+                saveData();
             } catch (err) {
                 console.error(err);
                 showNotification('❌ 下载失败: ' + err.message, 'error');
@@ -3440,6 +3444,7 @@
                 renderCustomTabs();
                 renderModManager();
                 showNotification(t('notif_uninstall_success', { name: mod.name }), 'success');
+                saveData();
             } catch (err) {
                 console.error(err);
                 showNotification(t('notif_uninstall_error', { error: err.message }), 'error');
