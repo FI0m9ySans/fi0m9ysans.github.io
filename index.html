@@ -2831,6 +2831,51 @@
                         itemAdded++; }
                 });
             }
+        // =========================================================
+        //  加载模组外部脚本
+        // =========================================================
+        function loadModScripts(scripts, zipData, callback) {
+            if (!scripts || scripts.length === 0) {
+                if (callback) callback();
+                return;
+            }
+            var total = scripts.length;
+            var loaded = 0;
+            scripts.forEach(function(src) {
+                if (src.match(/^https?:\/\//)) {
+                    var scriptEl = document.createElement('script');
+                    scriptEl.src = src;
+                    scriptEl.onload = function() {
+                        loaded++;
+                        if (loaded === total && callback) callback();
+                    };
+                    scriptEl.onerror = function() {
+                        console.warn('[Mod] Failed to load script:', src);
+                        loaded++;
+                        if (loaded === total && callback) callback();
+                    };
+                    document.head.appendChild(scriptEl);
+                } else {
+                    if (zipData && zipData[src]) {
+                        try {
+                            var scriptTag = document.createElement('script');
+                            scriptTag.textContent = zipData[src];
+                            document.head.appendChild(scriptTag);
+                            loaded++;
+                            if (loaded === total && callback) callback();
+                        } catch (e) {
+                            console.error('[Mod] Error executing script:', src, e);
+                            loaded++;
+                            if (loaded === total && callback) callback();
+                        }
+                    } else {
+                        console.warn('[Mod] Script file not found in .tomod:', src);
+                        loaded++;
+                        if (loaded === total && callback) callback();
+                    }
+                }
+            });
+        }
             // 合并 backpack
             if (config.backpack) {
                 for (const [key, val] of Object.entries(config.backpack)) {
@@ -2887,7 +2932,17 @@
                 });
             }
 
-            // 记录安装信息
+            // ---- ⭐ 加载外部脚本（放在这里） ----
+            if (config.scripts && Array.isArray(config.scripts) && config.scripts.length > 0) {
+                loadModScripts(config.scripts, zipData, function() {
+                    console.log('[Mod] All scripts loaded for:', config.name);
+                    if (typeof window.dispatchEvent === 'function') {
+                        window.dispatchEvent(new CustomEvent('modScriptsLoaded', { detail: { modName: config.name } }));
+                    }
+                });
+            }
+    
+            // ---- 记录安装信息 ----
             const modName = config.name || '未命名模组';
             const modId = 'mod_' + Date.now();
             const itemIds = (config.userItems || []).map(i => i.id);
@@ -2901,7 +2956,8 @@
                 tabIds: tabIds,
                 importedAt: new Date().toISOString()
             });
-
+    
+            // ---- 显示通知 ----
             showNotification(t('notif_import_zid', { itemAdded, itemUpdated, taskAdded, taskUpdated, tabAdded }),
                 'success');
         }
