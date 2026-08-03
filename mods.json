@@ -92,11 +92,11 @@
       "author": "FI0m9ySans",
       "version": "1.0",
       "description": "After loading this mod, the timer will be fixed (no other changes).",
-      "icon": "fa-time",
+      "icon": "fa-clock",
       "file": "mods/timer_fix.tomod",
       "type": "zid",
       "downloads": 0,
       "tags": ["Tools"]
-    },
+    }
   ]
 }
