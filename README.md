@@ -22,7 +22,7 @@ No installation required. All data is stored locally in your browser.
 | 🛒 **Store** | Buy items like "Rest +5min", "Focus Boost", "Lootbox" |
 | 🎒 **Backpack** | Manage and use your purchased items |
 | 📋 **Quest System** | Create tasks with reward conditions (Tomatoes, EXP, Items, Lootbox) |
-| 🧩 **Mod System** | Import/Export `.shom`/`.shem`/`.zid`/`.zod`/`.taem` files |
+| 🧩 **Mod System** | Import/Export `.tomod`, `.shom`, `.shem`, `.zid`, `.zod`, `.taem` files |
 | 🌐 **Mod Market** | Browse and install mods shared by the global community |
 | 🌍 **Bilingual** | Switch between Chinese & English instantly |
 | 💾 **Save System** | Export full progress as `.saop` file for backup |
@@ -33,12 +33,15 @@ No installation required. All data is stored locally in your browser.
 
 | Extension | Content | Description |
 |-----------|---------|-------------|
-| `.shom` | Items + Backpack | **Recommended** for item mods |
+| **`.tomod`** | Items + Tasks + Custom Tabs + Scripts + Pages | **Recommended** for full-featured mods (ZIP-based, supports JS & HTML) |
+| `.shom` | Items + Backpack | Recommended for item-only mods |
 | `.shem` | Items + Backpack | Legacy format (fully compatible) |
-| `.zid` | Items + Tasks + Custom Tabs | **Recommended** for full mods |
+| `.zid` | Items + Tasks + Custom Tabs | Legacy format (fully compatible) |
 | `.zod` | Items + Tasks + Custom Tabs | Legacy format (fully compatible) |
 | `.taem` | Tasks only | Share quest lists |
 | `.saop` | Full save data | Backup your progress |
+
+> **Note:** `.tomod` is the current recommended format. It supports custom scripts, pages, and all mod features in one package.
 
 ---
 
@@ -50,8 +53,8 @@ This repository also serves as a **global mod database**. Anyone can submit thei
 
 1. Click **[New Issue](https://github.com/FI0m9ySans/fi0m9ysans.github.io/issues/new/choose)**
 2. Choose your preferred language template (Chinese / English)
-3. Fill in your mod details and submit
-4. Once approved, your mod will appear in the in-app **Mod Market**
+3. Fill in your mod details (name, description, file link, tags, etc.)
+4. Submit — once approved, your mod will appear in the in-app **Mod Market**
 
 ### 📂 File Structure
 
@@ -117,4 +120,3 @@ MIT License — free to use, modify, and share.
 ---
 
 **🍅 Make focus fun again!**
-```
