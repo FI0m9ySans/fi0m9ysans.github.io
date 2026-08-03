@@ -1030,7 +1030,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v4.2 · Completely fixed the error!</div>
+        <div class="sidebar-footer">v4.21 - no have new update log</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -3098,7 +3098,21 @@
                             const text = await blob.text();
                             imported = JSON.parse(text);
                         }
-            
+
+                        // ---- 处理 scripts（仅 .tomod 格式） ----
+                        if (ext === 'tomod' && imported.scripts && Array.isArray(imported.scripts) && imported.scripts.length > 0) {
+                            // 加载模组脚本
+                            loadModScripts(imported.scripts, zipData, function() {
+                                console.log('[Mod] Scripts loaded for:', imported.name);
+                                // 可选：触发自定义事件，通知其他模块
+                                if (typeof window.dispatchEvent === 'function') {
+                                    window.dispatchEvent(new CustomEvent('modScriptsLoaded', { 
+                                        detail: { modName: imported.name } 
+                                    }));
+                                }
+                            });
+                        }
+                        
                         // ---- 根据 type 合并数据 ----
                         if (type === 'shom' || type === 'shem') {
                             if (!imported.userItems || !imported.backpack) throw new Error('无效的商品文件');
@@ -3394,7 +3408,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.2 · Completely fixed the error!');
+        console.log('🍅 番茄闹钟 v4.21 - no have new update log');
     </script>
 </body>
 </html>
