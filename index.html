@@ -1039,7 +1039,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v4.23 - no have new update log</div>
+        <div class="sidebar-footer">v4.24 - no have new update log</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -2823,6 +2823,50 @@
             fileInput.click();
         });
 
+        function loadModScripts(scripts, zipData, callback) {
+            window.loadModScripts = loadModScripts;
+            if (!scripts || scripts.length === 0) {
+                if (callback) callback();
+                return;
+            }
+            var total = scripts.length;
+            var loaded = 0;
+            scripts.forEach(function(src) {
+                if (src.match(/^https?:\/\//)) {
+                    var scriptEl = document.createElement('script');
+                    scriptEl.src = src;
+                    scriptEl.onload = function() {
+                        loaded++;
+                        if (loaded === total && callback) callback();
+                    };
+                    scriptEl.onerror = function() {
+                        console.warn('[Mod] Failed to load script:', src);
+                        loaded++;
+                        if (loaded === total && callback) callback();
+                    };
+                    document.head.appendChild(scriptEl);
+                } else {
+                    if (zipData && zipData[src]) {
+                        try {
+                            var scriptTag = document.createElement('script');
+                            scriptTag.textContent = zipData[src];
+                            document.head.appendChild(scriptTag);
+                            loaded++;
+                            if (loaded === total && callback) callback();
+                        } catch (e) {
+                            console.error('[Mod] Error executing script:', src, e);
+                            loaded++;
+                            if (loaded === total && callback) callback();
+                        }
+                    } else {
+                        console.warn('[Mod] Script file not found in .tomod:', src);
+                        loaded++;
+                        if (loaded === total && callback) callback();
+                    }
+                }
+            });
+        }
+        
         // 合并模组数据的通用函数（支持 source）
         function mergeModData(config, zipData = null) {
             let itemAdded = 0,
@@ -3426,7 +3470,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.23 - no have new update log');
+        console.log('🍅 番茄闹钟 v4.24 - no have new update log');
     </script>
 </body>
 </html>
