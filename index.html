@@ -1039,7 +1039,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v4.26 - no have new update log</div>
+        <div class="sidebar-footer">v4.27 - no have new update log</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -3316,21 +3316,22 @@
                         this.disabled = false;
                         this.innerHTML = `<i class="fas fa-download"></i> ${t('market_install')}`;
                     }
+                    // ---- 下载按钮事件绑定 ----
+                    container.querySelectorAll('.btn-download').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const fileUrl = this.dataset.file;
+                            const name = this.dataset.name;
+                            if (fileUrl && name) {
+                                downloadModFile(fileUrl, name + '.tomod');
+                            } else {
+                                showNotification('文件信息不完整', 'error');
+                            }
+                        });
+                    });
                 });
             });
         }
-    // ---- 下载按钮事件绑定 ----
-    container.querySelectorAll('.btn-download').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const fileUrl = this.dataset.file;
-            const name = this.dataset.name;
-            if (fileUrl && name) {
-                downloadModFile(fileUrl, name + '.tomod');
-            } else {
-                showNotification('文件信息不完整', 'error');
-            }
-        });
-    });
+
     // 下载函数（独立）
     async function downloadModFile(url, fileName) {
         try {
@@ -3482,7 +3483,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.26 - no have new update log');
+        console.log('🍅 番茄闹钟 v4.27 - no have new update log');
     </script>
 </body>
 </html>
