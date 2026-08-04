@@ -1039,7 +1039,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v4.22 - no have new update log</div>
+        <div class="sidebar-footer">v4.23 - no have new update log</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -2844,6 +2844,7 @@
         //  加载模组外部脚本
         // =========================================================
         function loadModScripts(scripts, zipData, callback) {
+            window.loadModScripts = loadModScripts;
             if (!scripts || scripts.length === 0) {
                 if (callback) callback();
                 return;
@@ -3399,6 +3400,12 @@
         // 在主程序初始化的位置（比如 init() 或最外层）
         window.loadModScripts = loadModScripts;
         function init() {
+            // 确保 loadModScripts 挂载到 window
+            if (typeof loadModScripts === 'function') {
+                window.loadModScripts = loadModScripts;
+            } else {
+                console.warn('loadModScripts 未定义，请检查');
+            }
             currentLang = 'zh';
             setLanguage('zh');
             durationInput.value = Math.floor(WORK_TIME / 60);
@@ -3419,7 +3426,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.22 - no have new update log');
+        console.log('🍅 番茄闹钟 v4.23 - no have new update log');
     </script>
 </body>
 </html>
