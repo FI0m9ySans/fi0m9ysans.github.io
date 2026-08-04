@@ -1039,7 +1039,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v4.21 - no have new update log</div>
+        <div class="sidebar-footer">v4.22 - no have new update log</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -3074,53 +3074,52 @@
 
             container.querySelectorAll('.btn-install').forEach(btn => {
                 btn.addEventListener('click', async function() {
-                    const fileUrl = this.dataset.file;
-                    const name = this.dataset.name;
-                    const type = this.dataset.type;
-                    this.disabled = true;
-                    this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('market_installing')}`;
-                    try {
-                        const response = await fetch(fileUrl);
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                        const blob = await response.blob();
-                        const ext = fileUrl.split('.').pop().toLowerCase();
+                const fileUrl = this.dataset.file;
+                const name = this.dataset.name;
+                const type = this.dataset.type;
+                this.disabled = true;
+                this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('market_installing')}`;
+                try {
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const blob = await response.blob();
+                    const ext = fileUrl.split('.').pop().toLowerCase();
             
-                        let imported;      // 解析后的配置对象
-                        let zipData = null; // .tomod 中的文件内容
+                    let imported;
+                    let zipData = null;
             
-                        // ---- 处理 .tomod ----
-                        if (ext === 'tomod') {
-                            const zip = await JSZip.loadAsync(blob);
-                            zipData = {};
-                            for (const [path, zipEntry] of Object.entries(zip.files)) {
-                                if (!zipEntry.dir) {
-                                    const content = await zipEntry.async('string');
-                                    zipData[path] = content;
-                                }
+                    // ---- 处理 .tomod ----
+                    if (ext === 'tomod') {
+                        const zip = await JSZip.loadAsync(blob);
+                        zipData = {};
+                        for (const [path, zipEntry] of Object.entries(zip.files)) {
+                            if (!zipEntry.dir) {
+                                const content = await zipEntry.async('string');
+                                zipData[path] = content;
                             }
-                            const modJsonFile = zip.file('mod.json');
-                            if (!modJsonFile) throw new Error('mod.json not found in .tomod!');
-                            const content = await modJsonFile.async('text');
-                            imported = JSON.parse(content);
-                        } else {
-                            // ---- 旧格式：直接 JSON ----
-                            const text = await blob.text();
-                            imported = JSON.parse(text);
                         }
-
-                        // ---- 处理 scripts（仅 .tomod 格式） ----
-                        if (ext === 'tomod' && imported.scripts && Array.isArray(imported.scripts) && imported.scripts.length > 0) {
-                            // 加载模组脚本
-                            loadModScripts(imported.scripts, zipData, function() {
+                        const modJsonFile = zip.file('mod.json');
+                        if (!modJsonFile) throw new Error('mod.json not found in .tomod!');
+                        const content = await modJsonFile.async('text');
+                        imported = JSON.parse(content);
+                    } else {
+                        const text = await blob.text();
+                        imported = JSON.parse(text);
+                    }
+            
+                    // ---- 处理 scripts（仅 .tomod 格式） ----
+                    if (ext === 'tomod' && imported.scripts && Array.isArray(imported.scripts) && imported.scripts.length > 0) {
+                        if (typeof window.loadModScripts === 'function') {
+                            window.loadModScripts(imported.scripts, zipData, function() {
                                 console.log('[Mod] Scripts loaded for:', imported.name);
-                                // 可选：触发自定义事件，通知其他模块
                                 if (typeof window.dispatchEvent === 'function') {
-                                    window.dispatchEvent(new CustomEvent('modScriptsLoaded', { 
-                                        detail: { modName: imported.name } 
-                                    }));
+                                    window.dispatchEvent(new CustomEvent('modScriptsLoaded', { detail: { modName: imported.name } }));
                                 }
                             });
+                        } else {
+                            console.warn('[Mod] loadModScripts not found in window');
                         }
+                    }
                         
                         // ---- 根据 type 合并数据 ----
                         if (type === 'shom' || type === 'shem') {
@@ -3262,7 +3261,9 @@
                         } else {
                             throw new Error('未知的模组类型: ' + type);
                         }
-            saveData();
+                        // 最后统一保存
+                        saveData();
+                
                     } catch (err) {
                         console.error(err);
                         showNotification('❌ 安装失败: ' + err.message, 'error');
@@ -3395,7 +3396,8 @@
         btnPause.addEventListener('click', pauseTimer);
         btnReset.addEventListener('click', resetTimer);
         $('btn-refresh-store').addEventListener('click', renderStore);
-
+        // 在主程序初始化的位置（比如 init() 或最外层）
+        window.loadModScripts = loadModScripts;
         function init() {
             currentLang = 'zh';
             setLanguage('zh');
@@ -3417,7 +3419,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.21 - no have new update log');
+        console.log('🍅 番茄闹钟 v4.22 - no have new update log');
     </script>
 </body>
 </html>
