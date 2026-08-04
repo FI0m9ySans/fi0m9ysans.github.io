@@ -102,7 +102,7 @@
       "id": "Strix",
       "name": "Strix",
       "author": "Lonek",
-      "version": "Alpha 1.0",
+      "version": "1.0-alpha",
       "description": "A Pomodoro Clock unreasoned modification.",
       "icon": "fa-clock",
       "file": "mods/Strix_en.tomod",
