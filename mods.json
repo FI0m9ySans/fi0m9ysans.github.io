@@ -1,59 +1,59 @@
 {
-  "name": "🍅 番茄模组仓库",
-  "description": "全球番茄闹钟模组分享平台",
+  "name": "🍅 Tomato Mod Repository",
+  "description": "Global Pomodoro Clock Mod Sharing Platform",
   "mods": [
     {
       "id": "xbox_controller",
-      "name": "Xbox 手柄",
+      "name": "Xbox Controller",
       "author": "FI0m9ySans",
       "version": "1.0",
-      "description": "经典手感，助你专注闯关！使用后增加10分钟专注时间。",
+      "description": "Classic feel, helps you focus and get through tasks! Adds 10 minutes of focus time when used.",
       "icon": "fa-gamepad",
       "file": "mods/xbox_controller.shom",
       "type": "shom",
       "downloads": 0,
-      "tags": ["硬件", "游戏"]
+      "tags": ["Hardware", "Gaming"]
     },
     {
       "id": "camera_mod",
-      "name": "摄像机模组",
+      "name": "Camera Mod",
       "author": "FI0m9ySans",
       "version": "1.0",
-      "description": "录视频、照相等专用，使用后增加专注时间。",
+      "description": "Dedicated for video recording, photography, etc. Increases focus time when used.",
       "icon": "fa-camera",
       "file": "mods/摄像机模组.shem",
       "type": "shem",
       "downloads": 0,
-      "tags": ["工具", "摄影"]
+      "tags": ["Tools", "Photography"]
     },
     {
       "id": "three_item_box_mod",
-      "name": "道具礼包模组",
+      "name": "Item Pack Mod",
       "author": "FI0m9ySans",
       "version": "1.0",
-      "description": "内含三个物品的模组。",
+      "description": "A mod containing three items.",
       "icon": "fa-box",
       "file": "mods/道具礼包.shem",
       "type": "shem",
       "downloads": 0,
-      "tags": ["道具", "礼包"]
+      "tags": ["Items", "Pack"]
     },
     {
       "id": "theme_customizer",
-      "name": "🎨 外观与主题定制中心",
-      "author": "千问 + FI0m9ySans",
+      "name": "🎨 Theme & Appearance Customizer",
+      "author": "Qianwen + FI0m9ySans",
       "version": "1.0",
-      "description": "提供多种全局主题切换及动态背景特效，让你的番茄钟与众不同。",
+      "description": "Provides multiple global themes and dynamic background effects, making your Pomodoro Clock stand out.",
       "icon": "fa-palette",
       "file": "mods/theme_customizer.tomod",
       "type": "zid",
       "downloads": 0,
-      "tags": ["主题", "外观", "定制", "UI"]
+      "tags": ["Theme", "Appearance", "Customization", "UI"]
     },
     {
       "id": "neotomator",
       "name": "⚙️ NeoTomator Loader",
-      "author": "豆包 + FI0m9ySans",
+      "author": "Doubao + FI0m9ySans",
       "version": "1.0",
       "description": "A loader-themed mod inspired by Fabric, Forge and NeoForge. Contains utility items and a core dependency system.",
       "icon": "fa-cogs",
