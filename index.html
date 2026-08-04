@@ -1039,7 +1039,7 @@
             <div class="nav-item" data-target="modmanager"><i class="fas fa-cubes"></i> <span data-i18n="nav-modmanager">模组管理</span></div>
             <!-- 自定义标签将由 JS 动态插入至此 -->
         </nav>
-        <div class="sidebar-footer">v4.27 - no have new update log</div>
+        <div class="sidebar-footer">v4.28 - no have new update log</div>
     </aside>
 
     <!-- ===== 主内容 ===== -->
@@ -3055,20 +3055,49 @@
         // =========================================================
         //  🌐 模组市场
         // =========================================================
-        const MARKET_CONFIG = {
-            REPO_OWNER: 'FI0m9ySans',
-            REPO_NAME: 'fi0m9ysans.github.io',
-            INDEX_PATH: 'mods.json',
-        };
+        
+        // 定义默认市场源（可供模组作者修改）
+        window.MARKET_SOURCE = window.MARKET_SOURCE || 
+            'https://raw.githubusercontent.com/FI0m9ySans/fi0m9ysans.github.io/main/mods.json';
+        
+        function getMarketSource() {
+            // 优先使用 localStorage 用户自定义源
+            const userSource = localStorage.getItem('market_source');
+            if (userSource) return userSource;
+            // 否则使用全局默认源（模组作者可覆盖）
+            return window.MARKET_SOURCE;
+        }
+        
+        function setMarketSource(url) {
+            localStorage.setItem('market_source', url);
+            loadMarketMods(); // 重新加载
+        }
+        
+        // 用户自定义市场源优先级高于默认
+        const MARKET_SOURCE = localStorage.getItem('market_source') || 
+            'https://raw.githubusercontent.com/FI0m9ySans/fi0m9ysans.github.io/main/mods.json';
 
         function getRawUrl(path) {
-            return `https://raw.githubusercontent.com/${MARKET_CONFIG.REPO_OWNER}/${MARKET_CONFIG.REPO_NAME}/main/${path}`;
+            const source = getMarketSource();
+            // 如果是官方市场，使用原逻辑
+            if (source.includes('fi0m9ysans.github.io')) {
+                return `https://raw.githubusercontent.com/${MARKET_CONFIG.REPO_OWNER}/${MARKET_CONFIG.REPO_NAME}/main/${path}`;
+            }
+            // 如果是第三方市场，假设模组文件与 mods.json 在同一目录
+            const baseUrl = source.substring(0, source.lastIndexOf('/') + 1);
+            return baseUrl + path;
         }
 
+        function setMarketSource(url) {
+            localStorage.setItem('market_source', url);
+            // 重新加载市场
+            loadMarketMods();
+        }
+        
         async function loadMarketMods() {
             const container = document.getElementById('market-list');
+            const url = getMarketSource(); // 动态获取最新源
             try {
-                const url = getRawUrl(MARKET_CONFIG.INDEX_PATH);
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
@@ -3082,8 +3111,15 @@
                 saveData();
             } catch (err) {
                 console.error('加载市场失败:', err);
-                container.innerHTML =
-                    `<div class="empty-message"><i class="fas fa-exclamation-triangle" style="color:var(--gold);"></i> ${t('notif_error_market_load')}<p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">💡 请检查仓库 <strong>${MARKET_CONFIG.REPO_OWNER}/${MARKET_CONFIG.REPO_NAME}</strong> 是否存在</p></div>`;
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <i class="fas fa-exclamation-triangle" style="color:var(--gold);"></i>
+                        ${t('notif_error_market_load')}
+                        <p style="margin-top:12px;font-size:0.85rem;color:var(--gray);">
+                            💡 当前市场源：<code>${url}</code>
+                        </p>
+                    </div>
+                `;
             }
         }
 
@@ -3483,7 +3519,7 @@
             btnAddTask.style.display = 'inline-block';
         }
         init();
-        console.log('🍅 番茄闹钟 v4.27 - no have new update log');
+        console.log('🍅 番茄闹钟 v4.28 - no have new update log');
     </script>
 </body>
 </html>
