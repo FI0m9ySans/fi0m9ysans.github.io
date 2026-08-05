@@ -103,7 +103,7 @@
       "name": "Strix",
       "author": "Lonek",
       "version": "1.1",
-      "description": "A Pomodoro Clock unreasoned modification. Contains the 'Owl's Mind' item giving +10 focus.",
+      "description": "A Pomodoro Clock unreasoned modification.",
       "icon": "fa-clock",
       "file": "mods/Strix_en.tomod",
       "type": "zid",
