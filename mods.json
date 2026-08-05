@@ -109,6 +109,18 @@
       "type": "zid",
       "downloads": 0,
       "tags": ["Create By Other User"]
+    },
+    {
+      "id": "brick_toolbox",
+      "name": "🧱 积木工具箱",
+      "author": "FI0m9ySans",
+      "version": "1.0",
+      "description": "提供基础积木块（颜色、尺寸、形状），其他模组可依赖此 API 构建新功能。",
+      "icon": "fa-box",
+      "file": "mods/brick_toolbox.tomod",
+      "type": "zid",
+      "downloads": 0,
+      "tags": ["API"]
     }
   ]
 }
