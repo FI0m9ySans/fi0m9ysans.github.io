@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>个人工作台 · FI0m9ySans</title>
-<meta name="description" content="FI0m9ySans 的个人工作台 —— 集成番茄钟、待办、笔记与常用链接。" />
+<meta name="description" content="FI0m9ySans 的个人工作台 —— 集成番茄钟、待办、笔记与模组工坊。" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root {
     --bg: #0f1115;
@@ -47,14 +48,14 @@
     height: 64px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     padding: 0 22px;
     border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--card) 80%, transparent);
     backdrop-filter: blur(8px);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
   }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
   .brand .dot {
@@ -62,6 +63,13 @@
     background: var(--accent); box-shadow: 0 0 12px var(--accent);
   }
   .greet { color: var(--muted); font-size: 13px; }
+  .nav { display: flex; gap: 6px; margin-left: 6px; }
+  .nav button {
+    border: 1px solid var(--border); background: var(--card-2); color: var(--muted);
+    padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; transition: .15s;
+  }
+  .nav button.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .nav button:hover { color: var(--text); }
   .clock { margin-left: auto; text-align: right; line-height: 1.15; }
   .clock .time { font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; }
   .clock .date { font-size: 12px; color: var(--muted); }
@@ -72,6 +80,10 @@
   }
   .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ---------- 工作台 dashboard ---------- */
   main {
     height: calc(100vh - 64px);
     display: grid;
@@ -101,19 +113,20 @@
   .pane.active { display: block; }
 
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
-  input[type="text"], textarea {
+  input[type="text"], input[type="number"], textarea, select {
     width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
     background: var(--card-2); color: var(--text); font-size: 14px; outline: none; transition: .15s;
     font-family: inherit;
   }
-  input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 200px; line-height: 1.6; }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; line-height: 1.6; }
   .btn {
     border: 0; background: var(--accent); color: #fff; padding: 10px 14px; border-radius: 10px;
     cursor: pointer; font-size: 14px; font-weight: 600; white-space: nowrap; transition: .15s;
   }
   .btn:hover { filter: brightness(1.08); }
   .btn.ghost { background: var(--card-2); color: var(--text); border: 1px solid var(--border); font-weight: 500; }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
 
   ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   ul.list li {
@@ -135,17 +148,58 @@
   .stat .box b { font-size: 20px; display: block; }
   .stat .box span { font-size: 11px; color: var(--muted); }
 
+  /* ---------- 模组工坊 studio ---------- */
+  .studio { height: calc(100vh - 64px); display: grid; grid-template-columns: 1fr 380px; gap: 18px; padding: 18px 22px; overflow: hidden; }
+  .studio .col { min-height: 0; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; padding-right: 4px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+  .card h3 { margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .card h3 .sub { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 500; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .block {
+    border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px;
+    background: var(--card-2); position: relative;
+  }
+  .block .bhead { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .block .bhead .path { font-size: 12px; color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .block textarea { min-height: 120px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  .block .del { position: absolute; top: 10px; right: 10px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  details.ref { background: var(--card-2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 12px; margin-bottom: 10px; }
+  details.ref summary { cursor: pointer; padding: 8px 0; font-size: 13px; font-weight: 600; }
+  details.ref table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0 10px; }
+  details.ref th, details.ref td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
+  details.ref th { color: var(--muted); font-weight: 600; }
+  .modcard { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; background: var(--card-2); }
+  .modcard .mt { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .modcard .md { font-size: 12px; color: var(--muted); margin: 6px 0; }
+  .modcard .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .modcard .tag { font-size: 11px; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 999px; }
+  .modcard .acts { display: flex; gap: 8px; }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+    background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   @media (max-width: 900px) {
-    main { grid-template-columns: 1fr; height: auto; }
+    main, .studio { grid-template-columns: 1fr; height: auto; overflow: visible; }
     .clock-wrap { height: 70vh; }
     #clockFrame { min-height: 520px; }
-    aside { height: 70vh; }
+    aside, .studio .col { height: auto; }
+    .nav button { padding: 8px 10px; font-size: 12px; }
   }
 </style>
 </head>
 <body>
 <header>
   <div class="brand"><span class="dot"></span> 个人工作台</div>
+  <div class="nav">
+    <button id="navDash" class="active">🏠 工作台</button>
+    <button id="navStudio">🧩 模组工坊</button>
+  </div>
   <span class="greet" id="greet">你好，花衫</span>
   <div class="clock">
     <div class="time" id="time">--:--:--</div>
@@ -154,171 +208,348 @@
   <button class="icon-btn" id="themeBtn" title="切换主题">🌙</button>
 </header>
 
-<main>
-  <section class="panel clock-wrap">
-    <div class="ph">🍅 番茄钟 · Mod 版 <span class="tag">内嵌自 tomato.html</span></div>
-    <iframe id="clockFrame" src="tomato.html" title="番茄钟 · Mod 版" loading="lazy"></iframe>
-  </section>
+<!-- ============ 工作台视图 ============ -->
+<div class="view active" id="viewDash">
+  <main>
+    <section class="panel clock-wrap">
+      <div class="ph">🍅 番茄钟 · Mod 版 <span class="tag">内嵌自 tomato.html</span></div>
+      <iframe id="clockFrame" src="tomato.html" title="番茄钟 · Mod 版" loading="lazy"></iframe>
+    </section>
 
-  <aside class="panel">
-    <div class="tabs">
-      <div class="tab active" data-pane="todo">待办</div>
-      <div class="tab" data-pane="notes">笔记</div>
-      <div class="tab" data-pane="links">链接</div>
+    <aside class="panel">
+      <div class="tabs">
+        <div class="tab active" data-pane="todo">待办</div>
+        <div class="tab" data-pane="notes">笔记</div>
+        <div class="tab" data-pane="links">链接</div>
+      </div>
+      <div class="tab-body">
+        <div class="pane active" id="pane-todo">
+          <div class="stat">
+            <div class="box"><b id="todoTotal">0</b><span>总任务</span></div>
+            <div class="box"><b id="todoDone">0</b><span>已完成</span></div>
+          </div>
+          <div class="row">
+            <input type="text" id="todoInput" placeholder="加个任务，回车添加…" />
+            <button class="btn" id="todoAdd">添加</button>
+          </div>
+          <ul class="list" id="todoList"></ul>
+        </div>
+
+        <div class="pane" id="pane-notes">
+          <div class="hint">本地自动保存（localStorage），仅存于本机浏览器。</div>
+          <textarea id="notes" placeholder="随手记点什么…"></textarea>
+        </div>
+
+        <div class="pane" id="pane-links">
+          <div class="row">
+            <input type="text" id="linkName" placeholder="名称" />
+            <input type="text" id="linkUrl" placeholder="https://…" />
+          </div>
+          <button class="btn" id="linkAdd" style="width:100%;margin-bottom:12px;">添加链接</button>
+          <ul class="list links" id="linkList"></ul>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- ============ 模组工坊视图 ============ -->
+<div class="view" id="viewStudio">
+  <div class="studio">
+    <!-- 左：编辑器 -->
+    <div class="col">
+      <div class="card">
+        <h3>📝 模组信息 <span class="sub">导出为 .tomod（ZIP）</span></h3>
+        <div class="grid2">
+          <div class="field"><label>名称</label><input type="text" id="m_name" placeholder="我的模组" /></div>
+          <div class="field"><label>作者</label><input type="text" id="m_author" placeholder="FI0m9ySans" /></div>
+          <div class="field"><label>版本</label><input type="text" id="m_version" placeholder="1.0" value="1.0" /></div>
+          <div class="field"><label>类型</label>
+            <select id="m_type">
+              <option value="zid">zid（物品+任务+标签页）</option>
+              <option value="tomod" selected>tomod（完整/推荐）</option>
+              <option value="shom">shom（纯物品）</option>
+              <option value="shem">shem（旧版物品）</option>
+              <option value="zod">zod（旧版）</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>描述</label><textarea id="m_desc" style="min-height:60px" placeholder="这个模组做了什么…"></textarea></div>
+      </div>
+
+      <div class="card">
+        <h3>🎒 物品（userItems）</h3>
+        <div id="itemList"></div>
+        <button class="btn ghost sm" id="addItem">+ 添加物品</button>
+      </div>
+
+      <div class="card">
+        <h3>📜 脚本文件（scripts）</h3>
+        <div id="scriptList"></div>
+        <button class="btn ghost sm" id="addScript">+ 添加脚本</button>
+      </div>
+
+      <div class="card">
+        <h3>📄 页面文件（自定义标签页）</h3>
+        <div id="pageList"></div>
+        <button class="btn ghost sm" id="addPage">+ 添加页面</button>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn" id="buildMod">📦 打包下载 .tomod</button>
+        <button class="btn ghost" id="saveDraft">💾 保存草稿</button>
+        <button class="btn ghost" id="loadExample">📥 载入示例</button>
+        <button class="btn ghost" id="clearMod">🗑️ 清空</button>
+      </div>
     </div>
-    <div class="tab-body">
-      <!-- 待办 -->
-      <div class="pane active" id="pane-todo">
-        <div class="stat">
-          <div class="box"><b id="todoTotal">0</b><span>总任务</span></div>
-          <div class="box"><b id="todoDone">0</b><span>已完成</span></div>
-        </div>
-        <div class="row">
-          <input type="text" id="todoInput" placeholder="加个任务，回车添加…" />
-          <button class="btn" id="todoAdd">添加</button>
-        </div>
-        <ul class="list" id="todoList"></ul>
+
+    <!-- 右：参考 + 模组库 -->
+    <div class="col">
+      <div class="card">
+        <h3>📚 格式速查</h3>
+        <details class="ref">
+          <summary>mod.json 字段说明</summary>
+          <table>
+            <tr><th>字段</th><th>说明</th></tr>
+            <tr><td>name / author</td><td>名称 / 作者</td></tr>
+            <tr><td>version / type</td><td>版本 / 类型（见下）</td></tr>
+            <tr><td>scripts</td><td>脚本路径数组，可本地或 https URL</td></tr>
+            <tr><td>userItems</td><td>物品数组（id,name,icon,price,effect,desc）</td></tr>
+            <tr><td>tasks</td><td>任务数组</td></tr>
+            <tr><td>customTabs</td><td>标签页 {id,name,icon,source}</td></tr>
+          </table>
+        </details>
+        <details class="ref">
+          <summary>扩展名对照</summary>
+          <table>
+            <tr><th>扩展名</th><th>包含</th></tr>
+            <tr><td>.tomod</td><td>物品+任务+标签页+脚本+页面（推荐）</td></tr>
+            <tr><td>.zid</td><td>物品+任务+自定义标签页</td></tr>
+            <tr><td>.shom / .shem</td><td>物品+背包</td></tr>
+            <tr><td>.zod</td><td>物品+任务+标签页（旧版）</td></tr>
+            <tr><td>.taem</td><td>仅任务</td></tr>
+          </table>
+        </details>
+        <p class="hint">测试：打包后打开番茄钟 → 导入模组 → 选择该 .tomod 文件。脚本可访问全局番茄钟 API。</p>
       </div>
 
-      <!-- 笔记 -->
-      <div class="pane" id="pane-notes">
-        <div class="hint">本地自动保存（localStorage），仅存于本机浏览器。</div>
-        <textarea id="notes" placeholder="随手记点什么…"></textarea>
-      </div>
-
-      <!-- 链接 -->
-      <div class="pane" id="pane-links">
-        <div class="row">
-          <input type="text" id="linkName" placeholder="名称" />
-          <input type="text" id="linkUrl" placeholder="https://…" />
-        </div>
-        <button class="btn" id="linkAdd" style="width:100%;margin-bottom:12px;">添加链接</button>
-        <ul class="list links" id="linkList"></ul>
+      <div class="card">
+        <h3>🗂️ 现有模组库 <span class="sub" id="libCount"></span></h3>
+        <div id="modLib"><div class="empty">加载中…</div></div>
       </div>
     </div>
-  </aside>
-</main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-  // ---------- 主题 ----------
+  // ============ 通用 ============
   const root = document.documentElement;
-  const themeBtn = document.getElementById('themeBtn');
-  function applyTheme(t) {
-    root.setAttribute('data-theme', t);
-    themeBtn.textContent = t === 'light' ? '☀️' : '🌙';
-    try { localStorage.setItem('wb_theme', t); } catch (e) {}
-  }
+  const $ = id => document.getElementById(id);
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200); }
+  function applyTheme(t) { root.setAttribute('data-theme', t); $('themeBtn').textContent = t === 'light' ? '☀️' : '🌙'; try { localStorage.setItem('wb_theme', t); } catch (e) {} }
   applyTheme((() => { try { return localStorage.getItem('wb_theme') || 'dark'; } catch (e) { return 'dark'; } })());
-  themeBtn.onclick = () => applyTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  $('themeBtn').onclick = () => applyTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
 
-  // ---------- 时钟 ----------
-  const timeEl = document.getElementById('time');
-  const dateEl = document.getElementById('date');
-  const greetEl = document.getElementById('greet');
+  // 视图切换
+  $('navDash').onclick = () => switchView('dash');
+  $('navStudio').onclick = () => switchView('studio');
+  function switchView(v) {
+    $('navDash').classList.toggle('active', v === 'dash');
+    $('navStudio').classList.toggle('active', v === 'studio');
+    $('viewDash').classList.toggle('active', v === 'dash');
+    $('viewStudio').classList.toggle('active', v === 'studio');
+  }
+
+  // 时钟
   const WD = ['日', '一', '二', '三', '四', '五', '六'];
   function tick() {
-    const d = new Date();
-    const p = n => String(n).padStart(2, '0');
-    timeEl.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-    dateEl.textContent = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 周${WD[d.getDay()]}`;
+    const d = new Date(); const p = n => String(n).padStart(2, '0');
+    $('time').textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    $('date').textContent = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 周${WD[d.getDay()]}`;
     const h = d.getHours();
-    const g = h < 6 ? '夜深了' : h < 12 ? '早上好' : h < 14 ? '中午好' : h < 18 ? '下午好' : '晚上好';
-    greetEl.textContent = `${g}，花衫`;
+    $('greet').textContent = `${h < 6 ? '夜深了' : h < 12 ? '早上好' : h < 14 ? '中午好' : h < 18 ? '下午好' : '晚上好'}，花衫`;
   }
   tick(); setInterval(tick, 1000);
 
-  // ---------- 标签页 ----------
-  document.querySelectorAll('.tab').forEach(t => {
-    t.onclick = () => {
-      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      document.getElementById('pane-' + t.dataset.pane).classList.add('active');
-    };
+  // 工作台标签页
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+    t.classList.add('active'); $('pane-' + t.dataset.pane).classList.add('active');
   });
 
-  // ---------- 待办 ----------
-  const todoInput = document.getElementById('todoInput');
-  const todoList = document.getElementById('todoList');
-  let todos = [];
-  try { todos = JSON.parse(localStorage.getItem('wb_todos') || '[]'); } catch (e) {}
+  // 待办
+  let todos = []; try { todos = JSON.parse(localStorage.getItem('wb_todos') || '[]'); } catch (e) {}
   function saveTodos() { try { localStorage.setItem('wb_todos', JSON.stringify(todos)); } catch (e) {} }
   function renderTodos() {
-    todoList.innerHTML = '';
-    if (!todos.length) { todoList.innerHTML = '<div class="empty">还没有任务，先加一个吧</div>'; }
+    $('todoList').innerHTML = '';
+    if (!todos.length) $('todoList').innerHTML = '<div class="empty">还没有任务，先加一个吧</div>';
     todos.forEach((t, i) => {
-      const li = document.createElement('li');
-      if (t.done) li.classList.add('done');
-      const chk = document.createElement('div');
-      chk.className = 'chk' + (t.done ? ' on' : '');
-      chk.textContent = t.done ? '✓' : '';
+      const li = document.createElement('li'); if (t.done) li.classList.add('done');
+      const chk = document.createElement('div'); chk.className = 'chk' + (t.done ? ' on' : ''); chk.textContent = t.done ? '✓' : '';
       chk.onclick = () => { todos[i].done = !todos[i].done; saveTodos(); renderTodos(); };
-      const txt = document.createElement('div');
-      txt.className = 'txt'; txt.textContent = t.text;
-      const x = document.createElement('button');
-      x.className = 'x'; x.textContent = '✕';
-      x.onclick = () => { todos.splice(i, 1); saveTodos(); renderTodos(); };
-      li.append(chk, txt, x);
-      todoList.appendChild(li);
+      const txt = document.createElement('div'); txt.className = 'txt'; txt.textContent = t.text;
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.onclick = () => { todos.splice(i, 1); saveTodos(); renderTodos(); };
+      li.append(chk, txt, x); $('todoList').appendChild(li);
     });
-    document.getElementById('todoTotal').textContent = todos.length;
-    document.getElementById('todoDone').textContent = todos.filter(t => t.done).length;
+    $('todoTotal').textContent = todos.length; $('todoDone').textContent = todos.filter(t => t.done).length;
   }
-  function addTodo() {
-    const v = todoInput.value.trim();
-    if (!v) return;
-    todos.push({ text: v, done: false });
-    todoInput.value = ''; saveTodos(); renderTodos();
-  }
-  document.getElementById('todoAdd').onclick = addTodo;
-  todoInput.onkeydown = e => { if (e.key === 'Enter') addTodo(); };
-  renderTodos();
+  function addTodo() { const v = $('todoInput').value.trim(); if (!v) return; todos.push({ text: v, done: false }); $('todoInput').value = ''; saveTodos(); renderTodos(); }
+  $('todoAdd').onclick = addTodo; $('todoInput').onkeydown = e => { if (e.key === 'Enter') addTodo(); }; renderTodos();
 
-  // ---------- 笔记 ----------
-  const notes = document.getElementById('notes');
-  try { notes.value = localStorage.getItem('wb_notes') || ''; } catch (e) {}
-  notes.oninput = () => { try { localStorage.setItem('wb_notes', notes.value); } catch (e) {} };
+  // 笔记
+  try { $('notes').value = localStorage.getItem('wb_notes') || ''; } catch (e) {}
+  $('notes').oninput = () => { try { localStorage.setItem('wb_notes', $('notes').value); } catch (e) {} };
 
-  // ---------- 链接 ----------
-  const linkList = document.getElementById('linkList');
-  const linkName = document.getElementById('linkName');
-  const linkUrl = document.getElementById('linkUrl');
-  let links = [];
-  try { links = JSON.parse(localStorage.getItem('wb_links') || '[]'); } catch (e) {}
-  if (!links.length) {
-    links = [
-      { name: '番茄钟（独立页）', url: 'tomato.html' },
-      { name: 'GitHub 仓库', url: 'https://github.com/FI0m9ySans/fi0m9ysans.github.io' },
-      { name: 'Mod 市场 (mods.json)', url: 'mods.json' },
-      { name: '使用指南', url: 'guide.html' }
-    ];
-    saveLinks();
-  }
+  // 链接
+  let links = []; try { links = JSON.parse(localStorage.getItem('wb_links') || '[]'); } catch (e) {}
   function saveLinks() { try { localStorage.setItem('wb_links', JSON.stringify(links)); } catch (e) {} }
+  if (!links.length) { links = [{ name: '番茄钟（独立页）', url: 'tomato.html' }, { name: 'GitHub 仓库', url: 'https://github.com/FI0m9ySans/fi0m9ysans.github.io' }, { name: 'Mod 市场 (mods.json)', url: 'mods.json' }, { name: '使用指南', url: 'guide.html' }]; saveLinks(); }
   function renderLinks() {
-    linkList.innerHTML = '';
-    if (!links.length) { linkList.innerHTML = '<div class="empty">还没有链接</div>'; }
+    $('linkList').innerHTML = '';
+    if (!links.length) $('linkList').innerHTML = '<div class="empty">还没有链接</div>';
     links.forEach((l, i) => {
       const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = l.url; a.target = '_blank'; a.rel = 'noopener';
-      a.innerHTML = '<span>🔗</span><span class="txt"></span>';
-      a.querySelector('.txt').textContent = l.name;
-      const x = document.createElement('button');
-      x.className = 'x'; x.textContent = '✕';
-      x.onclick = () => { links.splice(i, 1); saveLinks(); renderLinks(); };
-      li.append(a, x);
-      linkList.appendChild(li);
+      const a = document.createElement('a'); a.href = l.url; a.target = '_blank'; a.rel = 'noopener';
+      a.innerHTML = '<span>🔗</span><span class="txt"></span>'; a.querySelector('.txt').textContent = l.name;
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.onclick = () => { links.splice(i, 1); saveLinks(); renderLinks(); };
+      li.append(a, x); $('linkList').appendChild(li);
     });
   }
-  function addLink() {
-    const n = linkName.value.trim(), u = linkUrl.value.trim();
-    if (!n || !u) return;
-    links.push({ name: n, url: u });
-    linkName.value = ''; linkUrl.value = ''; saveLinks(); renderLinks();
-  }
-  document.getElementById('linkAdd').onclick = addLink;
+  $('linkAdd').onclick = () => { const n = $('linkName').value.trim(), u = $('linkUrl').value.trim(); if (!n || !u) return; links.push({ name: n, url: u }); $('linkName').value = ''; $('linkUrl').value = ''; saveLinks(); renderLinks(); };
   renderLinks();
+
+  // ============ 模组工坊 ============
+  const EFFECTS = ['tomato', 'focus', 'lootbox', 'rest', 'exp', 'custom'];
+  let items = [];
+  let scripts = [{ path: 'mod.js', code: '' }];
+  let pages = [];
+
+  function renderItems() {
+    $('itemList').innerHTML = '';
+    if (!items.length) $('itemList').innerHTML = '<div class="empty" style="padding:8px 0">暂无物品，点下方添加</div>';
+    items.forEach((it, i) => {
+      const b = document.createElement('div'); b.className = 'block';
+      b.innerHTML = `
+        <button class="x del" title="删除">✕</button>
+        <div class="grid2">
+          <div class="field"><label>ID</label><input type="text" data-k="id" value="${esc(it.id)}" placeholder="my_item"></div>
+          <div class="field"><label>名称</label><input type="text" data-k="name" value="${esc(it.name)}" placeholder="🍅 番茄超人"></div>
+          <div class="field"><label>图标 (FontAwesome)</label><input type="text" data-k="icon" value="${esc(it.icon)}" placeholder="fas fa-apple-alt"></div>
+          <div class="field"><label>价格</label><input type="number" data-k="price" value="${esc(it.price)}" min="0"></div>
+          <div class="field"><label>效果</label><select data-k="effect">${EFFECTS.map(e => `<option ${e === it.effect ? 'selected' : ''}>${e}</option>`).join('')}</select></div>
+          <div class="field"><label>描述</label><input type="text" data-k="desc" value="${esc(it.desc)}"></div>
+        </div>`;
+      b.querySelectorAll('[data-k]').forEach(inp => inp.oninput = () => { it[inp.dataset.k] = inp.value; });
+      b.querySelector('.del').onclick = () => { items.splice(i, 1); renderItems(); };
+      $('itemList').appendChild(b);
+    });
+  }
+  function renderScripts() {
+    $('scriptList').innerHTML = '';
+    if (!scripts.length) $('scriptList').innerHTML = '<div class="empty" style="padding:8px 0">暂无脚本</div>';
+    scripts.forEach((s, i) => {
+      const b = document.createElement('div'); b.className = 'block';
+      b.innerHTML = `<button class="x del" title="删除">✕</button>
+        <div class="bhead"><span class="path">路径</span><input type="text" data-k="path" value="${esc(s.path)}" placeholder="mod.js / lib/utils.js"></div>
+        <textarea data-k="code" placeholder="// 模组脚本，可访问全局番茄钟 API">${esc(s.code)}</textarea>`;
+      b.querySelectorAll('[data-k]').forEach(inp => inp.oninput = () => { s[inp.dataset.k] = inp.value; });
+      b.querySelector('.del').onclick = () => { scripts.splice(i, 1); renderScripts(); };
+      $('scriptList').appendChild(b);
+    });
+  }
+  function renderPages() {
+    $('pageList').innerHTML = '';
+    if (!pages.length) $('pageList').innerHTML = '<div class="empty" style="padding:8px 0">暂无页面（自定义标签页）</div>';
+    pages.forEach((p, i) => {
+      const b = document.createElement('div'); b.className = 'block';
+      b.innerHTML = `<button class="x del" title="删除">✕</button>
+        <div class="grid2">
+          <div class="field"><label>文件路径</label><input type="text" data-k="path" value="${esc(p.path)}" placeholder="pages/about.html"></div>
+          <div class="field"><label>标签页名</label><input type="text" data-k="name" value="${esc(p.name)}" placeholder="关于"></div>
+        </div>
+        <div class="field"><label>图标</label><input type="text" data-k="icon" value="${esc(p.icon)}" placeholder="fas fa-info-circle"></div>
+        <textarea data-k="content" placeholder="<div>页面 HTML…</div>">${esc(p.content)}</textarea>`;
+      b.querySelectorAll('[data-k]').forEach(inp => inp.oninput = () => { p[inp.dataset.k] = inp.value; });
+      b.querySelector('.del').onclick = () => { pages.splice(i, 1); renderPages(); };
+      $('pageList').appendChild(b);
+    });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  $('addItem').onclick = () => { items.push({ id: 'item_' + (items.length + 1), name: '', icon: 'fas fa-star', price: 1, effect: 'tomato', desc: '' }); renderItems(); };
+  $('addScript').onclick = () => { scripts.push({ path: 'script' + (scripts.length + 1) + '.js', code: '' }); renderScripts(); };
+  $('addPage').onclick = () => { pages.push({ path: 'pages/page' + (pages.length + 1) + '.html', name: '页面' + (pages.length + 1), icon: 'fas fa-file', content: '' }); renderPages(); };
+
+  // 草稿
+  function collectDraft() {
+    return {
+      meta: { name: $('m_name').value, author: $('m_author').value, version: $('m_version').value, type: $('m_type').value, desc: $('m_desc').value },
+      items, scripts, pages
+    };
+  }
+  function applyDraft(d) {
+    if (!d) return;
+    if (d.meta) { $('m_name').value = d.meta.name || ''; $('m_author').value = d.meta.author || ''; $('m_version').value = d.meta.version || '1.0'; $('m_type').value = d.meta.type || 'tomod'; $('m_desc').value = d.meta.desc || ''; }
+    items = d.items || []; scripts = d.scripts && d.scripts.length ? d.scripts : [{ path: 'mod.js', code: '' }]; pages = d.pages || [];
+    renderItems(); renderScripts(); renderPages();
+  }
+  $('saveDraft').onclick = () => { try { localStorage.setItem('wb_mod_draft', JSON.stringify(collectDraft())); toast('草稿已保存'); } catch (e) { toast('保存失败'); } };
+  $('clearMod').onclick = () => { if (!confirm('清空当前所有内容？')) return; $('m_name').value = ''; $('m_author').value = ''; $('m_version').value = '1.0'; $('m_desc').value = ''; items = []; scripts = [{ path: 'mod.js', code: '' }]; pages = []; renderItems(); renderScripts(); renderPages(); };
+  $('loadExample').onclick = () => {
+    applyDraft({
+      meta: { name: '示例模组', author: 'FI0m9ySans', version: '1.0', type: 'zid', desc: '工作台载入的示例模组，含一个物品与一页关于。' },
+      items: [{ id: 'my_first_item', name: '🍅 番茄超人', icon: 'fas fa-apple-alt', price: 1, effect: 'tomato', desc: '获得 10 个番茄币！' }],
+      scripts: [{ path: 'mod.js', code: "console.log('✅ 示例模组已加载！');\nwindow.MyMod = { sayHello(){ alert('你好，我是示例模组'); } };" }],
+      pages: [{ path: 'pages/about.html', name: '关于', icon: 'fas fa-info-circle', content: '<div><h3>📦 示例模组</h3><p>这是工作台生成的示例。</p></div>' }]
+    });
+    toast('已载入示例');
+  };
+
+  // 打包 .tomod
+  $('buildMod').onclick = () => {
+    const name = ($('m_name').value || 'my-mod').trim();
+    if (typeof JSZip === 'undefined') { toast('JSZip 未加载，请联网后重试'); return; }
+    const mod = {
+      name, author: $('m_author').value || 'Anonymous', version: $('m_version').value || '1.0',
+      description: $('m_desc').value || '', type: $('m_type').value,
+      scripts: scripts.map(s => s.path).filter(Boolean),
+      userItems: items.map(it => ({ id: it.id, name: it.name, price: Number(it.price) || 0, icon: it.icon, effect: it.effect, desc: it.desc, dependencies: [] })),
+      tasks: [], customTabs: pages.map(p => ({ id: p.path.replace(/\W/g, '_'), name: p.name, icon: p.icon, source: p.path }))
+    };
+    const zip = new JSZip();
+    zip.file('mod.json', JSON.stringify(mod, null, 2));
+    scripts.forEach(s => { if (s.path && s.code != null) zip.file(s.path, s.code); });
+    pages.forEach(p => { if (p.path && p.content != null) zip.file(p.path, p.content); });
+    zip.generateAsync({ type: 'blob' }).then(blob => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = name.replace(/\s+/g, '_') + '.tomod'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('已生成 ' + a.download);
+    }).catch(() => toast('打包失败'));
+  };
+
+  // 模组库（运行时读取 mods.json）
+  fetch('mods.json').then(r => r.json()).then(d => {
+    const mods = (d && d.mods) || [];
+    $('libCount').textContent = mods.length + ' 个';
+    $('modLib').innerHTML = '';
+    if (!mods.length) { $('modLib').innerHTML = '<div class="empty">暂无模组</div>'; return; }
+    mods.forEach(m => {
+      const c = document.createElement('div'); c.className = 'modcard';
+      c.innerHTML = `<div class="mt"><i class="fas ${m.icon || 'fa-cube'}"></i> ${esc(m.name)} <span style="color:var(--muted);font-weight:400;font-size:12px">v${esc(m.version)}</span></div>
+        <div class="md">${esc(m.description || '')}</div>
+        <div class="tags">${(m.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <div class="acts"><a class="btn sm" href="${esc(m.file)}" download>⬇ 下载</a><a class="btn ghost sm" href="tomato.html" target="_blank">🍅 打开番茄钟</a></div>`;
+      $('modLib').appendChild(c);
+    });
+  }).catch(() => { $('modLib').innerHTML = '<div class="empty">无法读取 mods.json（本地 file:// 下需部署后访问）</div>'; });
+
+  // 启动：载入草稿
+  try { const d = JSON.parse(localStorage.getItem('wb_mod_draft') || 'null'); if (d) applyDraft(d); } catch (e) {}
+  if (!items.length && !scripts[0].code && !pages.length) { renderItems(); renderScripts(); renderPages(); }
 </script>
 </body>
 </html>
